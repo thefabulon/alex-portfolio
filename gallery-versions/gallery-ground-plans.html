@@ -202,11 +202,11 @@ details.early summary small{font-family:var(--body);font-size:14px;color:var(--m
     <div class="tb-main">
       <div class="eyebrow">OCSA Production &amp; Design · portfolio process work</div>
       <h1>Gallery <em>Ground<svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 C20 3 34 10 52 6 S84 3 98 7"/></svg></em> Plans</h1>
-      <p>The lobby and the three games, drawn from above the way a set designer draws a ground plan before anything gets built. Each plan is traced from the real game files, so what you see here is what's in the games. The ten early ideas that came first are at the bottom.</p>
+      <p>The lobby and the two games, drawn from above the way a set designer draws a ground plan before anything gets built. Each plan is traced from the real game files, so what you see here is what's in the games. The ten early ideas that came first are at the bottom.</p>
     </div>
     <div class="tb-side">
       <div><b>Designer</b>Alex</div>
-      <div><b>Sheet</b>Lobby + 3 games, then 10 early concepts</div>
+      <div><b>Sheet</b>Lobby + 2 games, then 10 early concepts</div>
       <div><b>Scale</b>Not to scale (close, though)</div>
       <div><b>Shortlist</b><span id="count">0 starred</span></div>
     </div>
@@ -238,7 +238,7 @@ details.early summary small{font-family:var(--body);font-size:14px;color:var(--m
   </div>
 
   <div class="sec">
-    <h2>The lobby and the three games</h2>
+    <h2>The lobby and the two games</h2>
     <p>You start in the lobby. Every game is a cartridge: plug one into the console and a portal opens into that game.</p>
   </div>
 
@@ -252,7 +252,7 @@ details.early summary small{font-family:var(--body);font-size:14px;color:var(--m
       <div class="notes three">
         <div><b>What's there</b>An 8 × 6 m den. A wood cabinet holds the CRT TV, the wood-grain ALEX-2600 console, a joystick and a six-slot cartridge rack. Round rug, synthwave window, posters, a beanbag and a plant.</div>
         <div><b>How you move</b>You start on the rug facing the cabinet. Take a cartridge from the rack (1), plug it into the console (2), and the portal by the window opens (3). Walk through it into the game. Bit flies between four stops and points at whatever it's talking about.</div>
-        <div><b>Design choice</b>The rack has six slots but there are only three games, so the empty slots hold "Coming soon" cartridges. A new game drops into a slot without changing the room.</div>
+        <div><b>Design choice</b>The rack has six slots but there are only two games, so the empty slots hold "Coming soon" cartridges. A new game drops into a slot without changing the room.</div>
       </div>
       <div class="strip"><span>Traced from lobby/v2.html</span><span>Built · v2.11</span></div>
     </article>
@@ -274,7 +274,7 @@ details.early summary small{font-family:var(--body);font-size:14px;color:var(--m
     <article class="plate" id="wheelie">
       <div class="ph"><svg class="spot" id="spot-bike" viewBox="0 0 62 46" aria-hidden="true"></svg>
         <div class="ttl"><span class="no">Game 2</span><h2>Wheelie Sim</h2></div>
-        <a class="open" href="../wheelie-ride/index.html">Open it →</a></div>
+        <a class="open" href="../wheelie-ride/v2.html">Open it →</a></div>
       <p class="tag">One straight road that never ends. Pull the front up and see how far back you dare to go.</p>
       <div class="drawing"><svg id="svg-bike" viewBox="0 0 400 300" role="img" aria-label="Ground plan of the wheelie road: a straight two-lane road with trees and signs on both sides, the bike in the middle, three camera spots, and a side view showing the hand-drag and loop-out angles"></svg></div>
       <div class="notes">
@@ -285,19 +285,6 @@ details.early summary small{font-family:var(--body);font-size:14px;color:var(--m
       <div class="strip"><span>Traced from wheelie-ride/src/main.js</span><span>Built · v0.11</span></div>
     </article>
 
-    <article class="plate span" id="drift">
-      <div class="ph"><svg class="spot" id="spot-drift" viewBox="0 0 62 46" aria-hidden="true"></svg>
-        <div class="ttl"><span class="no">Game 3</span><h2>Drift Garage</h2></div>
-        <a class="open" href="../drift-garage/index.html">Open it →</a></div>
-      <p class="tag">Build a car in the garage, then take it to one of three courses.</p>
-      <div class="drawing wide"><svg id="svg-drift" viewBox="0 0 560 236" role="img" aria-label="Ground plans for the drift game: the garage build bay with a turntable, then the three courses: Dockyard Route, Touge Run and Drift Playground"></svg></div>
-      <div class="notes three">
-        <div><b>What's there</b>A build bay with five rides (AE86, Silvia S15, Supra MK4, RX-7 FD, Ninja H2) and tuning: paint, camber, wheel offset, spoiler, wide-body, turbo and sponsor stickers. Then three courses.</div>
-        <div><b>How you move</b>Tune your build and save it, pick a course, then drift for points and combos. On the Playground you weave through the cones, and they go flying if you hit them.</div>
-        <div><b>Design choice</b>Each course has its own scenery so it feels like a different place: containers, cranes and water at the dockyard, trees, rocks and guardrails on the mountain road, and an open lot with cones and light poles at the playground.</div>
-      </div>
-      <div class="strip"><span>Traced from drift-garage/index.html (sits next to the Alex folder, so the link works on this computer only)</span><span>Built</span></div>
-    </article>
   </main>
 
   <details class="early" id="early">
@@ -584,7 +571,7 @@ function drawLobby() {
     `<circle class="t" cx="-7" cy="30" r="4"/><circle class="t" cx="8" cy="22" r="4"/><path class="t" d="M-7 30 L4 25 L8 22 M-2 27 l2 -7"/>`,
     `<path class="t" d="M-8 30 q2 -9 14 -10"/><rect class="solid" x="2" y="17" width="9" height="6" rx="1.5" transform="rotate(-25 6 20)"/><circle class="f" cx="-8" cy="31" r="2"/><circle class="f" cx="-12" cy="28" r="1.6"/>`
   ];
-  [['GO-KART', ''], ['WHEELIE', 'SIM'], ['DRIFTING', 'GAME']].forEach(([a, b], i) => {
+  [['GO-KART', ''], ['WHEELIE', 'SIM']].forEach(([a, b], i) => {
     const cx = 392 + i * 63;
     s += cart(cx, 174, 44, 48, mk[i]) + T(cx, 238, a, 'middle', 'lbk') + (b ? T(cx, 251, b, 'middle', 'lbk') : '');
   });
@@ -815,7 +802,6 @@ const SPOTS = {
     + `<path class="acc-l" d="M54 10 l4 -4 M56 18 h5 M8 10 l-4 -4"/>`,
   'spot-kart': `<rect class="ft" x="10" y="14" width="40" height="18" rx="5"/><rect class="solid" x="6" y="8" width="11" height="6" rx="2"/><rect class="solid" x="6" y="32" width="11" height="6" rx="2"/><rect class="solid" x="43" y="8" width="11" height="6" rx="2"/><rect class="solid" x="43" y="32" width="11" height="6" rx="2"/><circle class="fl" cx="28" cy="23" r="5"/><path class="t" d="M36 17 v12"/><path class="acc-l" d="M2 16 h-4 M2 23 h-7 M2 30 h-4"/>`,
   'spot-bike': `<path class="t" d="M4 42 H60"/><circle class="ft" cx="18" cy="34" r="8"/><circle class="ft" cx="38" cy="12" r="8"/><path class="w" d="M18 34 L30 26 L38 12 M24 30 l6 -12"/><circle class="solid" cx="22" cy="10" r="5"/><path class="t" d="M22 15 L27 26 M24 18 L34 13 M23 18 Q14 30 12 41"/><path class="acc-l" d="M10 41 l-5 -3 M9 42 h-6"/>`,
-  'spot-drift': `<g transform="translate(36 22) rotate(-24)">${carTop(30, 15)}</g><circle class="f" cx="12" cy="34" r="5"/><circle class="f" cx="6" cy="26" r="4"/><circle class="f" cx="14" cy="22" r="3"/><path class="acc-l" d="M44 40 q8 -6 14 -4"/>`
 };
 
 // Splits a drawing into wobbly ink (filtered, plus a second offset pass like a sketch) and crisp labels.
@@ -834,7 +820,6 @@ function inkify(svg) {
 document.getElementById('svg-lobby').innerHTML = drawLobby();
 document.getElementById('svg-kart').innerHTML = drawKart();
 document.getElementById('svg-bike').innerHTML = drawBike();
-document.getElementById('svg-drift').innerHTML = drawDrift();
 document.getElementById('kart-len').textContent = `A ${Math.round(kartLen / 10) * 10} m lap`;
 for (const id in SPOTS) document.getElementById(id).innerHTML = SPOTS[id];
 

@@ -266,7 +266,7 @@ function drawLobby() {
     `<circle class="t" cx="-7" cy="30" r="4"/><circle class="t" cx="8" cy="22" r="4"/><path class="t" d="M-7 30 L4 25 L8 22 M-2 27 l2 -7"/>`,
     `<path class="t" d="M-8 30 q2 -9 14 -10"/><rect class="solid" x="2" y="17" width="9" height="6" rx="1.5" transform="rotate(-25 6 20)"/><circle class="f" cx="-8" cy="31" r="2"/><circle class="f" cx="-12" cy="28" r="1.6"/>`
   ];
-  [['GO-KART', ''], ['WHEELIE', 'SIM'], ['DRIFTING', 'GAME']].forEach(([a, b], i) => {
+  [['GO-KART', ''], ['WHEELIE', 'SIM']].forEach(([a, b], i) => {
     const cx = 392 + i * 63;
     s += cart(cx, 174, 44, 48, mk[i]) + T(cx, 238, a, 'middle', 'lbk') + (b ? T(cx, 251, b, 'middle', 'lbk') : '');
   });

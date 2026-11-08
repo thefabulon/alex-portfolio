@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Alexander Kim Portfolio · The Veil</title>
+<!-- THE VEIL: after The Broad and my Woven Room. A white gallery wall under the Broad's honeycomb
+     "veil", every project hung like a work with a museum wall label, folded bottle-cap metal like
+     El Anatsui's, and the mirror-shiny sculptures from the Woven Room standing on plinths. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=block" rel="stylesheet">
+<style>
+@page { size: 1280px 720px; margin: 0; }
+:root {
+  --wall: #f3f2ee; --ink: #141414; --ink2: #4b4a47; --mute: #8d8a83; --line: #d9d6ce;
+  --acc: #c23b2c;
+  --display: "Archivo", sans-serif; --body: "Hanken Grotesk", sans-serif; --mono: "IBM Plex Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #ddd; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { position: relative; width: 1280px; height: 720px; overflow: hidden; break-after: page; background: var(--wall); color: var(--ink); font-family: var(--body); }
+.page > * { position: absolute; }
+
+/* ---------- wall lettering */
+.gal { left: 48px; top: 112px; font: 500 9.5px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink2); z-index: 3; display: flex; gap: 14px; align-items: center; }
+.gal b { color: var(--acc); font-weight: 600; }
+.gal i { width: 26px; height: 1px; background: var(--ink2); }
+h1 { margin: 0; font-family: var(--display); font-weight: 820; font-stretch: 125%; font-size: 44px; line-height: .92; letter-spacing: -.01em; text-transform: uppercase; }
+.title { left: 46px; top: 132px; width: 800px; z-index: 3; }
+
+/* ---------- the hang */
+.media { left: 48px; top: 206px; width: 800px; height: 456px; display: grid; gap: 22px; z-index: 2; }
+.fig { margin: 0; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.frame { position: relative; background: #fff; padding: 7px; box-shadow: 0 0 0 1.5px #1c1b1a, 7px 9px 0 rgba(40, 32, 20, .07); }
+.fig .frame { flex: 1; min-height: 0; }
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fig.contain img { object-fit: contain; }
+.fig.bare .frame { background: none; box-shadow: none; padding: 0; }
+.fig.phone .frame { background: #111; padding: 6px; border-radius: 16px; box-shadow: 7px 9px 0 rgba(40, 32, 20, .08); }
+.fig.phone img { border-radius: 10px; }
+figcaption { margin-top: 7px; font: italic 400 10.5px/1.25 var(--body); color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+figcaption::before { content: attr(data-n) "  "; font: 500 8.5px var(--mono); letter-spacing: .1em; color: var(--acc); font-style: normal; }
+
+/* ---------- the wall label */
+.label { left: 884px; top: 206px; width: 348px; z-index: 3; background: #fff; padding: 18px 20px 16px; box-shadow: 0 0 0 1px var(--line), 5px 6px 0 rgba(40, 32, 20, .05); }
+.label .who { font: 700 12px/1.3 var(--body); }
+.label .who span { font-weight: 400; color: var(--ink2); }
+.label .ttl { margin: 2px 0 0; font: italic 600 15px/1.25 var(--body); }
+.label .med { margin: 3px 0 12px; font: 400 11px/1.35 var(--body); color: var(--ink2); padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.desc { display: flex; flex-direction: column; gap: 9px; }
+.desc h4 { margin: 0 0 2px; font: 500 8.5px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--acc); }
+.desc p { margin: 0; font: 400 11.4px/1.48 var(--body); color: var(--ink); }
+.label .loose { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.label .no { position: absolute; right: 16px; top: 16px; font: 500 9px var(--mono); letter-spacing: .14em; color: var(--mute); }
+
+/* ---------- extras */
+.extra h5 { margin: 0 0 7px; font: 500 8.5px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink2); }
+.stats { display: flex; gap: 22px; }
+.stat b { display: block; font-family: var(--display); font-weight: 800; font-stretch: 112%; font-size: 34px; line-height: 1; color: var(--acc); white-space: nowrap; }
+.stat span { display: block; margin-top: 5px; font: 500 8px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); }
+.media .x-stats { align-self: center; justify-self: start; padding-left: 6px; }
+.media .x-stats .stats { flex-direction: column; gap: 18px; }
+[data-id="hearth"] .media .x-stats .stats { flex-direction: row; gap: 56px; }
+[data-id="hearth"] .media .x-stats { padding: 6px 0 0 20px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chips span { font: 500 8.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 5px 8px; border: 1px solid var(--ink); }
+.swatches { display: flex; gap: 14px; flex-wrap: wrap; }
+.swatches div { display: flex; align-items: center; gap: 6px; font: 500 11px var(--body); }
+.swatches i { width: 13px; height: 13px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25); }
+.lessons { margin: 0; padding: 0; list-style: none; counter-reset: l; display: grid; gap: 6px; }
+.lessons li { counter-increment: l; font: 400 10.6px/1.4 var(--body); color: var(--ink2); padding-left: 20px; position: relative; }
+.lessons li::before { content: counter(l); position: absolute; left: 0; top: 0; font: 600 9px var(--mono); color: var(--acc); }
+.lessons b { color: var(--ink); font-weight: 600; }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; height: 100%; }
+.steps li { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.steps .frame { flex: 1; min-height: 0; }
+.steps em { font: 700 10px var(--mono); font-style: normal; color: var(--acc); margin-right: 6px; }
+.steps b { font: 600 12px var(--body); }
+.steps p { margin: 3px 0 0; font: 400 10.6px/1.4 var(--body); color: var(--ink2); }
+.titleblock { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--ink); }
+.titleblock div { padding: 6px 9px; border: .5px solid var(--ink); }
+.titleblock span { display: block; font: 500 7.5px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink2); }
+.titleblock b { font: 600 11px var(--body); }
+.role b { display: block; font-family: var(--display); font-weight: 800; font-stretch: 115%; font-size: 17px; line-height: 1.05; text-transform: uppercase; color: var(--acc); }
+.media .x-role { align-self: center; }
+.mission { margin: 0; font-family: var(--display); font-style: italic; font-weight: 300; font-stretch: 90%; font-size: 23px; line-height: 1.1; color: var(--acc); }
+.media .x-mission { align-self: center; }
+.build { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; border-top: 1.5px solid var(--ink); padding-top: 9px; }
+.build em { font: 600 9px var(--mono); font-style: normal; color: var(--acc); }
+.build b { display: block; margin: 2px 0 2px; font-family: var(--display); font-weight: 800; font-stretch: 112%; font-size: 13px; text-transform: uppercase; }
+.build span { font: 400 10px/1.3 var(--body); color: var(--ink2); }
+.next { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.next .frame { flex: 1; min-height: 0; }
+.next img { object-position: 50% 6%; }
+.next b { font-family: var(--display); font-weight: 820; font-stretch: 125%; font-size: 20px; text-transform: uppercase; }
+.next p { margin: 4px 0 0; font: 400 10.6px/1.4 var(--body); color: var(--ink2); }
+.next small { display: block; margin-top: 4px; font: italic 10.5px var(--body); color: var(--mute); }
+.media .x-next { display: flex; flex-direction: column; min-height: 0; }
+.media .x-next .next { flex: 1; min-height: 0; }
+.credit { left: 48px; bottom: 26px; font: italic 9.5px var(--body); color: var(--mute); z-index: 3; }
+
+.aside { font-family: var(--display); font-style: italic; font-weight: 300; font-stretch: 90%; font-size: 26px; color: var(--acc); z-index: 4; }
+.sculpt { overflow: visible; }
+.plinth { z-index: 2; background: #fbfaf7; box-shadow: 0 0 0 1px var(--line), 6px 6px 0 rgba(40, 32, 20, .05); }
+.sc { z-index: 3; }
+
+/* ---------- footer */
+.foot { left: 48px; right: 48px; bottom: 22px; display: flex; justify-content: space-between; font: 500 8px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); z-index: 3; }
+
+/* ---------- feature pages */
+.intro { left: 760px; top: 120px; width: 472px; margin: 0; font: 400 12.4px/1.5 var(--body); color: var(--ink2); z-index: 3; }
+.feat { left: 48px; right: 48px; top: 236px; bottom: 60px; z-index: 2; display: flex; flex-direction: column; justify-content: center; }
+.feat > * { flex: none; }
+.themes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+.theme .screen { aspect-ratio: 1.452; flex: none; }
+.chipstrip { display: flex; height: 12px; margin: 14px 0 12px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .15); }
+.chipstrip i { flex: 1; }
+.theme h3 { margin: 0; font-family: var(--display); font-weight: 820; font-stretch: 120%; font-size: 21px; text-transform: uppercase; }
+.theme .mood { display: block; margin: 2px 0 6px; font: italic 500 12.5px var(--body); color: var(--acc); }
+.theme p { margin: 0; font: 400 12px/1.5 var(--body); color: var(--ink2); }
+.psteps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+.psteps li { border-top: 1.5px solid var(--ink); padding-top: 10px; }
+.psteps em { font: 600 10px var(--mono); font-style: normal; color: var(--acc); }
+.psteps b { display: block; margin: 4px 0 5px; font-family: var(--display); font-weight: 820; font-stretch: 120%; font-size: 20px; text-transform: uppercase; }
+.psteps p { margin: 0; font: 400 12.4px/1.5 var(--body); color: var(--ink2); }
+.plabel { margin: 40px 0 14px; font: 500 9px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink2); }
+.problems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+.problem { position: relative; background: #fff; padding: 20px 22px 50px; box-shadow: 0 0 0 1px var(--line), 5px 6px 0 rgba(40, 32, 20, .05); }
+.problem b { font: italic 600 16px/1.25 var(--body); }
+.problem p { margin: 8px 0 0; font: 400 12px/1.5 var(--body); color: var(--ink2); }
+.problem .fix strong { color: var(--ink); }
+.stamp { position: absolute; left: 22px; bottom: 18px; font: 600 8.5px var(--mono); letter-spacing: .18em; text-transform: uppercase; display: flex; align-items: center; gap: 7px; }
+.stamp::before { content: ""; width: 9px; height: 9px; border-radius: 50%; }
+.fixed .stamp::before { background: #3d8a6e; }
+.open .stamp::before { background: #d9a83a; }
+.crew { display: grid; grid-template-columns: 430px 1fr; gap: 40px; align-items: center; }
+.crew .sketch .frame { aspect-ratio: 1.558; flex: none; }
+.crew .sketch figcaption { white-space: normal; font-size: 12px; margin-top: 10px; }
+.crew .sketch figcaption::before { content: none; }
+.looks { display: flex; flex-direction: column; gap: 4px; }
+.names { display: grid; grid-template-columns: 120px repeat(5, 1fr); font: 500 8.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); text-align: center; }
+.look { display: grid; grid-template-columns: 120px 1fr; align-items: center; border-top: 1px solid var(--line); padding: 6px 0; }
+.look img { width: 100%; display: block; }
+.look b { display: block; font-family: var(--display); font-weight: 820; font-stretch: 120%; font-size: 17px; text-transform: uppercase; }
+.look em { font: italic 12px var(--body); color: var(--acc); }
+.board { display: flex; flex-direction: column; gap: 26px; }
+.ep { display: grid; grid-template-columns: 250px 1fr; gap: 28px; }
+.eh h5 { margin: 0; font: 500 8.5px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--acc); }
+.eh h3 { margin: 6px 0 8px; font-family: var(--display); font-weight: 820; font-stretch: 125%; font-size: 26px; line-height: 1; text-transform: uppercase; }
+.eh p { margin: 0; font: 400 11.4px/1.45 var(--body); color: var(--ink2); }
+.panels { display: grid; gap: 18px; }
+.panel { margin: 0; }
+.panel .frame { aspect-ratio: 1.33; padding: 5px; }
+.pn { position: absolute; left: 0; top: 0; font: 600 8px var(--mono); padding: 3px 5px; background: #1c1b1a; color: #fff; }
+.panel figcaption { white-space: normal; font: italic 10.4px/1.35 var(--body); margin-top: 7px; }
+.panel figcaption::before { content: none; }
+.memorial { right: 48px; top: 44px; width: 120px; z-index: 4; }
+.memorial img { width: 100%; display: block; }
+
+/* ---------- cover */
+.cv-window { left: 560px; top: 0; width: 720px; height: 720px; z-index: 1; }
+.cv-window img { width: 100%; height: 100%; object-fit: cover; object-position: 40% 50%; display: block; }
+.cv-kick { left: 52px; top: 52px; font: 500 9.5px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink2); z-index: 3; }
+.cv-title { left: 48px; top: 250px; z-index: 3; margin: 0; font-family: var(--display); font-weight: 860; font-stretch: 125%; font-size: 84px; line-height: .86; text-transform: uppercase; letter-spacing: -.01em; }
+.cv-port { left: 52px; top: 208px; z-index: 3; font-family: var(--display); font-style: italic; font-weight: 300; font-stretch: 90%; font-size: 30px; color: var(--acc); }
+.cv-sub { left: 52px; top: 418px; z-index: 3; font: italic 400 17px var(--body); color: var(--ink2); }
+.cv-toc { left: 52px; top: 470px; z-index: 3; width: 470px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 22px; font: 400 10.5px/1.4 var(--body); color: var(--ink); padding: 14px 16px; background: #fff; box-shadow: 0 0 0 1px var(--line); }
+.cv-toc div { display: flex; gap: 8px; }
+.cv-toc b { font: 500 9px/1.6 var(--mono); color: var(--acc); }
+.cv-note { right: 48px; bottom: 34px; width: 300px; z-index: 4; font: italic 400 11px/1.4 var(--body); color: var(--ink); text-align: left; background: #fff; padding: 12px 14px; box-shadow: 0 0 0 1px var(--line); }
+.cv-note b { display: block; margin-bottom: 4px; font: 500 8px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--acc); font-style: normal; }
+</style>
+</head>
+<body>
+<div id="deck"></div>
+<script src="content.js"></script>
+<script src="shared.js"></script>
+<script>
+const ACCENTS = ["#c23b2c", "#c9577a", "#a87a14", "#3d8a6e", "#1f2a5a", "#d0562a"];
+const KINDS = ["wave", "arch", "diamonds"];
+
+const T = {
+  page(p, n) {
+    const acc = ACCENTS[n % ACCENTS.length];
+    const foot = `<div class="foot"><span>Alexander Kim · Portfolio · The Veil</span><span>Gallery ${pad2(n)} of ${TOTAL}</span></div>`;
+    const gal = `<div class="gal"><b>Gallery ${pad2(n)}</b><i></i><span>${esc(p.cat || "")}</span></div>`;
+    if (p.kind === "cover") {
+      const toc = CONTENTS.map(([k, t]) => `<div><b>${pad2(k)}</b>${esc(t)}</div>`).join("");
+      return `<section class="page cover" data-id="cover" style="--acc:${acc}">
+        <div class="cv-window"><img src="${IMG}woven-door.jpg" alt="The Woven Room, seen from the door"></div>
+        <div class="cv-kick">${esc(p.kicker)}</div>
+        <div class="cv-port">Portfolio</div>
+        <h1 class="cv-title">Alexander<br>Kim</h1>
+        <div class="cv-sub">${esc(p.sub)}</div>
+        <div class="cv-toc">${toc}</div>
+        <div class="cv-note"><b>This edition · The Veil</b>After The Broad in Los Angeles: its honeycomb veil, El Anatsui’s metal that hangs like cloth, and the shiny sculptures. Through the window: my Woven Room.</div>
+        ${foot}</section>`;
+    }
+    if (p.kind === "feature") {
+      return `<section class="page feature" data-id="${p.id}" style="--acc:${acc}">
+        ${gal}<div class="title"><h1>${esc(p.title)}</h1></div>
+        ${p.intro ? `<p class="intro">${esc(p.intro)}</p>` : ""}
+        <div class="feat">${featureHTML(p)}</div>
+        ${p.memorial ? `<div class="memorial frame"><img src="${p.memorial.src}" alt="${esc(p.memorial.alt)}"></div>` : ""}
+        ${p.aside ? `<div class="aside fa">${esc(p.aside)}</div>` : ""}
+        ${foot}</section>`;
+    }
+    const [grid, loose] = mediaHTML(p, "tall");
+    return `<section class="page project" data-id="${p.id}" style="--acc:${acc}">
+      ${gal}<div class="title"><h1>${esc(p.title)}</h1></div>
+      ${grid}
+      <div class="label"><span class="no">${pad2(n)}</span>
+        <div class="who">Alexander Kim</div>
+        <div class="ttl">${esc(p.title)}${p.sub ? `, <span style="font-weight:400">${esc(p.sub)}</span>` : ""}</div>
+        <div class="med">${esc(p.medium || "")}</div>
+        ${descHTML(p)}
+        ${loose ? `<div class="loose">${loose}</div>` : ""}
+      </div>
+      ${p.aside ? `<div class="aside">${esc(p.aside)}</div>` : ""}
+      ${p.credit ? `<div class="credit">${esc(p.credit)}</div>` : ""}
+      ${foot}</section>`;
+  },
+
+  async decorate(page, p, n) {
+    const pr = page.getBoundingClientRect();
+    const box = el => { const b = el.getBoundingClientRect(); return { x: b.left - pr.left, y: b.top - pr.top, w: b.width, h: b.height, r: b.right - pr.left, b: b.bottom - pr.top }; };
+    page.querySelectorAll(".media figcaption, .feat .sketch figcaption").forEach((c, i) => c.dataset.n = "fig. " + (i + 1));
+    fitText(page.querySelector(".title h1"), p.kind === "feature" ? 690 : 800, 44, 26);
+
+    // label: shrink the type a little if a long description runs past the wall
+    const label = page.querySelector(".label");
+    if (label) {
+      let fs = 11.4;
+      while (box(label).b > 664 && fs > 9.6) { fs -= 0.2; label.querySelectorAll(".desc p, .lessons li").forEach(e => e.style.fontSize = fs + "px"); }
+    }
+    const feat = page.querySelector(".feat"), intro = page.querySelector(".intro"), title = page.querySelector(".title");
+    if (feat) {
+      const top = Math.max(box(title).b, intro ? box(intro).b : 0) + 30;
+      feat.style.top = top + "px";
+    }
+    const fa = page.querySelector(".fa"), short = [...page.querySelectorAll(".panels")].find(x => x.children.length < 4);
+    if (fa && short) { const l = box(short.lastElementChild); Object.assign(fa.style, { left: (l.r + 26) + "px", top: (l.y + 34) + "px", width: "200px", transform: "rotate(-3deg)" }); }
+    if (p.memorial) intro.style.left = "640px", intro.style.width = "430px";
+    if (p.id === "hearth") Object.assign(page.querySelector(".aside").style, { left: "620px", top: "560px", transform: "rotate(-3deg)" });
+
+    // the veil: the Broad's honeycomb along the top of every wall, lifting at one corner
+    const liftX = n === 1 ? 560 : [980, 300, 1120, 640, 160, 860][n % 6];
+    const edge = x => (n === 1 ? 720 : 70 + 26 * Math.sin(x / 190 + n) + 8 * Math.sin(x / 67));
+    art(page, [0, 0, PW, PH], (ctx, w, h) => {
+      ctx.fillStyle = "#f3f2ee"; ctx.fillRect(0, 0, w, h);
+      if (n === 1) {
+        // cover: the whole wall is veil, with the corner lifted open over the Woven Room
+        drawVeil(ctx, w, h, { cell: 40, panel: "#f3f2ee", hole: "#d6d3ca", phase: 1.3, lift: { x: 900, y: 760, r: 330, k: 90 } });
+      } else {
+        drawVeil(ctx, w, h, { cell: 32, panel: "#f3f2ee", hole: "#d3d0c7", phase: n, bg: false, open: 1.25,
+          lift: { x: liftX, y: 0, r: 150, k: 34 }, mask: (x, y) => y < edge(x) });
+      }
+    }, { asJpeg: true, scale: 1.4, quality: 0.86, cls: "art bg" });
+
+    if (n === 1) {
+      // cut the "lifted veil" opening: the Woven Room shows through under a curved edge
+      const win = page.querySelector(".cv-window");
+      win.style.clipPath = "path('M 720 0 L 720 720 L 150 720 C 210 560, 120 470, 230 370 C 330 280, 260 150, 360 60 C 400 25, 380 0, 380 0 Z')";
+      return;
+    }
+
+    // a chrome sculpture from the Woven Room, on a plinth on the floor of the wall
+    if (p.kind === "project" && label) {
+      const L = box(label), room = 664 - L.b;
+      if (room > 84) {
+        const kind = KINDS[n % 3], sh = Math.min(room - 30, kind === "wave" ? 74 : 96), sw = kind === "wave" ? sh * 2.1 : kind === "arch" ? sh * 1.05 : sh * 1.25;
+        if (sh > 50) {
+          const x = 1232 - sw - 20, y = 664 - 18 - sh;
+          const pl = document.createElement("div"); pl.className = "plinth";
+          Object.assign(pl.style, { left: (x - 14) + "px", top: (664 - 18) + "px", width: (sw + 28) + "px", height: "26px" });
+          page.append(pl);
+          const sc = document.createElement("div"); sc.className = "sc";
+          Object.assign(sc.style, { left: x + "px", top: y + "px" });
+          sc.innerHTML = sculptureSVG(kind, sw, sh, undefined, "p" + n);
+          page.append(sc);
+        }
+      }
+    }
+    // feature pages: a band of folded metal along the floor
+    if (p.kind === "feature") {
+      art(page, [0, 690, PW, 30], (ctx, w, h) => drawMetal(ctx, w, h, { seed: n, plate: 9, fold: 8, wave: 30 }), { scale: 2, asJpeg: true, quality: 0.9, z: 1 });
+      page.querySelector(".foot").style.bottom = "40px";
+    }
+  },
+};
+build(T);
+</script>
+</body>
+</html>

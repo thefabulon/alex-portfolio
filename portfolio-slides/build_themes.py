@@ -39,12 +39,16 @@ def main():
     try:
         for theme in picked:
             out = os.path.join(HERE, THEMES[theme])
-            subprocess.run([
-                CHROME, "--headless=new", "--use-angle=metal", "--hide-scrollbars",
-                "--no-pdf-header-footer", "--run-all-compositor-stages-before-draw",
-                "--virtual-time-budget=90000", f"--print-to-pdf={out}",
-                f"http://127.0.0.1:{port}/portfolio-slides/themes/{theme}.html",
-            ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=600)
+            for attempt in range(3):   # headless Chrome now and then exits early; just try again
+                done = subprocess.run([
+                    CHROME, "--headless=new", "--use-angle=metal", "--hide-scrollbars",
+                    "--no-pdf-header-footer", "--virtual-time-budget=90000", f"--print-to-pdf={out}",
+                    f"http://127.0.0.1:{port}/portfolio-slides/themes/{theme}.html",
+                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=600)
+                if done.returncode == 0:
+                    break
+            else:
+                sys.exit(f"Chrome could not print {theme}")
             print("saved", out, f"({os.path.getsize(out) / 1e6:.1f} MB)")
     finally:
         server.shutdown()

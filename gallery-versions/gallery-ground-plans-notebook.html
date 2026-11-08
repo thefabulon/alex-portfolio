@@ -199,7 +199,7 @@ h1 .u{margin-left:.32em}
     <div class="kicker">Alex — OCSA Production &amp; Design — process work</div>
     <h1><span>Gallery</span><span class="u" id="h1u">Ground Plans</span></h1>
     <ul class="dash meta">
-      <li>the lobby and my 3 games, drawn from above like a set designer's ground plan</li>
+      <li>the lobby and my 2 games, drawn from above like a set designer's ground plan</li>
       <li>traced from the real game files, so it's what's <mark>actually in them</mark></li>
       <li>not to scale (close, though)</li>
       <li>my 10 early ideas are at the bottom</li>
@@ -263,7 +263,7 @@ h1 .u{margin-left:.32em}
   </section>
 
   <div class="intro">
-    <h2 class="scrawl">The lobby + the 3 games</h2>
+    <h2 class="scrawl">The lobby + the 2 games</h2>
     <p>You start in the lobby. Every game is a cartridge: plug one into the console and a portal opens into that game.</p>
   </div>
 
@@ -287,7 +287,7 @@ h1 .u{margin-left:.32em}
       <li>round rug, synthwave window, posters, a beanbag and a plant</li>
       <li>you start on the rug facing the cabinet. Take a cartridge from the rack <b>(1)</b>, plug it into the console <b>(2)</b>, and the portal by the window opens <b>(3)</b>. Walk through it into the game</li>
       <li>Bit flies between 4 stops and points at whatever it's talking about</li>
-      <li><mark>6 slots but only 3 games</mark>, so the empty slots hold "coming soon" cartridges. A new game drops into a slot without changing the room</li>
+      <li><mark>6 slots but only 2 games</mark>, so the empty slots hold "coming soon" cartridges. A new game drops into a slot without changing the room</li>
     </ul>
     <p class="src">traced from lobby/v2.html · built, v2.11</p>
   </article>
@@ -306,7 +306,7 @@ h1 .u{margin-left:.32em}
   </article>
 
   <article class="plan bike" id="wheelie">
-    <header><span class="num">3</span><h3>Wheelie Sim</h3><a class="open" href="../wheelie-ride/index.html">open it →</a></header>
+    <header><span class="num">3</span><h3>Wheelie Sim</h3><a class="open" href="../wheelie-ride/v2.html">open it →</a></header>
     <p class="tag">One straight road that never ends. Pull the front up and see how far back you dare to go.</p>
     <div class="art"><svg id="svg-bike" viewBox="0 0 400 300" role="img" aria-label="Ground plan of the wheelie road: a straight two-lane road with trees and signs on both sides, the bike in the middle, three camera spots, and a side view showing the hand-drag and loop-out angles"></svg></div>
     <ul class="dash notes">
@@ -319,19 +319,6 @@ h1 .u{margin-left:.32em}
     <p class="src">traced from wheelie-ride/src/main.js · built, v0.11</p>
   </article>
 
-  <article class="plan drift" id="drift">
-    <header><span class="num">4</span><h3>Drift Garage</h3><a class="open" href="../drift-garage/index.html">open it →</a></header>
-    <p class="tag">Build a car in the garage, then take it to one of three courses.</p>
-    <div class="art"><svg id="svg-drift" viewBox="0 0 560 236" role="img" aria-label="Ground plans for the drift game: the garage build bay with a turntable, then the three courses: Dockyard Route, Touge Run and Drift Playground"></svg></div>
-    <ul class="dash notes">
-      <li>a build bay with 5 rides: AE86, Silvia S15, Supra MK4, RX-7 FD and Ninja H2</li>
-      <li>tuning: paint, camber, wheel offset, spoiler, wide-body, turbo and sponsor stickers</li>
-      <li>tune your build and save it, pick a course, then drift for points and combos</li>
-      <li>on the Playground you weave through the cones, and they go flying if you hit them</li>
-      <li>each course has <mark>its own scenery</mark> so it feels like a different place: containers, cranes and water at the dockyard; trees, rocks and guardrails on the mountain road; an open lot with cones and light poles at the playground</li>
-    </ul>
-    <p class="src">traced from drift-garage/index.html · it sits next to the Alex folder, so that link only works on this computer</p>
-  </article>
 
   <section class="early" id="early" aria-labelledby="early-h">
     <div class="early-head">
@@ -379,7 +366,6 @@ document.getElementById('kart-len').textContent = `a ${Math.round(GP.kartLen / 1
 later(document.getElementById('svg-lobby'), GP.lobby);
 later(document.getElementById('svg-kart'), () => kartMarkup);
 later(document.getElementById('svg-bike'), GP.bike);
-later(document.getElementById('svg-drift'), GP.drift);
 document.querySelectorAll('.key svg').forEach((s, i) => Hand.draw(s, TOOL, { seed: i, tilt: 0 }));
 
 // pen scribbles: circles round the numbers, the double line under the title, stars

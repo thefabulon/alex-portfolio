@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Alexander Kim Portfolio · Opening Night</title>
+<!-- OPENING NIGHT: the portfolio as a show in 20 scenes. Every page is a black-box stage: the
+     backdrop is a scrim cut like The Broad's veil, the Dataland rose is projected through it in
+     that scene's lighting gel, spotlights pick out each project, and the words are set like a
+     script, with chalk notes from rehearsal. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Nanum+Pen+Script&display=block" rel="stylesheet">
+<style>
+@page { size: 1280px 720px; margin: 0; }
+:root {
+  --black: #09090a; --ink: #f2efe6; --ink2: #b9b4a8; --mute: #77736b; --chalk: #f4efdc; --gel: #2a5bd7;
+  --display: "Big Shoulders Display", sans-serif; --type: "Courier Prime", monospace; --hand: "Nanum Pen Script", cursive;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { position: relative; width: 1280px; height: 720px; overflow: hidden; break-after: page; background: var(--black); color: var(--ink); font-family: var(--type); }
+.page > * { position: absolute; }
+
+/* ---------- header: scene slate */
+.slate { left: 52px; top: 34px; z-index: 5; display: flex; gap: 14px; align-items: baseline; font: 700 11px/1 var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); }
+.slate b { color: #fff; }
+.slate .gel { display: inline-flex; align-items: center; gap: 6px; color: var(--ink2); }
+.slate .gel i { width: 10px; height: 10px; border-radius: 50%; background: var(--gel); box-shadow: 0 0 0 1px rgba(255, 255, 255, .35); }
+h1 { margin: 0; font: 900 64px/.86 var(--display); text-transform: uppercase; letter-spacing: .005em; color: #fff; }
+.title { left: 50px; top: 52px; z-index: 5; }
+.cue { z-index: 6; font: 400 24px/1 var(--hand); color: var(--chalk); transform: rotate(-3deg); }
+.cue::before { content: ""; display: inline-block; width: 15px; height: 15px; margin-right: 6px; border: 1.5px solid var(--chalk); border-radius: 50%; vertical-align: -2px; }
+
+/* ---------- the stage */
+.media { left: 70px; top: 136px; width: 1140px; height: 318px; display: grid; gap: 20px; z-index: 3; }
+.fig { margin: 0; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.frame { position: relative; overflow: hidden; background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .14); }
+.fig .frame { flex: 1; min-height: 0; }
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fig.contain .frame { background: #ecebe6; }
+.fig.contain img { object-fit: contain; padding: 4px; }
+.fig.bare .frame { background: none; box-shadow: none; }
+.fig.bare img { object-fit: contain; }
+.fig.phone .frame { border-radius: 14px; border: 5px solid #1b1b1d; }
+figcaption { margin-top: 4px; font: 400 19px/1 var(--hand); color: var(--chalk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transform: rotate(-1deg); transform-origin: left; }
+
+/* ---------- the apron: set like a script */
+.script { left: 70px; right: 70px; top: 500px; bottom: 50px; z-index: 4; display: grid; gap: 30px; }
+.script .d { min-width: 0; }
+.script h4 { margin: 0 0 6px; text-align: center; font: 700 11px/1 var(--type); letter-spacing: .12em; text-transform: uppercase; color: #fff; }
+.script h4 small { display: block; margin-top: 3px; font: italic 400 10px var(--type); letter-spacing: 0; text-transform: none; color: var(--mute); }
+.script p { margin: 0; font: 400 11.2px/1.45 var(--type); color: var(--ink); }
+.script .notes { border-left: 1px dashed rgba(255, 255, 255, .25); padding-left: 22px; display: flex; flex-direction: column; gap: 12px; }
+
+/* ---------- extras */
+.extra h5 { margin: 0 0 7px; font: 700 9.5px/1 var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); }
+.stats { display: flex; gap: 22px; }
+.stat b { display: block; font: 900 40px/.9 var(--display); color: var(--gel); white-space: nowrap; filter: brightness(1.5); }
+.stat span { display: block; margin-top: 4px; font: 700 9px/1.2 var(--type); letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.media .x-stats { align-self: center; padding-left: 20px; }
+.media .x-stats .stats { flex-direction: column; gap: 16px; }
+.notes .stat b { font-size: 26px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chips span { font: 700 9px/1 var(--type); letter-spacing: .06em; text-transform: uppercase; padding: 4px 7px; background: var(--chalk); color: #111; }
+.swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+.swatches div { display: flex; align-items: center; gap: 6px; font: 400 10.5px var(--type); }
+.swatches i { width: 18px; height: 6px; }
+.lessons { margin: 0; padding: 0; list-style: none; counter-reset: l; display: grid; gap: 7px; }
+.lessons li { counter-increment: l; font: 400 10.4px/1.4 var(--type); color: var(--ink2); padding-left: 18px; position: relative; }
+.lessons li::before { content: counter(l) "."; position: absolute; left: 0; font-weight: 700; color: var(--chalk); }
+.lessons b { color: var(--ink); }
+.media .x-lessons { align-self: center; padding-left: 6px; }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; height: 100%; }
+.steps li { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.steps .frame { flex: 1; min-height: 0; }
+.steps em { font: 900 22px/1 var(--display); font-style: normal; color: var(--chalk); margin-right: 6px; }
+.steps b { font: 700 10px var(--type); text-transform: uppercase; letter-spacing: .06em; }
+.steps p { margin: 3px 0 0; font: 400 10px/1.35 var(--type); color: var(--ink2); }
+.titleblock { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(255, 255, 255, .4); }
+.titleblock div { padding: 5px 8px; border: .5px solid rgba(255, 255, 255, .3); }
+.titleblock span { display: block; font: 700 7.5px var(--type); letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); }
+.titleblock b { font: 400 10.5px var(--type); }
+.role b { display: block; font: 900 30px/.9 var(--display); text-transform: uppercase; color: #fff; }
+.media .x-role { align-self: center; padding-left: 8px; }
+.mission { margin: 0; font: 400 26px/1 var(--hand); color: var(--chalk); }
+.build { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr; gap: 9px; height: 100%; align-content: center; }
+.build li { display: grid; grid-template-columns: 26px 78px 1fr; align-items: baseline; border-bottom: 1px dashed rgba(255, 255, 255, .2); padding-bottom: 6px; }
+.build em { font: 900 20px var(--display); font-style: normal; color: var(--gel); filter: brightness(1.6); }
+.build b { font: 800 19px var(--display); text-transform: uppercase; }
+.build span { font: 400 10.5px var(--type); color: var(--ink2); }
+.next { display: flex; flex-direction: column; gap: 8px; height: 100%; }
+.next .frame { flex: 1; min-height: 0; }
+.next img { object-position: 50% 6%; }
+.next b { font: 900 24px/1 var(--display); text-transform: uppercase; }
+.next p { margin: 3px 0 0; font: 400 10px/1.35 var(--type); color: var(--ink2); }
+.next small { display: none; }
+.media .x-next { display: flex; flex-direction: column; min-height: 0; }
+.media .x-next .next { flex: 1; min-height: 0; }
+.media .x-next h5 { color: var(--chalk); }
+.credit { left: 70px; bottom: 30px; font: italic 400 9.5px var(--type); color: var(--mute); z-index: 4; }
+.aside { font: 400 34px/1 var(--hand); color: var(--chalk); z-index: 6; }
+
+/* ---------- footer */
+.foot { left: 52px; right: 52px; bottom: 18px; display: flex; justify-content: space-between; font: 700 8.5px/1 var(--type); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); z-index: 5; }
+
+/* ---------- feature pages */
+.intro { left: 660px; top: 40px; width: 570px; margin: 0; font: 400 11.6px/1.5 var(--type); color: var(--ink); z-index: 5; }
+.feat { left: 70px; right: 70px; top: 190px; bottom: 50px; z-index: 4; display: flex; flex-direction: column; justify-content: center; }
+.feat > * { flex: none; }
+.themes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.theme .screen { aspect-ratio: 1.452; }
+.chipstrip { display: flex; height: 8px; margin: 12px 0 12px; }
+.chipstrip i { flex: 1; }
+.theme h3 { margin: 0; font: 900 30px/.9 var(--display); text-transform: uppercase; }
+.theme .mood { display: block; margin: 2px 0 6px; font: 400 22px var(--hand); color: var(--chalk); font-style: normal; }
+.theme p { margin: 0; font: 400 11.4px/1.45 var(--type); color: var(--ink2); }
+.psteps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+.psteps em { display: block; font: 900 64px/.8 var(--display); font-style: normal; color: var(--gel); filter: brightness(1.5); }
+.psteps b { display: block; margin: 8px 0 4px; font: 700 11px var(--type); letter-spacing: .1em; text-transform: uppercase; }
+.psteps p { margin: 0; font: 400 11.4px/1.45 var(--type); color: var(--ink2); }
+.plabel { margin: 34px 0 12px; font: 700 10px var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); }
+.problems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+.problem { position: relative; padding: 18px 20px 46px; border: 1px solid rgba(255, 255, 255, .22); background: rgba(9, 9, 10, .72); }
+.problem b { font: 800 22px/1 var(--display); text-transform: uppercase; }
+.problem p { margin: 8px 0 0; font: 400 11.2px/1.45 var(--type); color: var(--ink2); }
+.problem .fix strong { color: var(--ink); }
+.stamp { position: absolute; right: 16px; bottom: 10px; font: 400 26px var(--hand); color: var(--chalk); transform: rotate(-4deg); }
+.fixed .stamp::before { content: "✓ "; }
+.crew { display: grid; grid-template-columns: 420px 1fr; gap: 40px; align-items: center; }
+.crew .sketch .frame { aspect-ratio: 1.558; flex: none; }
+.crew .sketch figcaption { white-space: normal; font-size: 22px; margin-top: 10px; }
+.looks { display: flex; flex-direction: column; gap: 2px; }
+.names { display: grid; grid-template-columns: 120px repeat(5, 1fr); font: 700 9.5px var(--type); letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); text-align: center; }
+.look { display: grid; grid-template-columns: 120px 1fr; align-items: center; border-top: 1px dashed rgba(255, 255, 255, .2); padding: 6px 0; }
+.look img { width: 100%; display: block; }
+.look b { display: block; font: 900 26px/.9 var(--display); text-transform: uppercase; }
+.look em { font: 400 20px var(--hand); color: var(--chalk); font-style: normal; }
+.board { display: flex; flex-direction: column; gap: 24px; }
+.ep { display: grid; grid-template-columns: 250px 1fr; gap: 26px; }
+.eh h5 { margin: 0; font: 700 10px var(--type); letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); }
+.eh h3 { margin: 4px 0 8px; font: 900 34px/.9 var(--display); text-transform: uppercase; }
+.eh p { margin: 0; font: 400 10.8px/1.45 var(--type); color: var(--ink2); }
+.panels { display: grid; gap: 16px; }
+.panel { margin: 0; }
+.panel .frame { aspect-ratio: 1.33; }
+.pn { position: absolute; left: 0; top: 0; font: 700 9px var(--type); padding: 3px 6px; background: var(--chalk); color: #111; }
+.panel figcaption { white-space: normal; font: 400 10px/1.35 var(--type); color: var(--ink2); transform: none; margin-top: 6px; }
+.memorial { right: 52px; top: 30px; width: 112px; z-index: 6; transform: rotate(3deg); }
+.memorial img { width: 100%; display: block; border: 4px solid var(--chalk); }
+
+/* ---------- cover: the poster */
+.cv-kick { left: 52px; top: 40px; font: 700 10.5px var(--type); letter-spacing: .2em; text-transform: uppercase; color: var(--ink2); z-index: 5; }
+.cv-pre { left: 54px; top: 190px; z-index: 5; font: 400 30px var(--hand); color: var(--chalk); transform: rotate(-2deg); }
+.cv-title { left: 48px; top: 226px; z-index: 5; margin: 0; font: 900 138px/.9 var(--display); text-transform: uppercase; color: #fff; }
+.cv-sub { left: 54px; top: 486px; z-index: 5; font: 700 13px var(--type); letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+.cv-tag { left: 54px; top: 510px; z-index: 5; font: italic 400 15px var(--type); color: var(--ink2); }
+.cv-bill { left: 470px; top: 474px; width: 400px; z-index: 5; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 24px; font: 400 10.5px/1.4 var(--type); color: var(--ink2); }
+.cv-bill div b { display: block; font: 700 9px var(--type); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); margin-top: 8px; }
+.cv-toc { left: 54px; right: 56px; bottom: 50px; z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px 18px; font: 400 10px/1.4 var(--type); color: var(--ink); border-top: 1px solid rgba(255, 255, 255, .25); padding-top: 12px; }
+.cv-toc b { color: var(--mute); margin-right: 6px; }
+</style>
+</head>
+<body>
+<div id="deck"></div>
+<script src="content.js"></script>
+<script src="shared.js"></script>
+<script>
+/* one lighting gel per scene (Rosco numbers), picked to match each project's own colour */
+const GELS = {
+  cover: ["R44", "Middle Rose", "#ff4fa6"], hearth: ["R21", "Golden Amber", "#f2902e"], colors: ["R21", "Golden Amber", "#f2902e"],
+  process: ["R02", "Bastard Amber", "#f6b98a"], gokart: ["R80", "Primary Blue", "#2f63ff"], crew: ["R59", "Indigo", "#6a46e0"],
+  gkworld: ["R44", "Middle Rose", "#ff4fa6"], lego: ["R21", "Golden Amber", "#ff8a1e"], wheelie: ["R89", "Moss Green", "#5fc451"],
+  lobby: ["R68", "Sky Blue", "#2fa8f0"], woven: ["R26", "Light Red", "#e8343f"], sl63: ["R312", "Canary", "#f2d23a"],
+  booth: ["R89", "Moss Green", "#5fc451"], ads: ["R33", "No Color Pink", "#ff9bb5"], fishy1: ["R21", "Golden Amber", "#f2902e"],
+  fishy2: ["R68", "Sky Blue", "#2fa8f0"], fort: ["R02", "Bastard Amber", "#f6b98a"], birdhouse: ["R68", "Sky Blue", "#3ac0c8"],
+  music: ["R59", "Indigo", "#7a4cff"], encanto: ["R312", "Canary", "#f2c23a"],
+};
+const LABELS = [["What it is", "the set-up"], ["My role", "who does what"], ["Why I included it", "why it’s in the show"]];
+
+const T = {
+  page(p, n) {
+    const [gn, gname, gel] = GELS[p.id];
+    const foot = `<div class="foot"><span>Opening Night · Alexander Kim</span><span>Scene ${n} of ${TOTAL}</span></div>`;
+    const slate = `<div class="slate"><b>Scene ${n}</b><span>${esc(p.cat || "")}</span><span class="gel"><i></i>${gn} ${gname}</span></div>`;
+    if (p.kind === "cover") {
+      const toc = CONTENTS.map(([k, t]) => `<div><b>${k}</b>${esc(t)}</div>`).join("");
+      return `<section class="page cover" data-id="cover" style="--gel:${gel}">
+        <div class="cv-kick">${esc(p.kicker)}</div>
+        <div class="cv-pre">tonight, in twenty scenes…</div>
+        <h1 class="cv-title">Alexander<br>Kim</h1>
+        <div class="cv-sub">A portfolio</div>
+        <div class="cv-tag">${esc(p.sub)}</div>
+        <div class="cv-bill">
+          <div><b>Written, designed + built by</b>Alexander Kim</div>
+          <div><b>Scenery</b>a scrim cut like the veil at The Broad</div>
+          <div><b>Projection</b>a rose made of light, after Dataland</div>
+          <div><b>Lighting</b>one gel per scene</div>
+        </div>
+        <div class="cv-toc">${toc}</div>
+      </section>`;
+    }
+    if (p.kind === "feature") {
+      return `<section class="page feature" data-id="${p.id}" style="--gel:${gel}">
+        ${slate}<div class="title"><h1>${esc(p.title)}</h1></div>
+        ${p.intro ? `<p class="intro">${esc(p.intro)}</p>` : ""}
+        <div class="feat">${featureHTML(p)}</div>
+        ${p.memorial ? `<div class="memorial"><img src="${p.memorial.src}" alt="${esc(p.memorial.alt)}"></div>` : ""}
+        ${p.aside ? `<div class="aside fa">${esc(p.aside)}</div>` : ""}
+        ${foot}</section>`;
+    }
+    const [grid, loose] = mediaHTML(p, "wide");
+    const cols = loose ? "1fr 1fr 1fr .9fr" : "1fr 1fr 1fr";
+    return `<section class="page project" data-id="${p.id}" style="--gel:${gel}">
+      ${slate}<div class="title"><h1>${esc(p.title)}</h1></div>
+      ${p.sub ? `<div class="cue sub">${esc(p.sub)}</div>` : ""}
+      ${grid}
+      <div class="script" style="grid-template-columns:${cols}">
+        ${p.desc.map((d, i) => `<div class="d"><h4>${LABELS[i][0]}<small>(${LABELS[i][1]})</small></h4><p>${esc(d)}</p></div>`).join("")}
+        ${loose ? `<div class="notes">${loose}</div>` : ""}
+      </div>
+      ${p.aside ? `<div class="aside">${esc(p.aside)}</div>` : ""}
+      ${p.credit ? `<div class="credit">${esc(p.credit)}</div>` : ""}
+      ${foot}</section>`;
+  },
+
+  async decorate(page, p, n) {
+    const [, , gel] = GELS[p.id];
+    const pr = page.getBoundingClientRect();
+    const box = el => { const b = el.getBoundingClientRect(); return { x: b.left - pr.left, y: b.top - pr.top, w: b.width, h: b.height, r: b.right - pr.left, b: b.bottom - pr.top }; };
+    const title = page.querySelector(".title");
+    if (title) fitText(title.querySelector("h1"), p.kind === "feature" ? 590 : 760, 60, 34);
+    const sub = page.querySelector(".cue.sub");
+    if (sub && title) { const t = box(title.querySelector("h1")); Object.assign(sub.style, { left: Math.min(t.x + t.w + 26, 1000) + "px", top: (t.y + 24) + "px" }); }
+    // script text: shrink a touch if a long column runs into the footer
+    const script = page.querySelector(".script");
+    if (script) {
+      let fs = 11.2;
+      const tooTall = () => [...script.children].some(c => c.scrollHeight > script.clientHeight + 1);
+      while (tooTall() && fs > 9.4) { fs -= 0.2; script.querySelectorAll("p, .lessons li").forEach(e => e.style.fontSize = fs + "px"); }
+    }
+    const feat = page.querySelector(".feat"), intro = page.querySelector(".intro");
+    if (feat) feat.style.top = Math.max(box(title).b, intro ? box(intro).b : 0) + 28 + "px";
+    if (p.memorial) Object.assign(intro.style, { left: "560px", width: "500px" });
+    const fa = page.querySelector(".fa"), short = [...page.querySelectorAll(".panels")].find(x => x.children.length < 4);
+    if (fa && short) { const l = box(short.lastElementChild); Object.assign(fa.style, { left: (l.r + 30) + "px", top: (l.y + 30) + "px", width: "200px", transform: "rotate(-4deg)" }); }
+    if (p.id === "hearth") Object.assign(page.querySelector(".aside").style, { left: "1000px", top: "150px", transform: "rotate(-5deg)" });
+
+    // where the light falls: every picture on stage gets a beam from the grid
+    const figs = [...page.querySelectorAll(".media > .fig, .media .steps .frame")].map(box);
+    const cover = p.kind === "cover", feature = p.kind === "feature";
+    const stageBottom = cover ? 720 : feature ? 720 : 470;
+    const r = rng(n * 31);
+    let roseX = cover ? 930 : 180 + r() * 920, roseY = cover ? 330 : 120 + r() * 220, roseR = cover ? 300 : 150 + r() * 70;
+    if (feature) { roseX = n % 2 ? 1160 : 120; roseY = 690; roseR = 170; }   // keep the projection off the words
+
+    art(page, [0, 0, PW, PH], (ctx, w, h) => {
+      ctx.fillStyle = "#09090a"; ctx.fillRect(0, 0, w, h);
+      // 1. the projection on the cyc behind the scrim: a wash of the scene's gel + the rose
+      const proj = document.createElement("canvas"); proj.width = w * 1.6; proj.height = h * 1.6;
+      const pc = proj.getContext("2d"); pc.scale(1.6, 1.6);
+      let g = pc.createRadialGradient(w / 2, -60, 0, w / 2, -60, w * 0.8);
+      g.addColorStop(0, hex(gel, feature ? 0.32 : 0.5)); g.addColorStop(1, hex(gel, 0));
+      pc.fillStyle = g; pc.fillRect(0, 0, w, stageBottom);
+      const pal = ROSE_PAL.map((c, i) => mix(c, gel, 0.18 + i * 0.03));
+      if (feature) pc.globalAlpha = 0.4;
+      drawRose(pc, roseX, roseY, roseR, { seed: 300 + n, open: 0.55 + 0.45 * ((n * 7) % 10) / 9, rotate: n, palette: pal,
+        density: cover ? 1.5 : 0.9, drift: { angle: r() * 6.28, length: cover ? 600 : 360, count: cover ? 3200 : 1400 } });
+      // 2. the scrim: the Broad's veil, cut out of dark gauze; the light only comes through the openings
+      const scrim = document.createElement("canvas"); scrim.width = proj.width; scrim.height = proj.height;
+      const sc = scrim.getContext("2d"); sc.scale(1.6, 1.6);
+      sc.fillStyle = feature ? "rgba(9,9,10,.9)" : "rgba(9,9,10,.8)"; sc.fillRect(0, 0, w, h);
+      sc.globalCompositeOperation = "destination-out";
+      drawVeil(sc, w, stageBottom, { cell: cover ? 30 : 24, bg: false, inner: false, hole: "#000", phase: n * 0.7, open: 1.15,
+        lift: cover ? { x: 930, y: 720, r: 260, k: 70 } : { x: roseX, y: stageBottom, r: 220, k: 40 } });
+      ctx.drawImage(proj, 0, 0, w, h);
+      ctx.drawImage(scrim, 0, 0, w, h);
+      // 3. masking legs + border, so it reads as a stage opening
+      const leg = (x0, x1) => { const lg = ctx.createLinearGradient(x0, 0, x1, 0); lg.addColorStop(0, "rgba(9,9,10,1)"); lg.addColorStop(1, "rgba(9,9,10,0)"); ctx.fillStyle = lg; ctx.fillRect(Math.min(x0, x1), 0, Math.abs(x1 - x0), stageBottom); };
+      leg(0, 60); leg(w, w - 60);
+      g = ctx.createLinearGradient(0, 0, 0, 120); g.addColorStop(0, "rgba(9,9,10,.95)"); g.addColorStop(1, "rgba(9,9,10,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, 120);
+      if (!cover && !feature) {
+        // 4. the floor, the apron edge, and the dark house below it
+        g = ctx.createLinearGradient(0, 440, 0, 488);
+        g.addColorStop(0, "rgba(9,9,10,0)"); g.addColorStop(.55, hex(mix(gel, "#000000", 0.75), 1)); g.addColorStop(1, "#09090a");
+        ctx.fillStyle = g; ctx.fillRect(0, 440, w, 48);
+        ctx.fillStyle = "#09090a"; ctx.fillRect(0, 488, w, h - 488);
+        ctx.strokeStyle = "rgba(244,239,220,.22)"; ctx.setLineDash([5, 6]); ctx.beginPath(); ctx.moveTo(52, 486); ctx.lineTo(w - 52, 486); ctx.stroke(); ctx.setLineDash([]);
+        ctx.font = "700 8px Courier Prime"; ctx.fillStyle = "rgba(244,239,220,.4)"; ctx.fillText("PLASTER LINE", 52, 480); ctx.fillText("CL", w / 2 - 6, 480);
+        ctx.fillRect(w / 2, 482, 1, 8);
+      }
+      // 5. spotlight beams + pools of light on each picture
+      ctx.globalCompositeOperation = "lighter";
+      for (const f of figs) {
+        const cx = f.x + f.w / 2, top = -20, bot = Math.min(f.b + 30, stageBottom);
+        const sx = cx + (cx < w / 2 ? -80 : 80);
+        const bg = ctx.createLinearGradient(0, top, 0, bot);
+        bg.addColorStop(0, "rgba(255,248,230,.0)"); bg.addColorStop(.6, "rgba(255,248,230,.05)"); bg.addColorStop(1, "rgba(255,248,230,.10)");
+        ctx.fillStyle = bg; ctx.beginPath();
+        ctx.moveTo(sx - 10, top); ctx.lineTo(sx + 10, top); ctx.lineTo(f.r + 26, bot); ctx.lineTo(f.x - 26, bot); ctx.closePath(); ctx.fill();
+        const pool = ctx.createRadialGradient(cx, f.b + 10, 0, cx, f.b + 10, f.w * 0.6);
+        pool.addColorStop(0, "rgba(255,248,230,.22)"); pool.addColorStop(1, "rgba(255,248,230,0)");
+        ctx.save(); ctx.translate(cx, f.b + 10); ctx.scale(1, 0.18); ctx.translate(-cx, -(f.b + 10));
+        ctx.fillStyle = pool; ctx.beginPath(); ctx.arc(cx, f.b + 10, f.w * 0.6, 0, 7); ctx.fill(); ctx.restore();
+      }
+      if (cover) {
+        for (const [x0, x1] of [[200, 520], [1100, 760]]) {
+          const bg = ctx.createLinearGradient(0, 0, 0, 720);
+          bg.addColorStop(0, "rgba(255,248,230,.02)"); bg.addColorStop(1, "rgba(255,248,230,.10)");
+          ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(x0 - 12, -10); ctx.lineTo(x0 + 12, -10); ctx.lineTo(x1 + 200, 720); ctx.lineTo(x1 - 200, 720); ctx.fill();
+        }
+      }
+      ctx.globalCompositeOperation = "source-over";
+      // 6. spike tape: little L marks at each picture's downstage corners
+      if (!cover && !feature) {
+        const tapes = ["#f2d23a", "#ff4fa6", "#2fa8f0", "#5fc451", "#ffffff"];
+        figs.forEach((f, i) => {
+          ctx.fillStyle = tapes[(i + n) % tapes.length];
+          ctx.fillRect(f.x - 7, f.b + 3, 14, 3); ctx.fillRect(f.x - 7, f.b - 8, 3, 14);
+          ctx.fillRect(f.r - 7, f.b + 3, 14, 3); ctx.fillRect(f.r + 4, f.b - 8, 3, 14);
+        });
+      }
+    }, { asJpeg: true, scale: 1.4, quality: 0.82, cls: "art bg" });
+
+    // a chalk lighting cue in the margin, like a stage manager's prompt book
+    if (p.kind === "project") {
+      const cue = document.createElement("div"); cue.className = "cue";
+      cue.textContent = `LX ${n} · GO`;
+      Object.assign(cue.style, { right: "54px", top: "36px", fontSize: "26px" });
+      page.append(cue);
+    }
+  },
+};
+build(T);
+</script>
+</body>
+</html>

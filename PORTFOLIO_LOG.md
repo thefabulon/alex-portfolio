@@ -20,6 +20,23 @@ Some projects also have their own detailed log. Their changes are summarized her
 
 ## 2026-11-08
 
+### Portfolio: three new themed editions for art school
+
+- **Problem:** My portfolio deck looked like a template, and this is for a theater design program at an art school.
+- **Fix:** I made three new editions of the whole portfolio, each based on art I've seen:
+  - **Bloom** (`portfolio-slides/Alexander-Kim-Portfolio-Bloom.pdf`): based on the rose at Dataland. A rose made of points of light opens a little more on every page, and my photos break up into light at the edges.
+  - **The Veil** (`Alexander-Kim-Portfolio-Veil.pdf`): based on The Broad and my Woven Room. A white gallery wall under the Broad's honeycomb veil, every project hung with a museum wall label, and my chrome sculptures on plinths.
+  - **Opening Night** (`Alexander-Kim-Portfolio-Opening-Night.pdf`): both ideas on a stage. The veil is the scrim, the rose is projected through it in a different lighting gel for each scene, and my descriptions are set like a script.
+- **New page:** The Woven Room is now in the portfolio (page 11), with "The Rose" as the next room from my notebook plan. Each edition has 20 pages.
+- **How it's made:** `portfolio-slides/build_themes.py` prints the three PDFs from `portfolio-slides/themes/`. The words are in `themes/content.js`, so I only change them once. The rose, the veil and the folded metal are drawn by code.
+- **Still to do:** the checklist in `portfolio-slides/themes/NOTES.md`.
+- **Why I made this call:** _[your reasoning here]_
+
+### Lobby: no drifting game, and the new Wheelie Sim
+
+- **Change:** I removed the DRIFTING GAME from my lobby and my ground plans, and the WHEELIE SIM cartridge now opens version 2 (my Orange County roads) instead of version 1. Details in lobby v2.14 in [lobby/RELEASE_LOG.md](lobby/RELEASE_LOG.md).
+- **Why I made this call:** _[your reasoning here]_
+
 ### My portfolio is a website now
 
 - **Change:** I put my portfolio on GitHub and Hostinger, and the website opens on the Lobby (lobby v2.13 in [lobby/RELEASE_LOG.md](lobby/RELEASE_LOG.md)). From there people plug in cartridges to play my games, or go to my ground plans gallery.

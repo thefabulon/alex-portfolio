@@ -199,7 +199,7 @@ h1 span + span{margin-left:.55em}
   <header class="mast">
     <h1><span>Gallery</span><span>Ground Plans</span></h1>
     <div>
-      <p>The lobby and my three games, painted from above the way a set designer draws a ground plan before anything gets built.</p>
+      <p>The lobby and my two games, painted from above the way a set designer draws a ground plan before anything gets built.</p>
       <p class="sub">Every plan is traced from the real game files, so what you see is what's in the games. Not to scale (close, though).</p>
     </div>
   </header>
@@ -246,7 +246,7 @@ h1 span + span{margin-left:.55em}
       <a class="open" href="../index.html">Open the lobby →</a>
       <h4>What's there</h4><p>An 8 × 6 m den. A wood cabinet holds the CRT TV, the wood-grain ALEX-2600 console, a joystick and a six-slot cartridge rack. Round rug, synthwave window, posters, a beanbag and a plant.</p>
       <h4>How you move</h4><p>Start on the rug facing the cabinet. Take a cartridge from the rack (1), plug it into the console (2), and the portal by the window opens (3). Walk through it into the game. Bit flies between four stops and points at whatever it's talking about.</p>
-      <h4>Why six slots</h4><p>There are only three games, so the empty slots hold "Coming soon" cartridges. A new game drops into a slot without changing the room.</p>
+      <h4>Why six slots</h4><p>There are only two games, so the empty slots hold "Coming soon" cartridges. A new game drops into a slot without changing the room.</p>
       <p class="src">Traced from lobby/v2.html · built, v2.11</p>
     </div>
   </article>
@@ -271,7 +271,7 @@ h1 span + span{margin-left:.55em}
     <div class="txt">
       <h3><span class="dot" data-c="#4f7fa6"><span>3</span></span>Wheelie Sim</h3>
       <p class="tag">One straight road that never ends. Pull the front up and see how far back you dare to go.</p>
-      <a class="open" href="../wheelie-ride/index.html">Open the wheelie sim →</a>
+      <a class="open" href="../wheelie-ride/v2.html">Open the wheelie sim →</a>
       <h4>What's there</h4><p>An 11 m two-lane road with white edge lines, pine trees and Alpinestars signs on both sides. Five rides: street, trail and sprint bikes, a Sur-Ron and a Kawasaki Ninja H2R.</p>
       <h4>How you move</h4><p>Speed up and hold Space to lift the front. Past about 66° your rider drags a hand on the road. Past about 85° you loop out and crash. C switches between 3rd person, 1st person and side cam.</p>
       <h4>Design choice</h4><p>The bike never really moves forward. The road markings, trees and signs slide toward the camera, and once they pass behind you they jump back ahead, like a scrolling backdrop on a stage.</p>
@@ -279,22 +279,6 @@ h1 span + span{margin-left:.55em}
     </div>
   </article>
 
-  <article class="plan drift" id="drift">
-    <div class="txt">
-      <div class="hd">
-        <h3><span class="dot" data-c="#b4412b"><span>4</span></span>Drift Garage</h3>
-        <p class="tag">Build a car in the garage, then take it to one of three courses.</p>
-        <a class="open" href="../drift-garage/index.html">Open the drift garage →</a>
-      </div>
-    </div>
-    <div class="art"><svg id="svg-drift" viewBox="0 0 560 236" role="img" aria-label="Ground plans for the drift game: the garage build bay with a turntable, then the three courses: Dockyard Route, Touge Run and Drift Playground"></svg></div>
-    <div class="txt">
-      <div><h4>What's there</h4><p>A build bay with five rides (AE86, Silvia S15, Supra MK4, RX-7 FD, Ninja H2) and tuning: paint, camber, wheel offset, spoiler, wide-body, turbo and sponsor stickers. Then three courses.</p></div>
-      <div><h4>How you move</h4><p>Tune your build and save it, pick a course, then drift for points and combos. On the Playground you weave through the cones, and they go flying if you hit them.</p></div>
-      <div><h4>Design choice</h4><p>Each course has its own scenery so it feels like a different place: containers, cranes and water at the dockyard, trees, rocks and guardrails on the mountain road, and an open lot with cones and light poles at the playground.</p></div>
-      <p class="src">Traced from drift-garage/index.html. It sits next to the Alex folder, so that link only works on this computer.</p>
-    </div>
-  </article>
 
   <section class="early" id="early" aria-labelledby="early-h">
     <div class="early-top">
@@ -334,7 +318,6 @@ document.getElementById('kart-len').textContent = `A ${Math.round(GP.kartLen / 1
 later(document.getElementById('svg-kart'), () => '<rect class="tint1" x="14" y="22" width="372" height="236" rx="40"/>' + kartMarkup, PAL.kart);
 later(document.getElementById('svg-lobby'), GP.lobby, PAL.lobby);
 later(document.getElementById('svg-bike'), GP.bike, PAL.bike);
-later(document.getElementById('svg-drift'), GP.drift, PAL.drift);
 const sketch = document.getElementById('svg-sketch');
 sketch.innerHTML = GP.sketch();
 Hand.draw(sketch, TOOL, { palette: PAL.sketch, tilt: 2 });
@@ -369,7 +352,6 @@ function placeBlots() {
   blots.push(blot(document.getElementById('lobby'), '#e39a62', 'left', 820, 620, -60));
   blots.push(blot(document.getElementById('gokart'), '#a9c48d', 'right', 760, 700, 0));
   blots.push(blot(document.getElementById('wheelie'), '#8fb2cf', 'left', 760, 640, 0));
-  blots.push(blot(document.getElementById('drift'), '#d9a48f', 'right', 820, 620, 60));
 }
 
 // fine-liner leader lines from the notes into the painted rooms

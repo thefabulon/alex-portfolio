@@ -210,7 +210,7 @@ header{position:relative}
   <header>
     <h1 class="title"><span class="l1">Gallery</span><span class="l2">Ground Plans</span></h1>
     <div class="sticky lede" style="--c:var(--y)">
-      <p>The lobby and my 3 games, drawn from above like a set designer's ground plan.</p>
+      <p>The lobby and my 2 games, drawn from above like a set designer's ground plan.</p>
       <p>Traced from the real game files, so this is what's in them.</p>
       <p>Not to scale (close, though).</p>
     </div>
@@ -279,7 +279,7 @@ header{position:relative}
       <div class="art"><svg id="svg-lobby" viewBox="0 0 560 300" role="img" aria-label="Ground plan of the lobby: a den with a cabinet, TV, console and cartridge rack against the back wall, a round rug, a portal by the window, posters, a beanbag and a plant"></svg></div>
       <div class="sticky s1"><h4>What's there</h4><p>An 8 × 6 m den. A wood cabinet holds the CRT TV, the wood-grain ALEX-2600 console, a joystick and a 6-slot cartridge rack.</p><p>Round rug, synthwave window, posters, a beanbag and a plant.</p></div>
       <div class="sticky s2"><h4>How you move</h4><p>Start on the rug facing the cabinet. Take a cartridge from the rack (1), plug it into the console (2), and the portal by the window opens (3). Walk through it into the game.</p><p>Bit flies between 4 stops and points at whatever it's talking about.</p></div>
-      <div class="sticky s3"><h4>Why 6 slots?</h4><p>The rack has 6 slots but there are only 3 games, so the empty slots hold "Coming soon" cartridges. A new game drops into a slot without changing the room.</p></div>
+      <div class="sticky s3"><h4>Why 6 slots?</h4><p>The rack has 6 slots but there are only 2 games, so the empty slots hold "Coming soon" cartridges. A new game drops into a slot without changing the room.</p></div>
       <p class="src">Traced from lobby/v2.html · built, v2.11</p>
     </article>
 
@@ -293,7 +293,7 @@ header{position:relative}
       </article>
 
       <article class="plan bike" id="wheelie">
-        <div class="head"><h2>Wheelie Sim</h2><p class="tag">One straight road that never ends. Pull the front up and see how far back you dare to go.</p><a class="open" href="../wheelie-ride/index.html">Open it →</a></div>
+        <div class="head"><h2>Wheelie Sim</h2><p class="tag">One straight road that never ends. Pull the front up and see how far back you dare to go.</p><a class="open" href="../wheelie-ride/v2.html">Open it →</a></div>
         <div class="art"><svg id="svg-bike" viewBox="0 0 400 300" role="img" aria-label="Ground plan of the wheelie road: a straight two-lane road with trees and signs on both sides, the bike in the middle, three camera spots, and a side view showing the hand-drag and loop-out angles"></svg></div>
         <div class="sticky s1"><h4>What's there</h4><p>An 11 m two-lane road, pine trees and Alpinestars signs both sides. 5 rides: street, trail and sprint bikes, a Sur-Ron and a Kawasaki Ninja H2R.</p></div>
         <div class="sticky s2"><h4>How it works</h4><p>Hold Space to lift the front. Past about 66° your rider drags a hand. Past about 85° you loop out. C switches cameras.</p><p>The bike never really moves. The road, trees and signs slide toward you and jump back ahead once they're behind, like a scrolling backdrop on a stage.</p></div>
@@ -301,14 +301,6 @@ header{position:relative}
       </article>
     </div>
 
-    <article class="plan drift" id="drift">
-      <div class="head"><h2>Drift Garage</h2><p class="tag">Build a car in the garage, then take it to one of three courses.</p><a class="open" href="../drift-garage/index.html">Open it →</a></div>
-      <div class="art"><svg id="svg-drift" viewBox="0 0 560 236" role="img" aria-label="Ground plans for the drift game: the garage build bay with a turntable, then the three courses: Dockyard Route, Touge Run and Drift Playground"></svg></div>
-      <div class="sticky s1"><h4>The garage</h4><p>5 rides: AE86, Silvia S15, Supra MK4, RX-7 FD, Ninja H2. Tune paint, camber, wheel offset, spoiler, wide-body, turbo and sponsor stickers.</p></div>
-      <div class="sticky s2"><h4>How you move</h4><p>Save your build, pick a course, drift for points and combos. On the Playground you weave through cones, and they go flying if you hit them.</p></div>
-      <div class="sticky s3"><h4>3 different places</h4><p>Containers, cranes and water at the dockyard. Trees, rocks and guardrails on the mountain road. An open lot with cones and light poles at the playground.</p></div>
-      <p class="src">Traced from drift-garage/index.html (it sits next to the Alex folder, so the link only works on this computer)</p>
-    </article>
   </div>
 
   <section class="early" id="early" aria-labelledby="early-h">
@@ -340,7 +332,6 @@ document.getElementById('kart-len').textContent = `A ${Math.round(GP.kartLen / 1
 later(document.getElementById('svg-lobby'), GP.lobby);
 later(document.getElementById('svg-kart'), () => kartMarkup);
 later(document.getElementById('svg-bike'), GP.bike);
-later(document.getElementById('svg-drift'), GP.drift);
 
 const curve = (a, b, bend, n = 40) => {   // a bowed line from a to b
   const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1];
@@ -376,17 +367,17 @@ function flowArrows() {
   if (getComputedStyle(ov).display === 'none') return;
   const at = sizeOverlay(ov, host), art = document.querySelector('.lobby .art');
   const o = at(art, .88, 1.02);   // just past "plug in → portal → play"
-  const to = [at(document.querySelector('.kart h2'), .5, -0.18), at(document.querySelector('.drift h2'), .5, -0.14), at(document.querySelector('.bike h2'), .3, -0.12)];
-  const bends = [-.22, .04, .2], labels = ['go-kart', 'drifting game', 'wheelie sim'];
+  const to = [at(document.querySelector('.kart h2'), .5, -0.18), at(document.querySelector('.bike h2'), .3, -0.12)];
+  const bends = [-.22, .2], labels = ['go-kart', 'wheelie sim'];
   let s = '';
   to.forEach((b, i) => {
-    const a = [o[0] + (i - 1) * 14, o[1] + 10], pts = curve(a, b, bends[i], 60);
+    const a = [o[0] + (i * 2 - 1) * 14, o[1] + 10], pts = curve(a, b, bends[i], 60);
     s += Hand.scribble(TOOL, pts, { color: 'accent', sw: 3.4, arrow: true, head: 20, seed: 90 + i });
-    const m = pts[Math.round(pts.length * [.32, .22, .55][i])], lab = document.createElement('span');
+    const m = pts[Math.round(pts.length * [.32, .55][i])], lab = document.createElement('span');
     lab.className = 'arrow-label'; lab.textContent = labels[i];
-    lab.style.cssText = `top:${m[1] - 8}px;--r:${[10, -3, -12][i]}deg`;
+    lab.style.cssText = `top:${m[1] - 8}px;--r:${[10, -12][i]}deg`;
     host.appendChild(lab);
-    lab.style.left = (i === 2 ? m[0] + 16 : m[0] - 16 - lab.offsetWidth) + 'px';   // labels sit on the outside of each arrow
+    lab.style.left = (i === 1 ? m[0] + 16 : m[0] - 16 - lab.offsetWidth) + 'px';   // labels sit on the outside of each arrow
   });
   ov.innerHTML = s;
 }

@@ -14,6 +14,14 @@ The changes for all my projects are summarized in [../PORTFOLIO_LOG.md](../PORTF
 
 ---
 
+## v2.14 (2026-11-08): Two cartridges, and the new Wheelie Sim
+
+- **Change:** I took the DRIFTING GAME cartridge out. The rack now has GO-KART and WHEELIE SIM, and Bit says "There are two games so far."
+- **Change:** WHEELIE SIM opened my old version 1, the endless straight road. It now opens version 2 (`wheelie-ride/v2.html`), where you ride the real roads of my neighborhood in Orange County. Bit tells you about the real roads, the jumps, the map (M), and that the Lobby button is in the pause menu (Esc) now.
+- **Ground plans:** the Drift Garage plan came out of all four gallery pages, the lobby plan's rack lost its third cartridge, and "3 games" became "2 games". The Wheelie Sim "Open it" links go to version 2 too.
+- **Bug I caught:** the marker gallery draws arrows from the lobby to each game. With the Drift Garage gone, it tried to draw an arrow to something that wasn't there, and the page stopped drawing. Now it draws two arrows.
+- **Why I made this call:** _[your reasoning here]_
+
 ## v2.13 (2026-11-08): The lobby is the front door of my website
 
 - **Problem:** When I put my portfolio on Hostinger from GitHub, the website needed to open on the lobby, but the lobby was hidden in `lobby/`. Lots of links were also broken: the projects' "← Lobby" buttons pointed to `lobby/v2.html`, which I'd renamed, the "← Ground plans" buttons pointed to the gallery after I'd moved it into `gallery-versions/`, and the DRIFTING GAME cartridge pointed to a folder outside my repo.

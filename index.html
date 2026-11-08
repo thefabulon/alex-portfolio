@@ -207,7 +207,7 @@ function sunsetScene(ctx, x, y, w, h, t = 0) {
   for (let i = 0; i < 4; i++) drawCone(ctx, x + w * (0.1 + i * 0.27), y + h * 0.67, h / 150);
 }
 
-// Big outlined title that shrinks until it fits in maxW. Longer names like DRIFTING GAME need it.
+// Big outlined title that shrinks until it fits in maxW. Longer names like WHEELIE SIM need it.
 function fitTitle(ctx, text, x, y, size, maxW, fill, stroke, lw) {
   const font = s => `800 ${s}px "Big Shoulders Display", Impact, sans-serif`;
   ctx.font = font(size);
@@ -324,54 +324,6 @@ function roadScene(ctx, x, y, w, h, t = 0) {
   }
 }
 
-// DRIFTING GAME: a car seen from above, sliding sideways around a neon track and laying down smoke.
-function drawDriftCar(ctx, x, y, s, rot) {
-  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
-  ctx.fillStyle = "#0b0816";
-  for (const [wx, wy] of [[-22, -17], [-22, 13], [18, -17], [18, 13]]) ctx.fillRect(wx, wy, 11, 4); // tires
-  ctx.fillStyle = "#3fe0ff"; roundRect(ctx, -32, -15, 64, 30, 7); ctx.fill();           // body
-  ctx.fillStyle = "#ff3df0"; ctx.fillRect(-32, -3, 64, 6);                                // racing stripe
-  ctx.fillStyle = "#1a1530"; roundRect(ctx, -10, -12, 22, 24, 4); ctx.fill();            // glass roof
-  ctx.fillStyle = "#3fe0ff"; ctx.fillRect(-4, -10, 10, 20);
-  ctx.fillStyle = "#fff6c8"; ctx.fillRect(29, -13, 3, 6); ctx.fillRect(29, 7, 3, 6);     // headlights
-  ctx.fillStyle = "#ff3355"; ctx.fillRect(-32, -13, 3, 6); ctx.fillRect(-32, 7, 3, 6);   // taillights
-  ctx.fillStyle = "#7b5cff"; ctx.fillRect(-36, -14, 4, 28);                               // wing
-  ctx.restore();
-}
-function driftScene(ctx, x, y, w, h, t = 0, cyK = 0.55) {
-  ctx.fillStyle = "#120c24"; ctx.fillRect(x, y, w, h);
-  const cx = x + w / 2, cy = y + h * cyK, rx = w * 0.4, ry = h * 0.34;
-  // faint grid on the lot, then red-and-white curbs around a grass island
-  ctx.strokeStyle = "rgba(123,92,255,.18)"; ctx.lineWidth = 1;
-  for (let gx = x; gx < x + w; gx += h / 8) { ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke(); }
-  for (let gy = y; gy < y + h; gy += h / 8) { ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); ctx.stroke(); }
-  ctx.fillStyle = "#1f6b4f"; ctx.beginPath(); ctx.ellipse(cx, cy, rx * 0.5, ry * 0.5, 0, 0, 7); ctx.fill();
-  ctx.lineWidth = Math.max(3, h * 0.035);
-  for (let i = 0; i < 24; i++) {
-    ctx.strokeStyle = i % 2 ? "#ff3355" : "#f4f0ff";
-    ctx.beginPath(); ctx.ellipse(cx, cy, rx * 0.52, ry * 0.52, 0, (i * Math.PI) / 12, ((i + 1) * Math.PI) / 12); ctx.stroke();
-  }
-  // where the car is on its loop (it slides around the island)
-  const at = a => [cx + Math.cos(a) * rx * 0.82, cy + Math.sin(a) * ry * 0.82];
-  const a0 = t * 1.4 + 0.6;
-  // skid marks: two dark arcs behind the car
-  ctx.strokeStyle = "rgba(0,0,0,.55)"; ctx.lineWidth = Math.max(1.5, h * 0.012);
-  for (const off of [-0.05, 0.05]) {
-    ctx.beginPath();
-    for (let k = 0; k <= 30; k++) { const [px, py] = at(a0 - 0.15 - k * 0.07); ctx.lineTo(px + off * w * Math.sin(a0), py + off * h); }
-    ctx.stroke();
-  }
-  // tire smoke puffs
-  for (let k = 8; k >= 1; k--) {
-    const [px, py] = at(a0 - 0.12 - k * 0.09);
-    ctx.fillStyle = `rgba(220,215,255,${0.38 - k * 0.04})`;
-    ctx.beginPath(); ctx.arc(px + Math.sin(k * 3 + t * 4) * 4, py, (h / 30) * (1 + k * 0.45), 0, 7); ctx.fill();
-  }
-  const [px, py] = at(a0);
-  const heading = Math.atan2(Math.cos(a0) * ry, -Math.sin(a0) * rx);
-  drawDriftCar(ctx, px, py, h / 205, heading + 0.7);       // nose points in, tail swings out
-}
-
 // ---------- Alexander's projects. Each one is a cartridge. Add new ones here. ----------
 const PROJECTS = [
   {
@@ -419,21 +371,23 @@ const PROJECTS = [
     id: "wheelie",
     title: "WHEELIE SIM",
     tag: "Riding game",
-    href: "wheelie-ride/index.html",
+    href: "wheelie-ride/v2.html",
     stripes: ["#d6f05b", "#75d8e1", "#fb9e6d", "#e54b45"],
     portal: ["#101b23", "#75d8e1", "#d6f05b"],
     glow: 0xd6f05b,
     pickup: [
       "That's WHEELIE SIM!",
+      "Ride the real roads of Alexander's neighborhood in Orange County: Aliso Viejo, Laguna Hills, the 405, all the way down Pacific Coast Highway to the beach.",
       "Pick your ride: a street bike, a trail bike, a sprint bike, a Sur Ron electric dirt bike or a Kawasaki Ninja H2R hyperbike. Your rider wears an MTB helmet!",
       "Build up speed, then hold Space to pull a wheelie. Keep pulling back and your rider drags a hand on the road. Sparks fly!",
       "Watch the lean meter. Stay in the orange zone to keep dragging. Cross the red line and you loop it: the bike flips over backward and you go tumbling down the road!",
       "Just like GO-KART, you can switch cameras: 3rd person behind the bike, 1st person from inside your helmet, or the side cam. Press C or use the CAMERA switch in the corner of the game.",
-      "When you're done riding, hit the Back to lobby button at the top of the game and you'll come right back here.",
+      "Hit a bump fast enough and you get air! Press M for the map to pick a place to start.",
+      "When you're done riding, press Esc for the pause menu and hit Lobby, and you'll come right back here.",
       "Plug it into the console to ride!"
     ],
     again: ["WHEELIE SIM! Pull it way back and drag your hand on the road. Try it in 1st person: press C. Just don't loop it, or you'll be sliding down the road!"],
-    blurb: "Pick a ride, pull a wheelie, lean way back for a hand drag, and don't cross the red line, or the bike flips and you tumble. Press C to ride in 1st or 3rd person.",
+    blurb: "Ride the real roads of Alexander's Orange County neighborhood. Pick a ride, pull a wheelie, lean way back for a hand drag, and don't cross the red line, or the bike flips and you tumble. Press C to ride in 1st or 3rd person.",
     art(ctx, x, y, w, h) { roadScene(ctx, x, y, w, h, 0.4); drawWheelie(ctx, x + w * 0.56, y + h * 0.93, h / 125, 0.3, 1.18); },
     screen(ctx, w, h, t) {
       roadScene(ctx, 0, 0, w, h, t);
@@ -445,29 +399,6 @@ const PROJECTS = [
         ctx.fillText("HAND DRAG!", w / 2, 108);
       } else blinkLine(ctx, w, 108, t);
     }
-  },
-  {
-    id: "drift",
-    title: "DRIFTING GAME",
-    tag: "Drift racing",
-    href: "drift-garage/index.html",
-    stripes: ["#3fe0ff", "#ff3df0", "#7b5cff", "#ff9a3d"],
-    portal: ["#120c24", "#7b5cff", "#3fe0ff"],
-    glow: 0x7b5cff,
-    pickup: [
-      "That's DRIFTING GAME!",
-      "This one's all about going sideways. Kick the back of the car out and hold the slide around the corners.",
-      "The longer you drift, the more smoke you leave behind!",
-      "Plug it into the console to drift!"
-    ],
-    again: ["DRIFTING GAME! Plug it in and get sideways."],
-    blurb: "Throw the car sideways and hold the slide around every corner.",
-    art(ctx, x, y, w, h) { driftScene(ctx, x, y, w, h, 2.3); },
-    screen(ctx, w, h, t) {
-      driftScene(ctx, 0, 0, w, h, t, 0.62);
-      fitTitle(ctx, "DRIFTING GAME", w / 2, 56, 62, w - 30, "#3fe0ff", "#120c24", 8);
-      blinkLine(ctx, w, 80, t);
-    }
   }
 ];
 const RACK_SLOTS = 6;
@@ -477,7 +408,7 @@ const LINES = {
     "Beep boop! Welcome to the lobby! This is all of Alexander's projects.",
     "I'm Bit, your guide. Every project here is a game cartridge.",
     { t: "Grab one from this rack and plug it into the console to play it.", at: "rack" },
-    { t: "There are three games so far: GO-KART, WHEELIE SIM and DRIFTING GAME. Alexander is making more!", at: "rack" }
+    { t: "There are two games so far: GO-KART and WHEELIE SIM. Alexander is making more!", at: "rack" }
   ],
   back: ["Welcome back! Want another go? The cartridges are right here on the rack."],
   empty: ["That slot's empty for now. Alexander is still building that one!"],
