@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 64" width="128" height="64">
+  <title>Wide-brimmed straw hat with a red band</title>
+  <defs>
+    <pattern id="weave" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <rect width="6" height="6" fill="#e9c27a"/>
+      <path d="M0 3 H6" stroke="#cf9f52" stroke-width="1.4"/>
+    </pattern>
+  </defs>
+  <ellipse cx="64" cy="47" rx="61" ry="13" fill="url(#weave)" stroke="#5a3418" stroke-opacity=".45" stroke-width="3"/>
+  <path d="M34 46 C34 20 44 10 64 10 C84 10 94 20 94 46 Z" fill="url(#weave)" stroke="#5a3418" stroke-opacity=".45" stroke-width="3"/>
+  <path d="M35 37 C46 41 82 41 93 37 L94 45 C82 49 46 49 34 45 Z" fill="#c1352b"/>
+</svg>

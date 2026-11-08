@@ -1,0 +1,784 @@
+<title>My Street Fly-Throughs</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Archivo:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: the same drafting set as the ground plans. Title block, three version cards, then one big plate (map) and a prototype bench (3D greybox + shot list). */
+:root{
+  --paper:#e9eef1; --sheet:#fbfcfd; --tint:#dbe3e9; --road:#e2e8ed; --ink:#1b2630; --line:#2a3946;
+  --faint:#a7b6c1; --muted:#566673; --accent:#cf5600; --accent-soft:#fbe3d2;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0d1b29; --sheet:#11263a; --tint:#1a3550; --road:#173049; --ink:#e4eef6; --line:#cfe1ef;
+  --faint:#335473; --muted:#9bb2c4; --accent:#ff8a3d; --accent-soft:#3a2a1e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0d1b29; --sheet:#11263a; --tint:#1a3550; --road:#173049; --ink:#e4eef6; --line:#cfe1ef;
+  --faint:#335473; --muted:#9bb2c4; --accent:#ff8a3d; --accent-soft:#3a2a1e; color-scheme:dark}
+
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  background-image:linear-gradient(var(--tint) 1px,transparent 1px),linear-gradient(90deg,var(--tint) 1px,transparent 1px);
+  background-size:24px 24px}
+.wrap{max-width:1240px;margin:0 auto;padding-block:28px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:grid;gap:24px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:.95;text-wrap:balance;margin:0}
+h1{font-size:clamp(40px,7vw,72px);margin:6px 0 12px}
+h1 em,h2 em{font-style:normal;color:var(--accent)}
+h2{font-size:32px}
+button{font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--sheet);color:var(--ink);
+  border:1px solid var(--line);padding:7px 12px;cursor:pointer}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select{font:600 12px var(--mono);background:var(--sheet);color:var(--ink);border:1px solid var(--line);padding:6px 8px}
+
+/* title block */
+.tb{background:var(--sheet);border:2px solid var(--line);display:grid;grid-template-columns:1fr auto}
+.tb-main{padding:22px 24px;border-right:2px solid var(--line);min-width:0}
+.tb-main p{margin:0;max-width:66ch;color:var(--muted)}
+.tb-side{display:grid;font-family:var(--mono);font-size:12px;min-width:210px}
+.tb-side div{padding:10px 16px;border-bottom:1px solid var(--line)}
+.tb-side div:last-child{border-bottom:0}
+.tb-side b{display:block;font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:400;text-transform:uppercase}
+@media (max-width:720px){.tb{grid-template-columns:1fr}.tb-main{border-right:0;border-bottom:2px solid var(--line)}}
+
+/* version cards */
+.versions{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.vcard{background:var(--sheet);border:2px solid var(--line);padding:0;text-align:left;display:grid;grid-template-rows:auto auto auto;
+  font:inherit;text-transform:none;letter-spacing:0;color:var(--ink)}
+.vcard[aria-pressed="true"]{background:var(--sheet);color:var(--ink);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.vcard .vh{display:flex;align-items:baseline;gap:10px;padding:12px 14px 4px}
+.vcard .vl{font-family:var(--mono);font-weight:600;color:var(--accent);font-size:13px}
+.vcard .vn{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:.95;font-size:24px;flex:1}
+.vcard .mini{border-top:1px solid var(--faint);border-bottom:1px solid var(--faint);padding:4px}
+.vcard .mini svg{display:block;width:100%;height:auto}
+.vcard .vs{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 14px;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+@media (max-width:860px){.versions{grid-template-columns:1fr}}
+
+/* plate */
+.plate{background:var(--sheet);border:2px solid var(--line);display:grid}
+.ph{display:flex;align-items:baseline;gap:14px;padding:16px 18px 4px;flex-wrap:wrap}
+.ph .no{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600}
+.ph h2{flex:1;min-width:0}
+.tag{padding:0 18px 12px;margin:0;color:var(--muted)}
+.drawing{border-top:1px solid var(--faint);border-bottom:1px solid var(--faint);overflow-x:auto}
+.drawing svg{display:block;width:100%;min-width:640px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--mono);font-size:11px;color:var(--muted);align-items:center;padding:10px 18px;border-bottom:1px solid var(--faint)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend svg{width:30px;height:16px}
+.notes{display:grid;grid-template-columns:repeat(4,1fr)}
+.notes div{padding:12px 18px;font-size:13.5px;min-width:0}
+.notes div+div{border-left:1px solid var(--faint)}
+.notes b{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:3px}
+@media (max-width:860px){.notes{grid-template-columns:1fr 1fr}.notes div:nth-child(3){border-left:0}.notes div:nth-child(n+3){border-top:1px solid var(--faint)}}
+@media (max-width:520px){.notes{grid-template-columns:1fr}.notes div+div{border-left:0;border-top:1px solid var(--faint)}}
+.strip{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:2px solid var(--line);font-family:var(--mono);font-size:11px;padding:7px 18px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+/* prototype bench */
+.bench{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);border-top:2px solid var(--line)}
+@media (max-width:960px){.bench{grid-template-columns:1fr}}
+.viewer-col{border-right:1px solid var(--faint);min-width:0;display:grid;align-content:start}
+@media (max-width:960px){.viewer-col{border-right:0;border-bottom:1px solid var(--faint)}}
+.viewer{position:relative;aspect-ratio:16/9;max-width:100%;background:var(--paper);overflow:hidden;touch-action:none;cursor:grab}
+.viewer:active{cursor:grabbing}
+.viewer canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;pointer-events:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.hud.tl{left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.hud.tr{right:10px;top:10px;font-variant-numeric:tabular-nums}
+.chip{background:var(--sheet);border:1px solid var(--line);padding:3px 7px;color:var(--ink)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.cap{position:absolute;left:10px;right:10px;bottom:10px;pointer-events:none;background:var(--sheet);border:1px solid var(--line);padding:8px 10px;font-size:13px;line-height:1.4;max-width:60ch}
+.cap b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block}
+@media (max-width:560px){.cap{font-size:12px;padding:6px 8px}}
+.nogl{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted);font-family:var(--mono);font-size:12px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-top:1px solid var(--faint)}
+.controls .grow{flex:1 1 160px;display:flex;align-items:center;gap:8px;min-width:0}
+.controls input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
+.tc{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.hint{padding:0 14px 12px;margin:0;font-size:12.5px;color:var(--muted)}
+
+.shots{min-width:0;display:grid;align-content:start}
+.shots h3{font-size:22px;padding:14px 16px 2px}
+.shots p.sub{margin:0;padding:0 16px 10px;color:var(--muted);font-size:13px}
+.shots ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--faint);max-height:560px;overflow-y:auto}
+.shots li{border-bottom:1px solid var(--faint)}
+.shots li button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:44px 1fr;gap:4px 10px;width:100%;padding:9px 16px;cursor:pointer;font-size:13.5px;line-height:1.45}
+.shots li button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.shots li button:hover{background:var(--paper)}
+.shots li.now button{background:var(--accent-soft)}
+.shots .n{font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.shots .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.shots .k.stop{color:var(--accent);font-weight:600}
+.shots .txt{min-width:0}
+
+/* compare */
+.compare{background:var(--sheet);border:2px solid var(--line);display:grid}
+.compare .head{padding:16px 18px 10px}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--faint)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--faint)}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.v{font-family:var(--display);font-weight:800;font-size:20px;text-transform:uppercase;line-height:1;white-space:nowrap}
+td.v span{color:var(--accent);font-family:var(--mono);font-size:12px;display:block;margin-bottom:3px}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.effort i{font-style:normal;display:inline-block;width:9px;height:9px;border:1px solid var(--line);margin-left:3px;vertical-align:-1px}
+.effort i.on{background:var(--line)}
+.next{padding:14px 18px 18px;display:grid;gap:8px;border-top:2px solid var(--line)}
+.next ol{margin:0;padding-left:22px;display:grid;gap:6px;max-width:80ch}
+
+/* map drawing classes */
+.m-yard{fill:var(--sheet)}
+.m-road{fill:var(--road);stroke:var(--line);stroke-width:1.4}
+.m-cl{stroke:var(--faint);stroke-width:1.2;fill:none;stroke-dasharray:10 8}
+.m-walk{fill:var(--sheet);stroke:var(--line);stroke-width:.8}
+.m-ring{fill:none;stroke:var(--sheet);stroke-width:10}
+.m-ringe{fill:none;stroke:var(--line);stroke-width:.8}
+.m-lot{stroke:var(--faint);stroke-width:1;stroke-dasharray:3 4;fill:none}
+.m-house{fill:url(#hatch);stroke:var(--line);stroke-width:2}
+.m-ridge{stroke:var(--line);stroke-width:.8;stroke-dasharray:5 3;fill:none}
+.m-gar{stroke:var(--line);stroke-width:4;fill:none}
+.m-drive{fill:var(--tint);stroke:var(--line);stroke-width:.8}
+.m-tree{fill:none;stroke:var(--faint);stroke-width:1.1}
+.m-lamp{fill:var(--line)}
+.m-mail{fill:var(--sheet);stroke:var(--line);stroke-width:.8}
+.m-car{fill:var(--sheet);stroke:var(--line);stroke-width:1.1}
+.m-zebra{stroke:var(--faint);stroke-width:5;fill:none}
+.m-ex{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.8}
+.m-cone{fill:var(--accent);opacity:.12}
+.m-path{stroke:var(--accent);stroke-width:2.4;fill:none;stroke-dasharray:7 5;marker-end:url(#arr)}
+.m-tick{fill:var(--sheet);stroke:var(--accent);stroke-width:1.2}
+.m-tl{fill:var(--accent);font:600 9.5px var(--mono)}
+.m-lb{fill:var(--muted);font:500 9.5px var(--mono);letter-spacing:.08em}
+.m-lb.big{font-size:11px;fill:var(--ink)}
+.m-st circle{fill:var(--sheet);stroke:var(--accent);stroke-width:2}
+.m-st text{fill:var(--accent);font:600 11px var(--mono)}
+.m-en{fill:var(--accent)}
+.m-me circle{fill:var(--accent);stroke:var(--sheet);stroke-width:2}
+.m-me path{fill:var(--accent);opacity:.28}
+.m-sb{fill:var(--line)}
+.m-sbo{fill:var(--sheet);stroke:var(--line);stroke-width:1}
+.ah{fill:var(--accent)}
+.hatchl{stroke:var(--faint);stroke-width:1.2}
+.hatchb{fill:var(--tint)}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 Z"/></marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatchb" width="7" height="7"/><line class="hatchl" x1="0" y1="0" x2="0" y2="7"/></pattern>
+</defs></svg>
+
+<div class="wrap">
+  <header class="tb">
+    <div class="tb-main">
+      <div class="eyebrow">Plate 07 · My Street · Fly-through study</div>
+      <h1>My <em>Street</em> fly-throughs</h1>
+      <p>Three ways to move a visitor down the street and past the four projects. Each version has a top-down route map and a greybox prototype you can play: the same street drawn in plain blocks, so you can test the camera path, the stops and the timing before building anything real.</p>
+    </div>
+    <div class="tb-side">
+      <div><b>Sheet</b>07A – 07C</div>
+      <div><b>Scale</b>1 grid square = 5 m</div>
+      <div><b>Exhibits</b>Lego F1 · Hearth · VR · Go-kart</div>
+      <div><b>Date</b>17 Oct 2026</div>
+    </div>
+  </header>
+
+  <section class="versions" id="versions" aria-label="Choose a version"></section>
+
+  <article class="plate">
+    <div class="ph"><span class="no" id="p-no"></span><h2 id="p-name"></h2></div>
+    <p class="tag" id="p-tag"></p>
+    <div class="legend" aria-hidden="true">
+      <span><svg viewBox="0 0 30 16"><path class="m-path" style="marker-end:none" d="M2 8 H28"/></svg>Camera path</span>
+      <span><svg viewBox="0 0 30 16"><g class="m-st"><circle cx="15" cy="8" r="6.5"/></g></svg>Stop</span>
+      <span><svg viewBox="0 0 30 16"><path class="m-cone" style="opacity:.35" d="M4 8 L26 1 L26 15 Z"/></svg>What the camera sees</span>
+      <span><svg viewBox="0 0 30 16"><rect class="m-ex" x="6" y="3" width="18" height="10"/></svg>Exhibit</span>
+      <span><svg viewBox="0 0 30 16"><circle class="m-tick" cx="15" cy="8" r="3.5"/></svg>Every 30 s</span>
+      <span><svg viewBox="0 0 30 16"><rect class="m-house" x="4" y="2" width="22" height="12"/></svg>House (generic)</span>
+    </div>
+    <div class="drawing"><svg id="bigmap" viewBox="0 0 920 380" role="img" aria-label="Route map"></svg></div>
+    <div class="notes">
+      <div><b>How you move</b><span id="n-move"></span></div>
+      <div><b>Camera</b><span id="n-cam"></span></div>
+      <div><b>Run time</b><span id="n-time"></span></div>
+      <div><b>Watch out</b><span id="n-watch"></span></div>
+    </div>
+
+    <div class="bench">
+      <div class="viewer-col">
+        <div class="viewer" id="viewer">
+          <div class="hud tl"><span class="chip on" id="h-mode">Walk-through</span><span class="chip" id="h-eye"></span></div>
+          <div class="hud tr"><span class="chip" id="h-tc">0:00</span></div>
+          <div class="cap" id="cap"><b id="cap-k"></b><span id="cap-t"></span></div>
+        </div>
+        <div class="controls">
+          <button id="play" aria-pressed="false">▶ Play</button>
+          <button id="restart">↺ Restart</button>
+          <div class="grow"><input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Position in the fly-through"><span class="tc" id="tc">0:00 / 0:00</span></div>
+          <button id="cam-walk" aria-pressed="true">Walk</button>
+          <button id="cam-fly" aria-pressed="false">Fly-over</button>
+          <select id="rate" aria-label="Playback speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select>
+        </div>
+        <p class="hint">Greybox prototype: plain shapes, no textures. Drag the view to look around. Press space to play or pause. Click a shot on the right to jump to it.</p>
+      </div>
+      <div class="shots">
+        <h3>Shot list</h3>
+        <p class="sub">Write the walk-through like a storyboard. Each line is one shot.</p>
+        <ol id="shots"></ol>
+      </div>
+    </div>
+    <div class="strip"><span id="p-strip"></span><span>Greybox · NTS</span></div>
+  </article>
+
+  <section class="compare">
+    <div class="head"><div class="eyebrow">Side by side</div><h2>Compare the <em>three</em></h2></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Version</th><th>Run time</th><th>Camera</th><th>Stop order</th><th>Best for</th><th>Watch out</th><th>Build effort</th></tr></thead>
+      <tbody id="cmp"></tbody>
+    </table></div>
+    <div class="next">
+      <div class="eyebrow">Next step</div>
+      <ol>
+        <li><b>Pick a route.</b> Play all three and note where you got bored or lost. That stretch needs a sign, a sound or a shorter path.</li>
+        <li><b>Swap boxes for real things.</b> Start with the exhibits. Put the Lego street photos on the garage door and a real kart photo in the cul-de-sac, and leave the houses grey.</li>
+        <li><b>Test at real size.</b> Load the chosen route on the headset. Check the sign text is readable from the stop point and that the turns don't make you dizzy.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+// ---------- street layout (metres). +x runs down the street, -z is the north side ----------
+const LOTX = [0, 24, 48, 72, 96];
+const BULB = { x: 128, z: 0, r: 15 };
+const deg = d => d * Math.PI / 180;
+const ring = (a, r = 17) => [BULB.x + r * Math.cos(deg(a)), BULB.z + r * Math.sin(deg(a))];
+const drive = (s, lot) => ({ x: LOTX[lot] + 16.5, z: s * 11.5 });
+const walkAt = (s, lot) => [LOTX[lot] + 16.5, s * 6.5];
+
+const houses = [], driveways = [];
+for (const s of [-1, 1]) LOTX.forEach((lx, i) => {
+  const phi = s < 0 ? 0 : Math.PI;
+  houses.push({ x: lx + 11, z: s * 19.5, phi, w: 16, d: 11, h: 5.6 + ((i * 7 + (s > 0 ? 3 : 0)) % 4) * 0.5, gx: s < 0 ? 5.5 : -5.5 });
+  driveways.push({ x: lx + 16.5, z: s * 9, phi, w: 5, l: 10 });
+});
+for (const a of [-65, 0, 65]) {
+  const [x, z] = ring(a, 28), f = [-Math.cos(deg(a)), -Math.sin(deg(a))];
+  const phi = Math.atan2(f[0], f[1]);
+  houses.push({ x, z, phi, w: 14, d: 11, h: 6, gx: 0 });
+  const [dx, dz] = ring(a, 18.75);
+  driveways.push({ x: dx, z: dz, phi, w: 5, l: 7.5 });
+}
+const meetCars = [-120, -60, 0, 60, 120].map(a => {
+  const [x, z] = ring(a, 12.5);
+  return { x, z, a };
+});
+
+const EX = {
+  lego:   { name: "Lego F1 Cars", fw: 4, fd: 2.6, y: 1.0 },
+  hearth: { name: "Hearth App",   fw: 2.6, fd: 1.6, y: 1.5 },
+  vr:     { name: "VR & Virtual", fw: 3, fd: 3, y: 1.4 },
+  kart:   { name: "The Go-Kart",  fw: 3, fd: 2, y: 0.4 },
+};
+
+// ---------- the three versions ----------
+const V = [
+{ id: "a", letter: "A", name: "Sidewalk Stroll", eye: 1.6, speed: 2.2,
+  tag: "One side of the street, one direction, at eye height. The plainest version and the easiest to follow.",
+  move: "Walk the north sidewalk from the street sign to the cul-de-sac. Turn to face each driveway, then walk into the car meet.",
+  cam: "Eye height (1.6 m), walking pace. Turns to face each exhibit at the stops.",
+  watch: "The south side is scenery only. Give those houses a light or a sound so the street doesn't feel half empty.",
+  best: "Simplest to build and to follow. A clear beginning, middle and end.", effort: 1,
+  place: { lego: drive(-1, 1), hearth: drive(-1, 2), vr: drive(-1, 3), kart: { x: 128, z: 0 } },
+  path: [[-12, -6.5], [12, -6.5], { p: walkAt(-1, 1), ex: "lego" }, [52, -6.5], { p: walkAt(-1, 2), ex: "hearth" }, [76, -6.5],
+         { p: walkAt(-1, 3), ex: "vr" }, [104, -6.5], [116, -11.5], [128, -16.5], { p: [128, -6], ex: "kart", dwell: 9 }],
+  moves: [
+    "Enter at the street sign. The camera looks straight down the sidewalk, and the cul-de-sac is a faint shape at the far end.",
+    "Walk on. A tree and a streetlight at every house mark the beats, so each house reads as a new chapter.",
+    "Keep going. You can hear the car meet before you can see it.",
+    "The sidewalk bends into the cul-de-sac. Step between two parked cars into the ring.",
+  ],
+  stops: {
+    lego: "Turn left into the first driveway. The Lego F1 cars sit on a low table, with the street photos printed big on the garage door behind them.",
+    hearth: "The porch glows like a phone screen. Hearth runs on a tall panel and the creature sits on the step.",
+    vr: "The garage door is up. Inside: the headset on a plinth and a door frame that hints this gallery is virtual too.",
+    kart: "The finale. The go-kart sits in the middle of the car meet under the brightest light.",
+  } },
+{ id: "b", letter: "B", name: "Loop the Block", eye: 1.6, speed: 2.6,
+  tag: "Out along one side, around the cul-de-sac, back along the other. You finish where you started.",
+  move: "North sidewalk out, all the way around the cul-de-sac sidewalk, then the south sidewalk back to the corner.",
+  cam: "Eye height (1.6 m), a brisk walk. The car meet stays on your left around the circle.",
+  watch: "Longest run. The stretch between the Lego cars and VR needs signs or sound to stay interesting.",
+  best: "Uses both sides of the street. Loops cleanly, so it works as a demo that plays on repeat.", effort: 2,
+  place: { lego: drive(-1, 0), hearth: drive(1, 2), vr: drive(-1, 3), kart: { x: 128, z: 0 } },
+  path: [[-12, -6.5], { p: walkAt(-1, 0), ex: "lego" }, [52, -6.5], { p: walkAt(-1, 3), ex: "vr" }, [106, -6.5],
+         ring(-160), ring(-120), ring(-80), ring(-40), { p: ring(0), ex: "kart", dwell: 9 }, ring(40), ring(80), ring(120), ring(160),
+         [100, 6.5], { p: walkAt(1, 2), ex: "hearth" }, [30, 6.5], [-12, 6.5]],
+  moves: [
+    "Start at the corner of the block, north side. The first house is right in front of you.",
+    "A long walk past two quiet houses. Good spot for a timeline sign: how I got into building.",
+    "Follow the sidewalk around the cul-de-sac. The car meet stays on your left the whole way.",
+    "Cross over and head back on the south side. Everything you already passed is visible across the road.",
+    "Walk back to the corner where you started. The loop closes.",
+  ],
+  stops: {
+    lego: "First house: the Lego F1 cars, back on the street where they were photographed.",
+    vr: "Garage open. Headset on a plinth, and a door frame that leads nowhere yet.",
+    kart: "Halfway point. Stop on the far side of the circle and look across the car meet at the go-kart.",
+    hearth: "Last stop: Hearth on the porch, the newest project, so the walk ends on what's next.",
+  } },
+{ id: "c", letter: "C", name: "Car-Height Cruise", eye: 0.45, speed: 4,
+  tag: "Drive the street at Lego-car height. The camera sits where you held the camera for the street photos.",
+  move: "Roll down the road, pull into driveways for stops, then circle the car meet and park.",
+  cam: "45 cm off the road, driving pace. Tilts up at tall exhibits.",
+  watch: "Signs are hard to read from low down: tilt them back and use big text. In a headset, keep the turns slow or people get dizzy.",
+  best: "The most memorable. It matches the low camera angle of your Lego photos.", effort: 3,
+  place: { lego: { x: 30, z: -1.5 }, hearth: drive(1, 2), vr: drive(-1, 3), kart: { x: 128, z: 0 } },
+  path: [[-12, 2], [10, 2.2], { p: [24, 1.6], ex: "lego" }, [40, 2.5], [55, 2.5], [62.5, 5.2], { p: [64.5, 8], ex: "hearth" },
+         [67.5, 4.4], [76, 2], [83, -1.6], [87.4, -5.4], { p: [88.5, -8], ex: "vr" }, [91.5, -4], [100, 2], [112, 2.5],
+         ring(150, 8), ring(90, 8), ring(30, 8), { p: ring(0, 8), ex: "kart", dwell: 9 }, ring(-60, 8), ring(-120, 8), ring(-175, 8), [121.5, 3.6]],
+  moves: [
+    "Roll in at Lego-car height. The houses tower over you, like the street photos.",
+    "Drive down the lane, then swing right into the driveway.",
+    "Back out, cross the street and pull into the open garage.",
+    "Drive into the cul-de-sac and circle the car meet.",
+    "Finish the lap and park in the ring with the other cars.",
+  ],
+  stops: {
+    lego: "Pull up beside the photo set in the road. This is the exact view from the Lego photos.",
+    hearth: "Nose up to the porch. Hearth's panel towers above, so the camera tilts up.",
+    vr: "Headlights on the headset plinth inside the garage.",
+    kart: "Stop facing the go-kart. At this height it looks full size, and it is.",
+  } },
+];
+
+// ---------- timeline: travel at constant speed, dwell at each stop ----------
+function build(v) {
+  const pts = v.path.map(p => Array.isArray(p) ? p : p.p);
+  const curve = new THREE.CatmullRomCurve3(pts.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, "centripetal");
+  const L = curve.getLength(), N = 2000, lens = curve.getLengths(N);
+  const uAt = i => lens[Math.round(i / (pts.length - 1) * N)] / L;
+  const items = []; let t = 0, u = 0, mi = 0, si = 0;
+  const stops = [];
+  v.path.forEach((p, i) => {
+    if (Array.isArray(p)) return;
+    const us = uAt(i), d = (us - u) * L / v.speed;
+    items.push({ kind: "move", u0: u, u1: us, t0: t, t1: t + d, text: v.moves[mi++] }); t += d;
+    const pos = v.place[p.ex], dwell = p.dwell || 7;
+    const st = { ex: p.ex, p: p.p, u: us, n: ++si, target: new THREE.Vector3(pos.x, v.eye < 1 ? Math.min(EX[p.ex].y, 1.6) : EX[p.ex].y, pos.z) };
+    stops.push(st);
+    items.push({ kind: "stop", u0: us, u1: us, t0: t, t1: t + dwell, text: v.stops[p.ex], stop: st }); t += dwell;
+    u = us;
+  });
+  if (u < 0.999) { const d = (1 - u) * L / v.speed; items.push({ kind: "move", u0: u, u1: 1, t0: t, t1: t + d, text: v.moves[mi] }); t += d; }
+  return { curve, L, items, stops, T: t };
+}
+V.forEach(v => { v.tl = build(v); });
+
+function stateAt(v, t) {
+  const tl = v.tl; t = Math.max(0, Math.min(t, tl.T));
+  let idx = tl.items.findIndex(it => t <= it.t1); if (idx < 0) idx = tl.items.length - 1;
+  const it = tl.items[idx], f = it.t1 > it.t0 ? (t - it.t0) / (it.t1 - it.t0) : 1;
+  const u = it.u0 + (it.u1 - it.u0) * f;
+  let blend = 0, stop = null;
+  if (it.kind === "stop") {
+    stop = it.stop; const e = 1.4, a = t - it.t0, b = it.t1 - t;
+    blend = Math.min(1, a / e, b / e); blend = blend * blend * (3 - 2 * blend);
+  }
+  return { u: Math.min(1, Math.max(0, u)), idx, item: it, blend, stop };
+}
+const fmt = s => { s = Math.round(s); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+
+// ---------- the top-down map (SVG) ----------
+const S = 5, OX = 16, OZ = 38;
+const X = x => +((x + OX) * S).toFixed(1), Y = z => +((z + OZ) * S).toFixed(1);
+const rot = (x, z, phi) => `translate(${X(x)} ${Y(z)}) rotate(${(-phi * 180 / Math.PI).toFixed(1)})`;
+
+function exhibitPhi(v, st) { const p = v.place[st.ex]; return Math.atan2(st.p[0] - p.x, st.p[1] - p.z); }
+
+function mapSVG(v, mini) {
+  let s = `<rect class="m-yard" width="920" height="380"/>`;
+  // lot lines
+  for (const sd of [-1, 1]) for (const lx of [...LOTX, 120]) if (lx < 113) s += `<path class="m-lot" d="M${X(lx)} ${Y(sd * 7.5)} V${Y(sd * 34)}"/>`;
+  // road with cul-de-sac bulb
+  const ex = BULB.x - Math.sqrt(BULB.r ** 2 - 16);
+  s += `<path class="m-road" d="M${X(-16)} ${Y(-4)} H${X(ex)} A${BULB.r * S} ${BULB.r * S} 0 1 1 ${X(ex)} ${Y(4)} H${X(-16)} Z"/>`;
+  s += `<path class="m-cl" d="M${X(-16)} ${Y(0)} H${X(110)}"/>`;
+  // crosswalk at the entry
+  let zb = ""; for (let z = -3.2; z <= 3.2; z += 1.6) zb += `M${X(-9.5)} ${Y(z)} H${X(-6.5)} `;
+  s += `<path class="m-zebra" d="${zb}"/>`;
+  // sidewalks
+  for (const sd of [-1, 1]) s += `<rect class="m-walk" x="${X(-16)}" y="${Y(sd < 0 ? -7.5 : 5.5)}" width="${(112.3 + 16) * S}" height="${2 * S}"/>`;
+  s += `<circle class="m-ring" cx="${X(BULB.x)}" cy="${Y(0)}" r="${17 * S}"/><circle class="m-ringe" cx="${X(BULB.x)}" cy="${Y(0)}" r="${16 * S}"/><circle class="m-ringe" cx="${X(BULB.x)}" cy="${Y(0)}" r="${18 * S}"/>`;
+  // driveways and houses
+  for (const d of driveways) s += `<rect class="m-drive" transform="${rot(d.x, d.z, d.phi)}" x="${-d.w / 2 * S}" y="${-d.l / 2 * S}" width="${d.w * S}" height="${d.l * S}"/>`;
+  for (const h of houses) s += `<g transform="${rot(h.x, h.z, h.phi)}"><rect class="m-house" x="${-h.w / 2 * S}" y="${-h.d / 2 * S}" width="${h.w * S}" height="${h.d * S}"/>`
+    + `<path class="m-ridge" d="M0 ${-h.d / 2 * S} V${h.d / 2 * S}"/><path class="m-gar" d="M${(h.gx - 2.2) * S} ${h.d / 2 * S} H${(h.gx + 2.2) * S}"/></g>`;
+  // trees, lamps, mailboxes
+  for (const sd of [-1, 1]) LOTX.forEach(lx => {
+    const tx = X(lx + 6), ty = Y(sd * 4.75), r = 1.7 * S;
+    s += `<circle class="m-tree" cx="${tx}" cy="${ty}" r="${r}"/><path class="m-tree" d="M${tx - r} ${ty} H${tx + r} M${tx} ${ty - r} V${ty + r}"/>`;
+    s += `<rect class="m-lamp" x="${X(lx + 22) - 2.5}" y="${Y(sd * 4.75) - 2.5}" width="5" height="5"/>`;
+    s += `<rect class="m-mail" x="${X(lx + 12.6) - 2}" y="${Y(sd * 8.1) - 2}" width="4" height="4"/>`;
+  });
+  // car meet
+  for (const c of meetCars) s += `<rect class="m-car" transform="translate(${X(c.x)} ${Y(c.z)}) rotate(${(c.a + 90).toFixed(1)})" x="${-2.15 * S}" y="${-0.9 * S}" width="${4.3 * S}" height="${1.8 * S}" rx="3"/>`;
+  // sightline cones, exhibits, path
+  const tl = v.tl;
+  for (const st of tl.stops) {
+    const a = Math.atan2(st.target.z - st.p[1], st.target.x - st.p[0]), len = 9, h = deg(30);
+    s += `<path class="m-cone" d="M${X(st.p[0])} ${Y(st.p[1])} L${X(st.p[0] + len * Math.cos(a - h))} ${Y(st.p[1] + len * Math.sin(a - h))} L${X(st.p[0] + len * Math.cos(a + h))} ${Y(st.p[1] + len * Math.sin(a + h))} Z"/>`;
+  }
+  for (const st of tl.stops) {
+    const p = v.place[st.ex], e = EX[st.ex];
+    if (st.ex === "kart") s += `<circle class="m-ex" style="fill:none;stroke-dasharray:4 3" cx="${X(p.x)}" cy="${Y(p.z)}" r="${3 * S}"/>`;
+    s += `<rect class="m-ex" transform="${rot(p.x, p.z, exhibitPhi(v, st))}" x="${-e.fw / 2 * S}" y="${-e.fd / 2 * S}" width="${e.fw * S}" height="${e.fd * S}"/>`;
+  }
+  const pts = tl.curve.getSpacedPoints(260).map(q => `${X(q.x)},${Y(q.z)}`);
+  s += `<polyline class="m-path" points="${pts.join(" ")}"/>`;
+  const p0 = tl.curve.getPointAt(0), p1 = tl.curve.getPointAt(0.01), a0 = Math.atan2(p1.z - p0.z, p1.x - p0.x) * 180 / Math.PI;
+  s += `<g class="m-en" transform="translate(${X(p0.x)} ${Y(p0.z)}) rotate(${a0.toFixed(1)})"><path d="M-9 -7 L7 0 L-9 7 Z"/></g>`;
+  if (!mini) {
+    for (let t = 30; t < tl.T - 4; t += 30) {
+      const st = stateAt(v, t); if (st.item.kind === "stop") continue;
+      const q = tl.curve.getPointAt(st.u), nq = tl.curve.getTangentAt(st.u);
+      const ox = -nq.z * 3.2, oz = nq.x * 3.2;
+      s += `<circle class="m-tick" cx="${X(q.x)}" cy="${Y(q.z)}" r="3.5"/><text class="m-tl" text-anchor="middle" x="${X(q.x + ox)}" y="${Y(q.z + oz) + 3}">${fmt(t)}</text>`;
+    }
+  }
+  for (const st of tl.stops) {
+    const p = v.place[st.ex];
+    s += `<g class="m-st"><circle cx="${X(st.p[0])}" cy="${Y(st.p[1])}" r="${mini ? 13 : 10}"/><text x="${X(st.p[0])}" y="${Y(st.p[1]) + (mini ? 5 : 3.8)}" text-anchor="middle" style="${mini ? "font-size:15px" : ""}">${st.n}</text></g>`;
+    if (!mini) {
+      const lz = p.z + (p.z < -1 ? -2.6 : p.z > 1 ? 4.2 : (st.ex === "kart" ? 5.2 : -3));
+      s += `<text class="m-lb big" text-anchor="middle" x="${X(p.x)}" y="${Y(lz)}" style="paint-order:stroke;stroke:var(--sheet);stroke-width:4px">${EX[st.ex].name.toUpperCase()}</text>`;
+    }
+  }
+  if (!mini) {
+    s += `<text class="m-lb" x="${X(-14)}" y="${Y(-8.6)}">NORTH SIDEWALK</text><text class="m-lb" x="${X(-14)}" y="${Y(9.3)}">SOUTH SIDEWALK</text>`;
+    s += `<text class="m-lb" x="${X(34)}" y="${Y(-1)}">STREET · 8 M WIDE</text><text class="m-lb" text-anchor="middle" x="${X(-8)}" y="${Y(-13)}">ENTRY</text>`;
+    s += `<text class="m-lb" text-anchor="middle" x="${X(BULB.x)}" y="${Y(-11.4)}" style="paint-order:stroke;stroke:var(--road);stroke-width:4px">CAR MEET</text>`;
+    s += `<text class="m-lb" x="${X(146)}" y="${Y(35.5)}" text-anchor="middle">CUL-DE-SAC</text>`;
+    // scale bar and north arrow
+    const bx = 14, by = 366; s += `<rect class="m-sb" x="${bx}" y="${by}" width="${10 * S}" height="5"/><rect class="m-sbo" x="${bx + 10 * S}" y="${by}" width="${10 * S}" height="5"/><text class="m-lb" x="${bx}" y="${by - 4}">0</text><text class="m-lb" x="${bx + 10 * S}" y="${by - 4}" text-anchor="middle">10</text><text class="m-lb" x="${bx + 20 * S}" y="${by - 4}" text-anchor="middle">20 M</text>`;
+    s += `<g transform="translate(895 26)"><path class="m-sb" d="M0 -14 L7 8 L0 3 L-7 8 Z"/><text class="m-lb" x="0" y="22" text-anchor="middle">N</text></g>`;
+    s += `<g class="m-me" id="me"><path d=""/><circle r="6"/></g>`;
+  }
+  return s;
+}
+
+// ---------- page wiring ----------
+const $ = id => document.getElementById(id);
+let cur = V[0], t = 0, playing = false, camMode = "walk", rate = 1;
+
+$("versions").innerHTML = V.map(v => `<button class="vcard" id="v-${v.id}" aria-pressed="false">
+  <div class="vh"><span class="vl">07${v.letter}</span><span class="vn">${v.name}</span></div>
+  <div class="mini"><svg viewBox="0 0 920 380" aria-hidden="true">${mapSVG(v, true)}</svg></div>
+  <div class="vs"><span>${fmt(v.tl.T)} run</span><span>${v.tl.stops.length} stops</span><span>Eye ${v.eye} m</span></div></button>`).join("");
+V.forEach(v => $("v-" + v.id).addEventListener("click", () => select(v, true)));
+
+$("cmp").innerHTML = V.map(v => `<tr><td class="v"><span>07${v.letter}</span>${v.name}</td><td class="num">${fmt(v.tl.T)}<br>${Math.round(v.tl.L)} m</td>
+  <td>${v.cam}</td><td>${v.tl.stops.map(s => EX[s.ex].name).join(" → ")}</td><td>${v.best}</td><td>${v.watch}</td>
+  <td class="effort num">${["Low", "Medium", "High"][v.effort - 1]} ${[1, 2, 3].map(k => `<i class="${k <= v.effort ? "on" : ""}"></i>`).join("")}</td></tr>`).join("");
+
+function select(v, userPick) {
+  cur = v; t = 0; setPlaying(false); yawOff = 0; pitchOff = 0;
+  V.forEach(o => $("v-" + o.id).setAttribute("aria-pressed", String(o === v)));
+  $("p-no").textContent = "07" + v.letter; $("p-name").textContent = v.name; $("p-tag").textContent = v.tag;
+  $("n-move").textContent = v.move; $("n-cam").textContent = v.cam; $("n-watch").textContent = v.watch;
+  $("n-time").textContent = `${fmt(v.tl.T)} at 1× · ${Math.round(v.tl.L)} m of path · ${v.tl.stops.length} stops`;
+  $("p-strip").textContent = `Plate 07${v.letter} / 07C · Route plan · ${v.name}`;
+  $("bigmap").innerHTML = mapSVG(v, false);
+  $("bigmap").setAttribute("aria-label", `Route map for ${v.name}`);
+  $("h-eye").textContent = "Eye " + v.eye + " m";
+  $("shots").innerHTML = v.tl.items.map((it, i) => `<li id="shot-${i}"><button data-i="${i}"><span class="n">${fmt(it.t0)}</span><span class="txt"><span class="k ${it.kind}">${String(i + 1).padStart(2, "0")} · ${it.kind === "stop" ? "Stop " + it.stop.n + " · " + EX[it.stop.ex].name : "Move"}</span><br>${it.text}</span></button></li>`).join("");
+  if (userPick) { try { history.replaceState(null, "", "#" + v.id); } catch (e) {} }
+  if (scene3) scene3.setVersion(v);
+  update(true);
+}
+$("shots").addEventListener("click", e => {
+  const b = e.target.closest("button[data-i]"); if (!b) return;
+  t = cur.tl.items[+b.dataset.i].t0 + 0.01; setPlaying(true); update(true);
+});
+
+function setPlaying(p) {
+  playing = p; $("play").setAttribute("aria-pressed", String(p)); $("play").textContent = p ? "❚❚ Pause" : "▶ Play";
+}
+$("play").addEventListener("click", () => { if (t >= cur.tl.T - 0.05) t = 0; setPlaying(!playing); });
+$("restart").addEventListener("click", () => { t = 0; yawOff = 0; pitchOff = 0; update(true); });
+$("scrub").addEventListener("input", e => { t = e.target.value / 1000 * cur.tl.T; update(true); });
+$("rate").addEventListener("change", e => { rate = +e.target.value; });
+const setCam = m => { camMode = m; $("cam-walk").setAttribute("aria-pressed", String(m === "walk")); $("cam-fly").setAttribute("aria-pressed", String(m === "fly"));
+  $("h-mode").textContent = m === "walk" ? "Walk-through" : "Fly-over"; update(true); };
+$("cam-walk").addEventListener("click", () => setCam("walk"));
+$("cam-fly").addEventListener("click", () => setCam("fly"));
+addEventListener("keydown", e => {
+  if (e.code === "Space" && !/INPUT|SELECT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); $("play").click(); }
+});
+
+// drag to look
+let yawOff = 0, pitchOff = 0, drag = null;
+const vw = $("viewer");
+vw.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY }; vw.setPointerCapture(e.pointerId); });
+vw.addEventListener("pointermove", e => {
+  if (!drag) return; yawOff += (e.clientX - drag.x) * 0.005; pitchOff = Math.max(-1, Math.min(1, pitchOff + (e.clientY - drag.y) * 0.004));
+  drag = { x: e.clientX, y: e.clientY }; update(true);
+});
+const endDrag = () => { drag = null; };
+vw.addEventListener("pointerup", endDrag); vw.addEventListener("pointercancel", endDrag);
+
+let lastIdx = -1;
+function update(force) {
+  const st = stateAt(cur, t), tl = cur.tl;
+  $("scrub").value = Math.round(t / tl.T * 1000);
+  $("tc").textContent = `${fmt(t)} / ${fmt(tl.T)}`; $("h-tc").textContent = fmt(t);
+  if (st.idx !== lastIdx || force) {
+    lastIdx = st.idx;
+    document.querySelectorAll("#shots li").forEach((li, i) => li.classList.toggle("now", i === st.idx));
+    const it = st.item;
+    $("cap-k").textContent = `Shot ${String(st.idx + 1).padStart(2, "0")} · ` + (it.kind === "stop" ? `Stop ${it.stop.n}: ${EX[it.stop.ex].name}` : "Move");
+    $("cap-t").textContent = it.text;
+    if (playing) { const li = $("shot-" + st.idx), ol = $("shots"); if (li && ol.scrollHeight > ol.clientHeight) ol.scrollTop = li.offsetTop - ol.offsetTop - 40; }
+  }
+  const view = camera(st);
+  const me = document.getElementById("me");
+  if (me) {
+    me.setAttribute("transform", `translate(${X(view.here.x)} ${Y(view.here.z)})`);
+    const a = Math.atan2(view.dir.z, view.dir.x), h = deg(28), r = 9 * S;
+    me.querySelector("path").setAttribute("d", `M0 0 L${r * Math.cos(a - h)} ${r * Math.sin(a - h)} L${r * Math.cos(a + h)} ${r * Math.sin(a + h)} Z`);
+  }
+  if (scene3) scene3.render(view);
+}
+
+// camera pose shared by map marker and 3D view
+function camera(st) {
+  const c = cur.tl.curve, here = c.getPointAt(st.u), tan = c.getTangentAt(Math.min(st.u, 0.9995)).setY(0).normalize();
+  const eye = cur.eye;
+  let dir = tan.clone();
+  if (st.stop) {
+    const to = st.stop.target.clone().sub(new THREE.Vector3(here.x, eye, here.z)).normalize();
+    dir = new THREE.Vector3().lerpVectors(new THREE.Vector3(tan.x, 0, tan.z), to, st.blend).normalize();
+  }
+  if (camMode === "walk" && (yawOff || pitchOff)) {
+    dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), -yawOff);
+    const side = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+    dir.applyAxisAngle(side, -pitchOff).normalize();
+  }
+  return { here, dir, eye, stop: st.stop, blend: st.blend };
+}
+
+// ---------- 3D greybox ----------
+let scene3 = null;
+function make3D() {
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias: true }); } catch (e) { return null; }
+  if (!renderer.getContext()) return null;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  vw.prepend(renderer.domElement);
+  const scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(62, 16 / 9, 0.05, 400);
+  const fog = new THREE.Fog(0xffffff, 30, 140); scene.fog = fog;
+
+  const mk = () => new THREE.MeshBasicMaterial({ polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+  const M = {
+    ground: new THREE.MeshBasicMaterial(), road: mk(), walk: mk(),
+    bFill: mk(), bEdge: new THREE.LineBasicMaterial(), fFill: mk(), fEdge: new THREE.LineBasicMaterial(),
+    xFill: mk(), xEdge: new THREE.LineBasicMaterial(), path: new THREE.LineBasicMaterial(), lane: new THREE.MeshBasicMaterial(),
+    glow: new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }),
+  };
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888";
+  function theme() {
+    const c = n => new THREE.Color(css(n));
+    scene.background = c("--paper"); fog.color = c("--paper");
+    M.ground.color = c("--sheet"); M.road.color = c("--road"); M.walk.color = c("--tint");
+    M.bFill.color = c("--sheet"); M.bEdge.color = c("--line"); M.fFill.color = c("--sheet"); M.fEdge.color = c("--faint");
+    M.xFill.color = c("--accent-soft"); M.xEdge.color = c("--accent"); M.path.color = c("--accent"); M.lane.color = c("--faint"); M.glow.color = c("--accent");
+  }
+  theme();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { theme(); update(true); });
+  new MutationObserver(() => { theme(); update(true); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  const solid = (geo, role) => { const m = new THREE.Mesh(geo, M[role + "Fill"]); m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 20), M[role + "Edge"])); return m; };
+  const box = (w, h, d, role, x = 0, y = 0, z = 0) => { const m = solid(new THREE.BoxGeometry(w, h, d), role); m.position.set(x, y, z); return m; };
+  const outline = (w, h, role, x, y, z) => { const l = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(w, h)), M[role + "Edge"]); l.position.set(x, y, z); return l; };
+  const flat = (geo, mat, y) => { const m = new THREE.Mesh(geo, mat); m.rotation.x = -Math.PI / 2; m.position.y = y; return m; };
+
+  // ground, road, sidewalks
+  const g = flat(new THREE.PlaneGeometry(600, 600), M.ground, 0); scene.add(g);
+  const roadShape = new THREE.Shape();
+  const ex = BULB.x - Math.sqrt(BULB.r ** 2 - 16);
+  roadShape.moveTo(-60, -4); roadShape.lineTo(ex, -4);
+  roadShape.absarc(BULB.x, 0, BULB.r, Math.atan2(-4, ex - BULB.x), Math.atan2(4, ex - BULB.x), false);
+  roadShape.lineTo(-60, 4); roadShape.closePath();
+  // shape is in (x, z); lay it flat with z mapped correctly
+  const roadMesh = new THREE.Mesh(new THREE.ShapeGeometry(roadShape, 48), M.road);
+  roadMesh.rotation.x = Math.PI / 2; roadMesh.position.y = 0.01; roadMesh.material.side = THREE.DoubleSide; scene.add(roadMesh);
+  const roadEdge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.ShapeGeometry(roadShape, 48)), M.fEdge);
+  roadEdge.rotation.x = Math.PI / 2; roadEdge.position.y = 0.02; scene.add(roadEdge);
+  for (let x = -56; x < 110; x += 6) { const d = flat(new THREE.PlaneGeometry(3, 0.15), M.lane, 0.03); d.position.x = x; scene.add(d); }
+  for (let z = -3.2; z <= 3.2; z += 1.6) { const d = flat(new THREE.PlaneGeometry(3, 0.7), M.lane, 0.03); d.position.set(-8, 0.03, z); scene.add(d); }
+  for (const sd of [-1, 1]) { const w = box(172.3, 0.15, 2, "f", (112.3 - 60) / 2, 0.075, sd * 6.5); w.material = M.walk; scene.add(w); }
+  const ringG = new THREE.RingGeometry(16, 18, 72);
+  const ringM = flat(ringG, M.walk, 0.08); scene.add(ringM);
+  const ringE = new THREE.LineSegments(new THREE.EdgesGeometry(ringG), M.fEdge); ringE.rotation.x = -Math.PI / 2; ringE.position.y = 0.09; ringE.position.set(BULB.x, 0.09, 0); ringM.position.set(BULB.x, 0.08, 0); scene.add(ringE);
+
+  // houses
+  const roofShape = w => { const s = new THREE.Shape(); s.moveTo(-w / 2 - 0.4, 0); s.lineTo(w / 2 + 0.4, 0); s.lineTo(0, 2.6); s.closePath(); return s; };
+  for (const h of houses) {
+    const grp = new THREE.Group();
+    grp.add(box(h.w, h.h, h.d, "b", 0, h.h / 2, 0));
+    const roof = solid(new THREE.ExtrudeGeometry(roofShape(h.w), { depth: h.d + 0.8, bevelEnabled: false }), "b");
+    roof.position.set(0, h.h, -h.d / 2 - 0.4); grp.add(roof);
+    const fz = h.d / 2 + 0.03;
+    grp.add(outline(4.4, 2.6, "b", h.gx, 1.3, fz));
+    for (let k = 0; k < 3; k++) grp.add(outline(4.4, 0.02, "f", h.gx, 0.65 + k * 0.65, fz));
+    const sg = h.gx < 0 ? -1 : 1;
+    const doorX = h.gx === 0 ? 4.4 : -3 * sg;
+    const low = h.gx === 0 ? [-4.6] : [-6.2 * sg, 0.6 * sg];
+    const high = h.gx === 0 ? [-4.6, 4.6] : [-6.2 * sg, -3 * sg, 0.6 * sg, 5.5 * sg];
+    grp.add(outline(1.1, 2.2, "b", doorX, 1.1, fz));
+    for (const wx of low) grp.add(outline(1.6, 1.2, "b", wx, 1.5, fz));
+    for (const wx of high) grp.add(outline(1.4, 1.1, "b", wx, h.h - 1.4, fz));
+    grp.position.set(h.x, 0, h.z); grp.rotation.y = h.phi; scene.add(grp);
+  }
+  for (const d of driveways) { const m = flat(new THREE.PlaneGeometry(d.w, d.l), M.walk, 0.05); m.rotation.z = d.phi; m.position.set(d.x, 0.05, d.z); scene.add(m); }
+
+  // trees, lamps, mailboxes
+  const crownG = new THREE.IcosahedronGeometry(1.7, 0);
+  for (const sd of [-1, 1]) LOTX.forEach(lx => {
+    scene.add(box(0.3, 2.6, 0.3, "f", lx + 6, 1.3, sd * 4.75));
+    const cr = solid(crownG, "f"); cr.position.set(lx + 6, 3.8, sd * 4.75); scene.add(cr);
+    scene.add(box(0.14, 5, 0.14, "f", lx + 22, 2.5, sd * 4.75));
+    scene.add(box(0.14, 0.14, 1.4, "f", lx + 22, 4.95, sd * 4.75 + -sd * 0.7));
+    scene.add(box(0.08, 1, 0.08, "f", lx + 12.6, 0.5, sd * 8.1));
+    scene.add(box(0.45, 0.4, 0.6, "f", lx + 12.6, 1.15, sd * 8.1));
+  });
+  // entry street sign
+  scene.add(box(0.1, 3, 0.1, "b", -10, 1.5, -5)); scene.add(box(1.6, 0.3, 0.04, "b", -10, 2.8, -5)); scene.add(box(0.04, 0.3, 1.6, "b", -10, 2.45, -5));
+
+  // generic car
+  function car(role) {
+    const c = new THREE.Group();
+    c.add(box(4.3, 0.75, 1.8, role, 0, 0.6, 0)); c.add(box(2.2, 0.6, 1.6, role, -0.2, 1.27, 0));
+    const wg = new THREE.CylinderGeometry(0.34, 0.34, 0.25, 12);
+    for (const [wx, wz] of [[1.4, 0.85], [-1.4, 0.85], [1.4, -0.85], [-1.4, -0.85]]) { const w = solid(wg, role); w.rotation.x = Math.PI / 2; w.position.set(wx, 0.34, wz); c.add(w); }
+    return c;
+  }
+  for (const m of meetCars) { const c = car("f"); c.position.set(m.x, 0, m.z); c.rotation.y = Math.atan2(-Math.cos(deg(m.a)), -Math.sin(deg(m.a))); scene.add(c); }
+
+  // exhibit props, built facing local +z
+  const props = {
+    lego() {
+      const g = new THREE.Group();
+      g.add(box(3.2, 0.8, 1.4, "x", 0, 0.4, 0));
+      for (const cx of [-1, 0, 1]) { g.add(box(0.7, 0.16, 0.32, "x", cx, 0.88, 0.15)); g.add(box(0.28, 0.12, 0.26, "x", cx - 0.05, 1.02, 0.15)); }
+      g.add(box(4, 2.4, 0.08, "x", 0, 1.6, -1.1));
+      for (let i = 0; i < 3; i++) g.add(outline(1.1, 0.8, "x", -1.3 + i * 1.3, 1.9, -1.05));
+      return g;
+    },
+    hearth() {
+      const g = new THREE.Group();
+      g.add(box(2.6, 0.3, 1.4, "x", 0, 0.15, -0.2));
+      g.add(box(0.25, 0.4, 0.25, "x", 0, 0.5, -0.2));
+      g.add(box(1.3, 2.5, 0.12, "x", 0, 1.95, -0.2));
+      g.add(outline(1.1, 2.2, "x", 0, 1.95, -0.13));
+      const cr = solid(new THREE.IcosahedronGeometry(0.32, 1), "x"); cr.position.set(0.95, 0.62, 0.2); g.add(cr);
+      return g;
+    },
+    vr() {
+      const g = new THREE.Group();
+      const p = solid(new THREE.CylinderGeometry(0.35, 0.4, 1.1, 16), "x"); p.position.y = 0.55; g.add(p);
+      g.add(box(0.55, 0.24, 0.32, "x", 0, 1.25, 0));
+      g.add(box(0.15, 3.1, 0.15, "x", -1.2, 1.55, -1.4)); g.add(box(0.15, 3.1, 0.15, "x", 1.2, 1.55, -1.4)); g.add(box(2.55, 0.15, 0.15, "x", 0, 3.1, -1.4));
+      return g;
+    },
+    kart() {
+      const g = new THREE.Group();
+      g.add(box(1.9, 0.18, 1.1, "x", 0, 0.24, 0));
+      g.add(box(0.5, 0.6, 0.55, "x", -0.3, 0.6, 0));
+      g.add(box(0.06, 0.45, 0.06, "x", 0.45, 0.5, 0)); g.add(box(0.06, 0.06, 0.4, "x", 0.5, 0.74, 0));
+      const wg = new THREE.CylinderGeometry(0.22, 0.22, 0.2, 12);
+      for (const [wx, wz] of [[0.75, 0.62], [-0.75, 0.62], [0.75, -0.62], [-0.75, -0.62]]) { const w = solid(wg, "x"); w.rotation.x = Math.PI / 2; w.position.set(wx, 0.22, wz); g.add(w); }
+      for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2, c = solid(new THREE.ConeGeometry(0.18, 0.5, 8), "x"); c.position.set(3 * Math.cos(a), 0.25, 3 * Math.sin(a)); g.add(c); }
+      const rg = flat(new THREE.RingGeometry(2.55, 2.7, 64), M.glow, 0.04); g.add(rg);
+      g.rotation.y = 0;
+      return g;
+    },
+  };
+  let exGroup = null, pathLine = null;
+  function setVersion(v) {
+    if (exGroup) scene.remove(exGroup);
+    if (pathLine) scene.remove(pathLine);
+    exGroup = new THREE.Group();
+    for (const st of v.tl.stops) {
+      const p = v.place[st.ex], phi = exhibitPhi(v, st);
+      const g = props[st.ex](); g.position.set(p.x, 0, p.z); g.rotation.y = phi; exGroup.add(g);
+      // sign on a post, between the exhibit and the stop, angled toward the visitor
+      const sg = new THREE.Group();
+      sg.add(box(0.06, v.eye < 1 ? 0.5 : 1.1, 0.06, "x", 0, v.eye < 1 ? 0.25 : 0.55, 0));
+      sg.add(box(0.9, 0.6, 0.05, "x", 0, v.eye < 1 ? 0.75 : 1.4, 0));
+      const mx = p.x + (st.p[0] - p.x) * 0.55, mz = p.z + (st.p[1] - p.z) * 0.55;
+      const side = st.ex === "kart" ? 0 : 1.8;
+      sg.position.set(mx + Math.cos(phi) * side, 0, mz - Math.sin(phi) * side); sg.rotation.y = phi;
+      if (v.eye < 1) sg.children[1].rotation.x = -0.45;
+      exGroup.add(sg);
+    }
+    scene.add(exGroup);
+    const pts = v.tl.curve.getSpacedPoints(400).map(q => new THREE.Vector3(q.x, 0.12, q.z));
+    pathLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), M.path);
+    scene.add(pathLine);
+  }
+  function size() {
+    const w = vw.clientWidth, h = vw.clientHeight; if (!w || !h) return;
+    renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+  }
+  new ResizeObserver(() => { size(); update(true); }).observe(vw);
+  size();
+  function render(view) {
+    const { here, dir, eye } = view;
+    if (camMode === "walk") {
+      cam.fov = 62;
+      cam.position.set(here.x, eye, here.z);
+      cam.lookAt(here.x + dir.x * 10, eye + dir.y * 10, here.z + dir.z * 10);
+      pathLine.visible = false;
+    } else {
+      cam.fov = 50;
+      const flatDir = new THREE.Vector3(dir.x, 0, dir.z).normalize();
+      cam.position.set(here.x - flatDir.x * 14, 15, here.z - flatDir.z * 14);
+      cam.lookAt(here.x + flatDir.x * 6, 0, here.z + flatDir.z * 6);
+      pathLine.visible = true;
+    }
+    cam.updateProjectionMatrix();
+    marker.position.set(here.x, 0, here.z); marker.visible = camMode === "fly";
+    renderer.render(scene, cam);
+  }
+  const marker = new THREE.Group();
+  marker.add(box(0.5, 1.6, 0.5, "x", 0, 0.8, 0));
+  scene.add(marker);
+  return { setVersion, render, marker };
+}
+
+scene3 = make3D();
+if (!scene3) { const d = document.createElement("div"); d.className = "nogl"; d.textContent = "This browser can't show the 3D prototype. The route map and shot list above still work."; vw.prepend(d); }
+
+const fromHash = V.find(v => "#" + v.id === location.hash);
+select(fromHash || V[0], false);
+
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (playing) {
+    t += dt * rate;
+    if (!drag) { yawOff *= 0.96; pitchOff *= 0.96; if (Math.abs(yawOff) < 1e-3) yawOff = 0; if (Math.abs(pitchOff) < 1e-3) pitchOff = 0; }
+    if (t >= cur.tl.T) { t = cur.tl.T; setPlaying(false); }
+    update(false);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>

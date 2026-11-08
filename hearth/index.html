@@ -1,0 +1,1493 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hearth: a cozy daily-ritual app with a companion creature, gentle check-ins and a tiny platform game. Designed by Alex.">
+  <meta name="theme-color" content="#181112">
+  <title>Hearth</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c2 6 9 9 9 17a9 9 0 0 1-18 0c0-5 3-7 4-11 2 2 2 4 3 5 1-4 0-7 2-11z' fill='%23f26d3d'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="palettes/skins.css">
+  <script>
+    // Pick the skin before first paint: ?skin= wins, then the saved choice.
+    (function () {
+      var skins = ["ember", "tidepool", "meadow", "marshy"];
+      var renamed = { sage: "meadow", lavender: "marshy" }; // earlier skin names
+      var asked = new URLSearchParams(location.search).get("skin");
+      var saved = null;
+      try { saved = localStorage.getItem("hearth.skin"); } catch (error) { /* private window */ }
+      asked = renamed[asked] || asked;
+      saved = renamed[saved] || saved;
+      var skin = skins.indexOf(asked) >= 0 ? asked : skins.indexOf(saved) >= 0 ? saved : "ember";
+      document.documentElement.dataset.skin = skin;
+    })();
+  </script>
+  <script src="demo.js"></script>
+  <script src="hearth-store.js"></script>
+  <style>
+    /* Colors come from palettes/skins.css; these are shorthands built on its tokens. */
+    :root {
+      --line: rgba(var(--ink-rgb), 0.14);
+      --edge: rgba(var(--ink-rgb), 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background: linear-gradient(135deg, var(--bg-a), var(--bg-c));
+    }
+
+    .hearth-shell {
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 82% 14%, var(--glow-a), transparent 28rem),
+        radial-gradient(circle at 10% 100%, var(--glow-b), transparent 30rem),
+        linear-gradient(135deg, var(--bg-a) 0%, var(--bg-b) 49%, var(--bg-c) 100%);
+    }
+
+    .hearth-shell::before {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      opacity: var(--grain);
+      background-image: radial-gradient(rgba(255,255,255,.8) .55px, transparent .55px);
+      background-size: 5px 5px;
+      mix-blend-mode: soft-light;
+    }
+
+    .app-frame {
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 30px 22px 42px;
+    }
+
+    .brand-face { font-family: "Fraunces", serif; }
+
+    .top-rule {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb),.65), transparent);
+    }
+
+    .glass-panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 18px 50px var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .panel-cut { border-radius: 26px 26px 10px 26px; }
+
+    .kicker { color: var(--accent); font-weight: 700; font-size: 12px; letter-spacing: 0.12rem; text-transform: uppercase; }
+    .heading { color: var(--heading); font-weight: 700; font-size: 24px; }
+    .note { color: var(--muted); font-size: 14px; }
+    .soft-button { background: rgba(var(--ink-rgb),.05); color: var(--soft-ink); font-weight: 700; border-color: rgba(var(--ink-rgb),.18); }
+    .soft-button:hover:not(:disabled) { background: rgba(var(--ink-rgb),.09); }
+    .fire-button { background: var(--button); color: var(--button-ink); font-weight: 700; }
+    .focus-ring:focus { outline: none; }
+    .focus-ring:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .ink-heading { color: var(--heading); }
+    .ink-muted { color: var(--muted); }
+    .ink-faint { color: var(--faint); }
+    .ink-accent { color: var(--accent); }
+    .ink-reply { color: rgba(var(--ink-rgb), .82); }
+    .icon-tint { color: var(--icon); opacity: .85; }
+    .icon-badge { color: var(--icon); background: rgba(var(--primary-rgb), .12); border-color: rgba(var(--accent-rgb), .22); }
+    .chip { color: var(--chip-ink); background: rgba(var(--accent-rgb), .12); border: 1px solid rgba(var(--accent-rgb), .18); }
+    .row-surface { border: 1px solid var(--edge); background: rgba(var(--ink-rgb), .035); }
+    .row-fill { background: rgba(var(--ink-rgb), .035); }
+    .tile { border: 1px solid var(--edge); background: var(--well); }
+    .edge-border { border-color: var(--edge); }
+    .inset-panel { border: 1px solid rgba(var(--accent-rgb), .12); background: var(--inset); }
+    .caption-pill { border: 1px solid var(--edge); background: var(--caption-bg); color: var(--caption-ink); }
+    .ok-pill { border: 1px solid var(--ok-line); background: var(--ok-bg); color: var(--ok-ink); }
+    .msg-ok { color: var(--ok-ink); }
+    .msg-err { color: var(--err-ink); }
+    .game-well { border: 1px solid rgba(var(--accent-rgb), .12); background: var(--game-sky-bottom); }
+
+    .ritual-option { transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+    .ritual-option:hover {
+      transform: translateY(-2px);
+      border-color: rgba(var(--accent-rgb),.65);
+      background: rgba(var(--ink-rgb),.08);
+    }
+    .ritual-option:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    .goal-check { accent-color: var(--primary); width: 18px; height: 18px; flex: 0 0 auto; }
+
+    .field-input {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid rgba(var(--ink-rgb),.28);
+      outline: none;
+      padding: 8px 2px;
+      color: var(--ink);
+      background: transparent;
+      transition: border-color .2s ease;
+    }
+    .field-input::placeholder { color: rgba(var(--ink-rgb),.5); }
+    .field-input:focus { border-bottom-color: var(--accent); box-shadow: 0 2px 0 rgba(var(--accent-rgb),.15); }
+
+    .ember-button {
+      transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+      box-shadow: 0 8px 20px rgba(var(--button-rgb),.25);
+    }
+    .ember-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.07);
+      box-shadow: 0 12px 24px rgba(var(--button-rgb),.35);
+    }
+    .ember-button:disabled { opacity: .62; cursor: wait; }
+
+    .creature-stage {
+      min-height: 264px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px 24px 6px 24px;
+      background:
+        radial-gradient(circle at 50% 82%, var(--stage-glow), transparent 25%),
+        linear-gradient(180deg, var(--stage-top), var(--stage-bottom));
+    }
+    .creature-stage::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -28% -10%;
+      height: 54%;
+      background: radial-gradient(ellipse at center, var(--stage-floor), transparent 63%);
+      filter: blur(16px);
+    }
+
+    .creature {
+      --creature: #f3a65f;
+      width: 126px;
+      height: 142px;
+      position: relative;
+      z-index: 2;
+      margin: 62px auto 0;
+      animation: floaty 4.2s ease-in-out infinite;
+    }
+    .creature[data-color="ember"] { --creature: #f26d3d; }
+    .creature[data-color="gold"] { --creature: #f6be6e; }
+    .creature[data-color="moss"] { --creature: #9db47c; }
+
+    .creature[data-stage="final"] {
+      width: 148px;
+      height: 164px;
+      margin-top: 40px;
+      filter: drop-shadow(0 0 18px rgba(246,190,110,.38));
+    }
+    .creature[data-stage="final"] .creature-body {
+      width: 132px;
+      height: 148px;
+      left: 8px;
+    }
+    .creature[data-stage="final"] .creature-hat { transform: scale(1.12); transform-origin: bottom center; }
+    .creature[data-stage="final"] .creature-hat.leaf { transform: rotate(26deg) scale(1.12); }
+    .creature[data-stage="final"] .creature-hat.straw { transform: scale(1.12); transform-origin: bottom center; }
+
+    /* The keeper is the same spark you play as in Brain Break: same flame path and eyes. */
+    .creature-body {
+      position: absolute;
+      width: 112px;
+      height: 125px;
+      left: 7px;
+      bottom: 0;
+      overflow: visible;
+      fill: var(--creature);
+      filter: drop-shadow(0 0 14px var(--creature));
+      transform-origin: 50% 100%;
+      animation: flicker 2.6s ease-in-out infinite;
+    }
+    .creature-face { fill: #251517; }
+
+    .creature-hat {
+      position: absolute;
+      z-index: 4;
+      left: 28px;
+      top: 17px;
+      width: 73px;
+      height: 42px;
+      display: none;
+    }
+    .creature[data-hat="cap"] .creature-hat.cap,
+    .creature[data-hat="leaf"] .creature-hat.leaf,
+    .creature[data-hat="crown"] .creature-hat.crown,
+    .creature[data-hat="straw"] .creature-hat.straw { display: block; }
+
+    .hat-cap {
+      border-radius: 42px 42px 9px 9px;
+      background: #b34b39;
+      border: 4px solid rgba(53,27,22,.38);
+    }
+    .hat-cap::after {
+      content: "";
+      position: absolute;
+      width: 44px;
+      height: 11px;
+      left: 41px;
+      bottom: -7px;
+      border-radius: 0 12px 12px 0;
+      background: #b34b39;
+      border: 3px solid rgba(53,27,22,.38);
+    }
+    .hat-leaf {
+      width: 40px;
+      height: 58px;
+      top: 1px;
+      left: 19px;
+      transform: rotate(26deg);
+      border-radius: 100% 0 100% 0;
+      background: #93ad71;
+      border: 4px solid rgba(53,27,22,.38);
+    }
+    .hat-crown {
+      top: 8px;
+      height: 48px;
+      background: #e3af52;
+      border: 4px solid rgba(53,27,22,.38);
+      clip-path: polygon(0 100%, 0 26%, 23% 57%, 42% 0, 62% 57%, 100% 18%, 100% 100%);
+    }
+    .hat-straw {
+      top: 12px;
+      left: -3px;
+      width: 128px;
+      height: 43px;
+      overflow: visible;
+      filter: drop-shadow(0 5px 3px rgba(0,0,0,.14));
+    }
+    .hat-straw img {
+      display: block;
+      width: 128px;
+      height: 64px;
+      object-fit: contain;
+      object-position: center;
+      transform: translateY(-7px);
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0) rotate(-1deg); }
+      50% { transform: translateY(-8px) rotate(1deg); }
+    }
+    @keyframes flicker {
+      0%, 100% { transform: scaleY(1) skewX(0deg); }
+      35% { transform: scaleY(1.035) skewX(-1.5deg); }
+      70% { transform: scaleY(.985) skewX(1deg); }
+    }
+    @media (prefers-reduced-motion: reduce) { .creature, .creature-body { animation: none; } }
+
+    /* 3D keeper: one of Alex's characters (../characters), drawn by the module script at the bottom. */
+    .keeper-3d { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; display: none; }
+    .creature-stage.has-3d .keeper-3d { display: block; }
+    .creature-stage.has-3d .creature { visibility: hidden; }
+    .keeper-drive { text-decoration: underline; text-underline-offset: 3px; }
+
+    .choice-input { position: absolute; opacity: 0; pointer-events: none; }
+    .choice-label {
+      cursor: pointer;
+      border: 1px solid rgba(var(--ink-rgb),.18);
+      background: rgba(var(--ink-rgb),.04);
+      transition: all .2s ease;
+    }
+    .choice-input:checked + .choice-label,
+    .choice-label:has(input:checked) {
+      border-color: var(--accent);
+      color: var(--heading);
+      background: rgba(var(--accent-rgb),.15);
+      box-shadow: 0 0 0 1px rgba(var(--accent-rgb),.3);
+    }
+    .choice-input:focus-visible + .choice-label { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .choice-label[data-locked="true"] { opacity: .55; }
+    .choice-label[data-locked="true"]::after { content: " 🔒"; font-size: 10px; }
+
+    .shop-item[data-owned="true"] { border-color: var(--ok-line); }
+
+    .timeline-row { border-left: 2px solid rgba(var(--accent-rgb),.38); position: relative; }
+    .timeline-row::before {
+      content: "";
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      left: -5.5px;
+      top: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px rgba(var(--primary-rgb),.13);
+    }
+
+    .skin-picker { display: inline-flex; gap: 6px; padding: 4px; border-radius: 999px; border: 1px solid var(--edge); background: rgba(var(--ink-rgb), .04); }
+    .skin-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; padding: 2px; background-clip: content-box; cursor: pointer; transition: transform .2s ease, border-color .2s ease; }
+    .skin-swatch:hover { transform: scale(1.08); }
+    .skin-swatch[aria-checked="true"] { border-color: var(--accent); }
+    .skin-swatch:focus { outline: none; }
+    .skin-swatch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .status-message { min-height: 22px; }
+
+    #brain-break-canvas { touch-action: none; }
+    .game-pad { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+
+    @media (max-width: 640px) {
+      .app-frame { padding: 22px 15px 32px; }
+      .header-stack { align-items: flex-start; flex-direction: column; gap: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hearth-shell">
+   <div class="app-frame">
+    <header class="pb-7" aria-label="Hearth header">
+     <div class="header-stack flex items-center justify-between gap-4">
+      <div>
+       <div class="flex items-center gap-3">
+        <span class="icon-badge flex h-10 w-10 items-center justify-center rounded-full border" aria-hidden="true"><i data-lucide="flame" style="width:20px;height:20px;"></i></span>
+        <h1 class="brand-face leading-none" style="color:var(--heading);font-weight:700;font-size:32px;">Hearth</h1>
+       </div>
+       <p class="ink-muted mt-3 max-w-md" style="font-size:15px;line-height:1.5;">A small place to tend what matters, one steady day at a time.</p>
+      </div>
+      <div class="flex flex-wrap items-center justify-end gap-2">
+       <div class="skin-picker" role="radiogroup" aria-label="App theme">
+        <button type="button" class="skin-swatch" role="radio" data-skin-choice="ember" aria-label="Ember theme" title="Ember" style="background-image:linear-gradient(135deg,#f26d3d 50%,#281819 50%);"></button>
+        <button type="button" class="skin-swatch" role="radio" data-skin-choice="tidepool" aria-label="Tidepool theme" title="Tidepool" style="background-image:linear-gradient(135deg,#9fd0de 50%,#17242f 50%);"></button>
+        <button type="button" class="skin-swatch" role="radio" data-skin-choice="meadow" aria-label="Morning Meadow theme" title="Morning Meadow" style="background-image:linear-gradient(135deg,#6e8f62 50%,#f6f1e7 50%);"></button>
+        <button type="button" class="skin-swatch" role="radio" data-skin-choice="marshy" aria-label="Marshy theme" title="Marshy" style="background-image:linear-gradient(135deg,#a9d4f5 50%,#1a2250 50%);"></button>
+       </div>
+       <div class="chip inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold" aria-label="Current day streak">
+        <i data-lucide="flame" style="width:16px;height:16px;" aria-hidden="true"></i><span id="header-streak-value">0</span><span style="font-size:12px;">day streak</span>
+       </div>
+       <div class="chip rounded-full px-4 py-2 text-sm font-medium">
+        <span id="today-label"></span>
+       </div>
+      </div>
+     </div>
+     <div class="top-rule mt-7"></div>
+    </header>
+
+    <main class="grid gap-6 lg:grid-cols-[1.14fr_.86fr]">
+     <section id="ritual-panel" class="glass-panel panel-cut p-5 sm:p-7" aria-labelledby="ritual-heading">
+      <div class="flex items-start justify-between gap-5">
+       <div>
+        <p class="kicker">Today’s ritual</p>
+        <h2 id="ritual-heading" class="brand-face heading mt-2 leading-tight">What would make today feel tended?</h2>
+       </div>
+       <span class="icon-tint mt-1" aria-hidden="true"><i data-lucide="sunrise" style="width:24px;height:24px;"></i></span>
+      </div>
+      <form id="ritual-form" class="mt-7">
+       <div class="mb-6 flex flex-wrap gap-3">
+        <button id="checkin-button" type="button" class="fire-button ember-button inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm focus-ring">
+         <i data-lucide="sparkles" style="width:17px;height:17px;"></i><span>Complete daily check-in</span>
+        </button>
+        <div id="completed-state" class="ok-pill hidden items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold" aria-live="polite">
+         <i data-lucide="check-circle-2" style="width:17px;height:17px;"></i><span>Today’s flame is lit</span>
+        </div>
+       </div>
+       <fieldset>
+        <legend class="ink-heading mb-3 text-base font-bold">Three small intentions</legend>
+        <label class="ritual-option mb-3 flex items-center gap-3 row-surface rounded-xl px-4 py-3"><input id="goal-one-completed" class="goal-check" type="checkbox"><span class="min-w-0 flex-1"><span class="sr-only">First goal</span><input id="goal-one" class="field-input" type="text" maxlength="120" placeholder="One small thing…"></span></label>
+        <label class="ritual-option mb-3 flex items-center gap-3 row-surface rounded-xl px-4 py-3"><input id="goal-two-completed" class="goal-check" type="checkbox"><span class="min-w-0 flex-1"><span class="sr-only">Second goal</span><input id="goal-two" class="field-input" type="text" maxlength="120" placeholder="Another gentle step…"></span></label>
+        <label class="ritual-option flex items-center gap-3 row-surface rounded-xl px-4 py-3"><input id="goal-three-completed" class="goal-check" type="checkbox"><span class="min-w-0 flex-1"><span class="sr-only">Third goal</span><input id="goal-three" class="field-input" type="text" maxlength="120" placeholder="Something kind for you…"></span></label>
+       </fieldset>
+       <div class="mt-6 flex flex-wrap items-center gap-4">
+        <button id="save-ritual-button" type="submit" class="soft-button rounded-xl border px-5 py-3 text-sm focus-ring">Save ritual</button>
+        <p id="ritual-message" class="status-message text-sm" role="status" aria-live="polite"></p>
+       </div>
+      </form>
+     </section>
+
+     <aside id="creature-panel" class="glass-panel panel-cut overflow-hidden p-4 sm:p-5" aria-labelledby="creature-heading">
+      <div class="mb-4 flex items-start justify-between gap-4 px-1">
+       <div>
+        <p class="kicker">Your companion</p>
+        <h2 id="creature-heading" class="brand-face heading mt-1">The little keeper</h2>
+       </div>
+       <span class="icon-tint" aria-hidden="true"><i data-lucide="wand-sparkles" style="width:20px;height:20px;"></i></span>
+      </div>
+      <div class="creature-stage">
+       <div id="creature" class="creature" data-color="ember" data-hat="cap" role="img" aria-label="Your hearth creature">
+        <div class="creature-hat hat-cap cap"></div>
+        <div class="creature-hat hat-leaf leaf"></div>
+        <div class="creature-hat hat-crown crown"></div>
+        <div class="creature-hat hat-straw straw"><img src="assets/straw-hat.svg" alt="Wide-brimmed straw hat with a red band"></div>
+        <svg class="creature-body" viewBox="-42 -60 84 94" aria-hidden="true">
+         <path d="M0 -57.5 C45 -20 47.5 10 27.5 25 Q0 37.5 -27.5 25 C-47.5 10 -35 -25 0 -57.5 Z"/>
+         <ellipse class="creature-face" cx="-11" cy="2.5" rx="7.7" ry="11.5"/>
+         <ellipse class="creature-face" cx="11" cy="2.5" rx="7.7" ry="11.5"/>
+        </svg>
+       </div>
+       <canvas id="keeper-3d" class="keeper-3d" aria-hidden="true"></canvas>
+       <div class="absolute inset-x-0 bottom-4 z-10 flex justify-center">
+        <div class="caption-pill rounded-full px-3 py-1.5 text-xs backdrop-blur"><span id="creature-caption"></span></div>
+       </div>
+      </div>
+      <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+       <div class="tile rounded-xl px-2 py-3">
+        <p id="streak-value" class="brand-face ink-accent text-xl">0</p>
+        <p class="ink-muted mt-1 text-[11px] font-semibold uppercase tracking-wide">day streak</p>
+       </div>
+       <div class="tile rounded-xl px-2 py-3">
+        <p id="coal-value" class="brand-face ink-accent text-xl">0</p>
+        <p class="ink-muted mt-1 text-[11px] font-semibold uppercase tracking-wide">coals</p>
+       </div>
+       <div class="tile rounded-xl px-2 py-3">
+        <p id="week-value" class="brand-face ink-accent text-xl">1</p>
+        <p class="ink-muted mt-1 text-[11px] font-semibold uppercase tracking-wide">evolution</p>
+       </div>
+      </div>
+      <form id="creature-form" class="edge-border mt-5 border-t pt-5">
+       <h3 class="ink-heading text-sm font-bold">Make it yours</h3>
+       <fieldset class="mt-3">
+        <legend class="ink-muted mb-2 text-xs font-semibold">Keeper</legend>
+        <div class="flex flex-wrap gap-2">
+         <input class="choice-input" id="keeper-spark" name="keeper" value="spark" type="radio" checked><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="keeper-spark">Spark</label>
+         <input class="choice-input" id="keeper-jimbob" name="keeper" value="jimbob" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="keeper-jimbob">Jimbob</label>
+         <input class="choice-input" id="keeper-srank" name="keeper" value="srank" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="keeper-srank">Srank</label>
+         <input class="choice-input" id="keeper-jimmy" name="keeper" value="jimmy" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="keeper-jimmy">Jimmy</label>
+         <input class="choice-input" id="keeper-ember" name="keeper" value="ember" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="keeper-ember">Ember</label>
+         <input class="choice-input" id="keeper-bernie" name="keeper" value="bernie" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="keeper-bernie">Bernie</label>
+        </div>
+       </fieldset>
+       <fieldset id="keeper-look-set" class="mt-4">
+        <legend class="ink-muted mb-2 text-xs font-semibold">Look</legend>
+        <div class="flex flex-wrap gap-2">
+         <input class="choice-input" id="look-toon" name="keeper-look" value="toon" type="radio" checked><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="look-toon">Toon</label>
+         <input class="choice-input" id="look-galaxy" name="keeper-look" value="galaxy" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="look-galaxy">Galaxy</label>
+         <input class="choice-input" id="look-carlo" name="keeper-look" value="carlo" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="look-carlo">Painted</label>
+        </div>
+       </fieldset>
+       <fieldset class="mt-4">
+        <legend class="ink-muted mb-2 text-xs font-semibold">Creature color</legend>
+        <div class="flex flex-wrap gap-2">
+         <input class="choice-input" id="color-ember" name="creature-color" value="ember" type="radio" checked><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="color-ember">Ember</label>
+         <input class="choice-input" id="color-gold" name="creature-color" value="gold" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="color-gold" data-unlock="gold">Golden</label>
+         <input class="choice-input" id="color-moss" name="creature-color" value="moss" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="color-moss">Moss</label>
+        </div>
+       </fieldset>
+       <fieldset class="mt-4">
+        <legend class="ink-muted mb-2 text-xs font-semibold">Favorite hat</legend>
+        <div class="flex flex-wrap gap-2">
+         <input class="choice-input" id="hat-cap" name="hat-style" value="cap" type="radio" checked><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="hat-cap">Cap</label>
+         <input class="choice-input" id="hat-leaf" name="hat-style" value="leaf" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="hat-leaf" data-unlock="leaf">Leaf</label>
+         <input class="choice-input" id="hat-crown" name="hat-style" value="crown" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="hat-crown" data-unlock="crown">Crown</label>
+         <input class="choice-input" id="hat-straw" name="hat-style" value="straw" type="radio"><label class="choice-label rounded-lg px-3 py-2 text-xs font-semibold" for="hat-straw">Straw</label>
+        </div>
+       </fieldset>
+       <div class="mt-4 flex items-center gap-3">
+        <button id="save-creature-button" type="submit" class="soft-button rounded-xl border px-4 py-2.5 text-xs focus-ring">Save creature</button>
+        <p id="creature-message" class="status-message text-xs" role="status" aria-live="polite"></p>
+       </div>
+       <p id="keeper-drive-row" class="mt-3 text-xs" hidden><a id="keeper-drive" class="keeper-drive ink-accent" href="../gokart/index.html">Take your keeper for a drive →</a></p>
+      </form>
+     </aside>
+
+     <section id="survey-panel" class="glass-panel panel-cut lg:col-span-2 p-5 sm:p-7" aria-labelledby="survey-heading">
+      <div class="flex items-start justify-between gap-4">
+       <div>
+        <p class="kicker">A gentle check-in</p>
+        <h2 id="survey-heading" class="brand-face heading mt-2">Notice your energy</h2>
+        <p class="note mt-2">Tell Hearth how you feel and how much energy you have to shape three kinder intentions.</p>
+       </div>
+       <span class="icon-tint" aria-hidden="true"><i data-lucide="compass" style="width:22px;height:22px;"></i></span>
+      </div>
+      <form id="survey-form" class="mt-5 grid gap-4 sm:grid-cols-2">
+       <fieldset>
+        <legend class="ink-heading mb-2 block text-xs font-bold">How are you feeling today?</legend>
+        <div class="grid gap-2">
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-feeling" value="good" required>Good</label>
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-feeling" value="great">Great</label>
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-feeling" value="not-well">Not well</label>
+        </div>
+       </fieldset>
+       <fieldset>
+        <legend class="ink-heading mb-2 block text-xs font-bold">What is your energy level?</legend>
+        <div class="grid gap-2">
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-energy" value="high" required>High</label>
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-energy" value="medium">Medium</label>
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-energy" value="low">Low</label>
+        </div>
+       </fieldset>
+       <fieldset>
+        <legend class="ink-heading mb-2 block text-xs font-bold">How stressed are you right now?</legend>
+        <div class="grid gap-2">
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-stress" value="very-stressed" required>Very</label>
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-stress" value="moderately-stressed">Moderate</label>
+         <label class="choice-label rounded-lg px-3 py-2 text-sm"><input class="mr-2" type="radio" name="survey-stress" value="low-stress">Low</label>
+        </div>
+       </fieldset>
+       <div>
+        <label class="ink-heading mb-2 block text-xs font-bold" for="survey-mood">What is your mood?</label>
+        <textarea id="survey-mood" name="survey-mood" rows="3" maxlength="240" class="field-input resize-none" placeholder="A few words is plenty."></textarea>
+       </div>
+       <div class="sm:col-span-2 flex flex-wrap items-center gap-4">
+        <button id="save-survey-button" type="submit" class="fire-button ember-button rounded-xl px-5 py-3 text-sm">Save direction</button>
+        <p id="survey-message" class="status-message text-sm" role="status" aria-live="polite"></p>
+       </div>
+      </form>
+      <section class="inset-panel mt-6 rounded-2xl p-4" aria-labelledby="assistant-heading">
+       <div class="flex items-start gap-3">
+        <span class="icon-badge mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full" aria-hidden="true"><i data-lucide="message-circle-heart" style="width:18px;height:18px;"></i></span>
+        <div class="min-w-0 flex-1">
+         <h3 id="assistant-heading" class="ink-heading text-sm font-bold">A little company</h3>
+         <p class="note mt-1 leading-6">How are you today? Choose a feeling and I’ll offer a small, non-personal suggestion.</p>
+         <div class="mt-3 flex flex-wrap gap-2">
+          <button id="assistant-tired" type="button" class="soft-button rounded-lg border px-3 py-2 text-xs">I feel tired</button>
+          <button id="assistant-stressed" type="button" class="soft-button rounded-lg border px-3 py-2 text-xs">I feel stressed</button>
+          <button id="assistant-good" type="button" class="soft-button rounded-lg border px-3 py-2 text-xs">I feel good</button>
+         </div>
+         <p id="assistant-response" class="ink-reply mt-3 text-sm leading-6" role="status" aria-live="polite"></p>
+        </div>
+       </div>
+      </section>
+     </section>
+
+     <section id="shop-panel" class="glass-panel panel-cut lg:col-span-2 p-5 sm:p-7" aria-labelledby="shop-heading">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+       <div>
+        <p class="kicker">Keeper’s shop</p>
+        <h2 id="shop-heading" class="brand-face heading mt-2">A little more magic</h2>
+       </div>
+       <p class="note">Spend coals from your check-ins to unlock small comforts.</p>
+      </div>
+      <div class="mt-5 grid gap-3 sm:grid-cols-3">
+       <button data-shop-item="leaf" type="button" class="shop-item soft-button rounded-xl border px-4 py-3 text-left"><span class="ink-heading block text-sm font-bold">Leaf hat</span><span class="ink-muted mt-1 block text-xs font-normal">A quiet companion · <span data-shop-cost></span></span></button>
+       <button data-shop-item="crown" type="button" class="shop-item soft-button rounded-xl border px-4 py-3 text-left"><span class="ink-heading block text-sm font-bold">Crown hat</span><span class="ink-muted mt-1 block text-xs font-normal">A bright milestone · <span data-shop-cost></span></span></button>
+       <button data-shop-item="gold" type="button" class="shop-item soft-button rounded-xl border px-4 py-3 text-left"><span class="ink-heading block text-sm font-bold">Golden glow</span><span class="ink-muted mt-1 block text-xs font-normal">A little radiance · <span data-shop-cost></span></span></button>
+      </div>
+      <p id="shop-message" class="status-message mt-3 text-sm" role="status" aria-live="polite"></p>
+     </section>
+
+     <section id="brain-break-panel" class="glass-panel panel-cut lg:col-span-2 p-5 sm:p-7" aria-labelledby="brain-break-heading">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+       <div>
+        <p class="kicker">A tiny reset</p>
+        <h2 id="brain-break-heading" class="brand-face heading mt-2">Brain Break</h2>
+        <p class="note mt-2">Guide your fire friend through 20 rising levels with spikes. Use the arrow keys or buttons, then jump for a little reset.</p>
+       </div>
+       <div class="chip rounded-full px-3 py-2 text-xs">
+        <span class="font-bold">Level</span> <span id="game-level">1</span>/20
+       </div>
+      </div>
+      <div class="game-well mt-5 overflow-hidden rounded-2xl">
+       <canvas id="brain-break-canvas" class="block w-full" width="900" height="330" tabindex="0" aria-label="Brain Break platform game"></canvas>
+      </div>
+      <div class="game-pad mt-4 flex flex-wrap items-center gap-2">
+       <button id="game-left" type="button" class="soft-button rounded-lg border px-4 py-2 text-sm" aria-label="Move left">←</button>
+       <button id="game-right" type="button" class="soft-button rounded-lg border px-4 py-2 text-sm" aria-label="Move right">→</button>
+       <button id="game-jump" type="button" class="fire-button ember-button rounded-lg px-4 py-2 text-sm">Jump</button>
+       <button id="game-restart" type="button" class="soft-button rounded-lg border px-4 py-2 text-sm">Restart level</button>
+       <p id="game-message" class="status-message text-sm" role="status" aria-live="polite"></p>
+      </div>
+     </section>
+
+     <section id="history-panel" class="glass-panel panel-cut lg:col-span-2 p-5 sm:p-7" aria-labelledby="history-heading">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+       <div>
+        <p class="kicker">Your embers</p>
+        <h2 id="history-heading" class="brand-face heading mt-2">Recent days at the hearth</h2>
+       </div>
+       <p class="note italic">Small efforts count.</p>
+      </div>
+      <div id="history-list" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+       <p id="history-empty" class="note col-span-full py-4 italic">Your first saved ritual will glow here.</p>
+      </div>
+     </section>
+    </main>
+
+    <footer class="pt-8 text-center">
+     <p class="ink-faint text-xs">Keep it kind. Keep it small. Keep the fire.</p>
+    </footer>
+   </div>
+  </div>
+
+  <script>
+    function getTodayDate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return year + "-" + month + "-" + day;
+    }
+
+    const TODAY = getTodayDate();
+    const DEMO = window.__hearthSeed || null;
+    const state = { records: [], todayRecord: null, initialized: false, writeInFlight: false };
+
+    // Coal prices for the keeper's shop. Check-ins earn one coal each; everyone starts with three.
+    const SHOP = {
+      leaf: { cost: 3, label: "Leaf hat", apply: { hat_style: "leaf" } },
+      crown: { cost: 6, label: "Crown hat", apply: { hat_style: "crown" } },
+      gold: { cost: 9, label: "Golden glow", apply: { creature_color: "gold" } }
+    };
+    const STARTING_COALS = 3;
+    // Alex's characters can keep the hearth instead of the spark. They're drawn in 3D by the module at the bottom.
+    const KEEPER_NAMES = { jimbob: "Jimbob", srank: "Srank", jimmy: "Jimmy", ember: "Ember", bernie: "Bernie" };
+    const LOOK_NAMES = { toon: "Toon", galaxy: "Galaxy", carlo: "Painted" };
+
+    const el = {
+      form: document.getElementById("ritual-form"),
+      checkin: document.getElementById("checkin-button"),
+      save: document.getElementById("save-ritual-button"),
+      completed: document.getElementById("completed-state"),
+      message: document.getElementById("ritual-message"),
+      creatureForm: document.getElementById("creature-form"),
+      creatureSave: document.getElementById("save-creature-button"),
+      creatureMessage: document.getElementById("creature-message"),
+      creature: document.getElementById("creature"),
+      creatureCaption: document.getElementById("creature-caption"),
+      streak: document.getElementById("streak-value"),
+      coal: document.getElementById("coal-value"),
+      week: document.getElementById("week-value"),
+      history: document.getElementById("history-list"),
+      historyEmpty: document.getElementById("history-empty"),
+      surveyForm: document.getElementById("survey-form"),
+      surveySave: document.getElementById("save-survey-button"),
+      surveyMessage: document.getElementById("survey-message"),
+      shopMessage: document.getElementById("shop-message"),
+      assistantResponse: document.getElementById("assistant-response")
+    };
+
+    function dateLabel(dateString) {
+      return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" })
+        .format(new Date(dateString + "T12:00:00"));
+    }
+
+    function setMessage(target, message, kind) {
+      target.textContent = message;
+      const size = target.classList.contains("text-xs") ? "text-xs" : "text-sm";
+      const spacing = target.classList.contains("mt-3") ? " mt-3" : "";
+      target.className = "status-message " + size + spacing + " " + (kind === "error" ? "msg-err" : "msg-ok");
+    }
+
+    function goalInput(index) { return document.getElementById("goal-" + index); }
+    function goalCheck(index) { return document.getElementById("goal-" + index + "-completed"); }
+
+    function calculateStreak(records) {
+      const doneDates = new Set(records.filter(r => r.survey_completed).map(r => r.date));
+      let cursor = new Date(TODAY + "T12:00:00");
+      let count = 0;
+      while (doneDates.has(cursor.toISOString().slice(0, 10))) {
+        count += 1;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return count;
+    }
+
+    function latestRecord() {
+      return state.todayRecord || state.records.slice().sort((a, b) => b.date.localeCompare(a.date))[0] || null;
+    }
+
+    function unlockedItems(record) {
+      return new Set(String((record && record.unlocked_items) || "").split(",").filter(Boolean));
+    }
+
+    function latestStats() {
+      const record = latestRecord();
+      const streak = calculateStreak(state.records);
+      return {
+        streak: streak,
+        coal: record ? Number(record.coal_count ?? STARTING_COALS) : STARTING_COALS,
+        week: Math.max(1, Math.floor(streak / 7) + 1),
+        color: record ? record.creature_color || "ember" : "ember",
+        hat: record ? record.hat_style || "cap" : "cap",
+        keeper: record ? record.keeper_character || "spark" : "spark",
+        look: record && LOOK_NAMES[record.keeper_look] ? record.keeper_look : "toon",
+        unlocked: unlockedItems(record)
+      };
+    }
+
+    function updateCreature() {
+      const stats = latestStats();
+      el.streak.textContent = stats.streak;
+      document.getElementById("header-streak-value").textContent = stats.streak;
+      el.coal.textContent = stats.coal;
+      el.week.textContent = stats.week;
+      el.creature.dataset.color = stats.color;
+      el.creature.dataset.hat = stats.hat;
+      el.creature.dataset.stage = stats.streak >= 28 ? "final" : "growing";
+      showKeeper(stats.keeper, stats.look);
+      const name = KEEPER_NAMES[stats.keeper];
+      el.creatureCaption.textContent = stats.streak >= 28
+        ? (name ? name + " burns bright: final form reached." : "The hearth burns bright: final form reached.")
+        : stats.streak === 0
+          ? (name ? name + " is waiting by a quiet spark." : "A quiet spark is waiting.")
+          : (name ? name + " grows a little every day." : "Growing brighter, one day at a time.");
+
+      const color = document.querySelector('input[name="creature-color"][value="' + stats.color + '"]');
+      const hat = document.querySelector('input[name="hat-style"][value="' + stats.hat + '"]');
+      const keeper = document.querySelector('input[name="keeper"][value="' + stats.keeper + '"]');
+      const look = document.querySelector('input[name="keeper-look"][value="' + stats.look + '"]');
+      if (color) color.checked = true;
+      if (hat) hat.checked = true;
+      if (keeper) keeper.checked = true;
+      if (look) look.checked = true;
+
+      document.querySelectorAll("[data-unlock]").forEach(label => {
+        label.dataset.locked = String(!stats.unlocked.has(label.dataset.unlock));
+      });
+      document.querySelectorAll("[data-shop-item]").forEach(button => {
+        const item = button.dataset.shopItem;
+        const owned = stats.unlocked.has(item);
+        button.dataset.owned = String(owned);
+        button.querySelector("[data-shop-cost]").textContent = owned ? "Unlocked" : SHOP[item].cost + " coals";
+      });
+    }
+
+    // Which keeper the stage shows, plus the bits of the form that only make sense for a character.
+    function showKeeper(keeper, look) {
+      const name = KEEPER_NAMES[keeper];
+      el.creature.dataset.keeper = name ? keeper : "spark";
+      el.creature.dataset.look = look;
+      el.creature.setAttribute("aria-label", name ? "Your keeper, " + name + ", in the " + LOOK_NAMES[look] + " look" : "Your hearth creature");
+      document.getElementById("keeper-look-set").hidden = !name;
+      document.getElementById("keeper-drive-row").hidden = !name;
+      if (name) {
+        const link = document.getElementById("keeper-drive");
+        link.textContent = "Take " + name + " for a drive →";
+        link.href = "../gokart/index.html?driver=" + keeper + "&look=" + look;
+      }
+    }
+
+    function hydrateToday() {
+      const r = state.todayRecord;
+      ["one", "two", "three"].forEach(index => {
+        goalInput(index).value = r ? (r["goal_" + index] || "") : "";
+        goalCheck(index).checked = r ? Boolean(r["goal_" + index + "_completed"]) : false;
+      });
+      if (r) {
+        ["feeling", "energy", "stress"].forEach(key => {
+          const choice = document.querySelector('input[name="survey-' + key + '"][value="' + r["survey_" + key] + '"]');
+          if (choice) choice.checked = true;
+        });
+        document.getElementById("survey-mood").value = r.survey_mood || "";
+      }
+      el.completed.classList.toggle("hidden", !(r && r.check_in_completed));
+      el.completed.classList.toggle("flex", Boolean(r && r.check_in_completed));
+      el.checkin.classList.toggle("hidden", Boolean(r && r.check_in_completed));
+    }
+
+    function renderHistory() {
+      const recent = state.records.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
+      const streakDates = new Set();
+      let cursor = new Date(TODAY + "T12:00:00");
+      while (state.records.some(record => record.date === cursor.toISOString().slice(0, 10) && record.survey_completed)) {
+        streakDates.add(cursor.toISOString().slice(0, 10));
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      el.history.querySelectorAll(".history-item").forEach(node => node.remove());
+      el.historyEmpty.classList.toggle("hidden", recent.length > 0);
+
+      recent.forEach(record => {
+        const item = document.createElement("article");
+        item.className = "history-item timeline-row row-fill rounded-r-xl py-3 pl-5 pr-4";
+        const title = document.createElement("p");
+        title.className = "ink-heading text-sm font-bold";
+        title.textContent = dateLabel(record.date) + (record.date === TODAY ? " · today" : "");
+        const details = document.createElement("p");
+        details.className = "ink-muted mt-1 text-xs leading-5";
+        const completedGoals = ["one", "two", "three"].filter(key => record["goal_" + key + "_completed"]).length;
+        const streakStatus = streakDates.has(record.date) ? " · streak maintained" : "";
+        details.textContent = record.check_in_completed
+          ? "Check-in complete" + streakStatus + " · " + completedGoals + " goal" + (completedGoals === 1 ? "" : "s") + " checked"
+          : "Ritual saved · " + completedGoals + " goal" + (completedGoals === 1 ? "" : "s") + " checked";
+        item.append(title, details);
+        el.history.appendChild(item);
+      });
+    }
+
+    function updateUI() {
+      state.todayRecord = state.records.find(record => record.date === TODAY) || null;
+      hydrateToday();
+      updateCreature();
+      renderHistory();
+    }
+
+    function generateGoalsFromSurvey() {
+      const feeling = document.querySelector('input[name="survey-feeling"]:checked').value;
+      const energy = document.querySelector('input[name="survey-energy"]:checked').value;
+      const goals = {
+        feeling: {
+          good: "🙏 Name three things you are grateful for.",
+          great: "☀️ Go for a walk and enjoy your bright energy.",
+          "not-well": "🌿 Take a few deep breaths and be gentle with yourself."
+        },
+        energy: {
+          high: "🚀 Move one important idea forward.",
+          medium: "💧 Drink some water and make steady progress.",
+          low: "🌙 Take a nap, listen to music, or practice mindfulness."
+        }
+      };
+      const mood = document.getElementById("survey-mood").value.trim();
+      const moodGoal = /sad|down|low|lonely|anxious|worried|stressed|overwhelmed|tired|angry|frustrated/i.test(mood)
+        ? "🫶 Offer yourself one gentle, grounding moment for how you feel."
+        : mood
+          ? "✨ Notice what is supporting your mood and carry one of those small sparks forward."
+          : "💛 Take one small, caring step for yourself today.";
+      [goals.feeling[feeling], goals.energy[energy], moodGoal].forEach((goal, index) => {
+        goalInput(["one", "two", "three"][index]).value = goal;
+        goalCheck(["one", "two", "three"][index]).checked = false;
+      });
+    }
+
+    function buildRecord(checkInCompleted, overrides) {
+      // A new day carries the creature, coals and unlocks forward from the latest saved day.
+      const previous = latestRecord() || {};
+      const base = state.todayRecord || {
+        coal_count: previous.coal_count,
+        creature_color: previous.creature_color,
+        hat_style: previous.hat_style,
+        keeper_character: previous.keeper_character,
+        keeper_look: previous.keeper_look,
+        unlocked_items: previous.unlocked_items
+      };
+      const streakPreview = calculateStreak(
+        state.records.filter(r => r.date !== TODAY).concat([{ date: TODAY, survey_completed: overrides.survey_completed ?? base.survey_completed ?? false }])
+      );
+      return {
+        ...base,
+        date: TODAY,
+        check_in_completed: checkInCompleted,
+        goal_one: goalInput("one").value.trim(),
+        goal_one_completed: goalCheck("one").checked,
+        goal_two: goalInput("two").value.trim(),
+        goal_two_completed: goalCheck("two").checked,
+        goal_three: goalInput("three").value.trim(),
+        goal_three_completed: goalCheck("three").checked,
+        coal_count: Number(base.coal_count ?? STARTING_COALS),
+        streak_count: streakPreview,
+        evolution_week: Math.max(1, Math.floor(streakPreview / 7) + 1),
+        creature_color: base.creature_color || "ember",
+        hat_style: base.hat_style || "cap",
+        keeper_character: base.keeper_character || "spark",
+        keeper_look: base.keeper_look || "toon",
+        unlocked_items: base.unlocked_items || "",
+        ...overrides
+      };
+    }
+
+    async function saveToday(checkInCompleted, trigger, messageTarget, successText, overrides = {}) {
+      // Always use the latest persisted copy so updates retain the backend record id.
+      state.todayRecord = state.records.find(record => record.date === TODAY) || state.todayRecord || null;
+      if (state.writeInFlight) {
+        setMessage(messageTarget, "Your Hearth is still saving that change. Please wait a moment.", "error");
+        return false;
+      }
+      if (!state.todayRecord && state.records.length >= 999) {
+        setMessage(messageTarget, "Your Hearth has reached its 999-day record limit. Remove an older day to continue.", "error");
+        return false;
+      }
+
+      trigger.disabled = true;
+      state.writeInFlight = true;
+      const record = buildRecord(checkInCompleted, overrides);
+      let result;
+      try {
+        result = state.todayRecord
+          ? await window.dataSdk.update(record)
+          : await window.dataSdk.create(record);
+      } catch (error) {
+        result = { isOk: false };
+      } finally {
+        state.writeInFlight = false;
+        trigger.disabled = false;
+      }
+
+      if (!result.isOk) {
+        setMessage(messageTarget, "Your ritual could not be saved. Please try again.", "error");
+        return false;
+      }
+      const existingIndex = state.records.findIndex(recordItem => recordItem.date === TODAY);
+      if (existingIndex >= 0) {
+        state.records[existingIndex] = record;
+      } else {
+        state.records.push(record);
+      }
+      state.todayRecord = record;
+      updateUI();
+      setMessage(messageTarget, successText, "success");
+      return true;
+    }
+
+    function dayOfYear() {
+      const now = new Date(TODAY + "T12:00:00");
+      return Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+    }
+
+    function answerAssistant(feeling) {
+      const dailySuggestions = {
+        tired: [
+          "A gentle idea: drink a glass of water, loosen your shoulders, and choose one tiny task for now.",
+          "A gentle idea: let yourself move slowly, take three steady breaths, and begin with the easiest next step.",
+          "A gentle idea: soften your schedule where you can and give one small thing your full, unhurried attention."
+        ],
+        stressed: [
+          "A grounding idea: breathe in for four counts, out for six, and repeat three times before deciding anything.",
+          "A grounding idea: write down the one thing that matters most right now, and set the rest aside for later.",
+          "A grounding idea: step away for two minutes, look at something far away, and let your jaw unclench."
+        ],
+        good: [
+          "A bright idea: put that energy into one thing you have been meaning to start.",
+          "A bright idea: send a kind message to someone who would enjoy hearing from you.",
+          "A bright idea: notice what made today feel good so you can find it again tomorrow."
+        ]
+      };
+      const options = dailySuggestions[feeling];
+      el.assistantResponse.textContent = options[dayOfYear() % options.length];
+    }
+
+    // ---------- Event wiring ----------
+
+    el.form.addEventListener("submit", event => {
+      event.preventDefault();
+      const done = Boolean(state.todayRecord && state.todayRecord.check_in_completed);
+      saveToday(done, el.save, el.message, "Ritual saved. Small efforts count.");
+    });
+
+    el.checkin.addEventListener("click", () => {
+      if (!(state.todayRecord && state.todayRecord.survey_completed)) {
+        setMessage(el.message, "Start with the gentle check-in below, then light today’s flame.", "error");
+        document.getElementById("survey-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      const coals = latestStats().coal + 1;
+      saveToday(true, el.checkin, el.message, "Today’s flame is lit. +1 coal for your keeper.", { coal_count: coals });
+    });
+
+    el.surveyForm.addEventListener("submit", event => {
+      event.preventDefault();
+      generateGoalsFromSurvey();
+      const choice = name => document.querySelector('input[name="survey-' + name + '"]:checked').value;
+      const done = Boolean(state.todayRecord && state.todayRecord.check_in_completed);
+      saveToday(done, el.surveySave, el.surveyMessage, "Three kinder intentions are waiting in today’s ritual.", {
+        survey_completed: true,
+        survey_feeling: choice("feeling"),
+        survey_energy: choice("energy"),
+        survey_stress: choice("stress"),
+        survey_mood: document.getElementById("survey-mood").value.trim()
+      });
+    });
+
+    el.creatureForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const color = document.querySelector('input[name="creature-color"]:checked').value;
+      const hat = document.querySelector('input[name="hat-style"]:checked').value;
+      const unlocked = latestStats().unlocked;
+      const locked = [color, hat].find(item => SHOP[item] && !unlocked.has(item));
+      if (locked) {
+        setMessage(el.creatureMessage, "Unlock the " + SHOP[locked].label + " in the keeper’s shop first.", "error");
+        return;
+      }
+      const done = Boolean(state.todayRecord && state.todayRecord.check_in_completed);
+      const keeper = document.querySelector('input[name="keeper"]:checked').value;
+      const look = document.querySelector('input[name="keeper-look"]:checked').value;
+      saveToday(done, el.creatureSave, el.creatureMessage, "Your keeper looks wonderful.", {
+        creature_color: color, hat_style: hat, keeper_character: keeper, keeper_look: look
+      });
+    });
+
+    // Preview choices on the creature right away, before saving.
+    el.creatureForm.addEventListener("change", event => {
+      if (event.target.name === "creature-color") el.creature.dataset.color = event.target.value;
+      if (event.target.name === "hat-style") el.creature.dataset.hat = event.target.value;
+      if (event.target.name === "keeper" || event.target.name === "keeper-look") {
+        showKeeper(document.querySelector('input[name="keeper"]:checked').value, document.querySelector('input[name="keeper-look"]:checked').value);
+      }
+    });
+
+    document.querySelectorAll("[data-shop-item]").forEach(button => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.shopItem;
+        const item = SHOP[key];
+        const stats = latestStats();
+        if (stats.unlocked.has(key)) {
+          const done = Boolean(state.todayRecord && state.todayRecord.check_in_completed);
+          saveToday(done, button, el.shopMessage, item.label + " is on. Your keeper beams.", item.apply);
+          return;
+        }
+        if (stats.coal < item.cost) {
+          setMessage(el.shopMessage, item.label + " needs " + item.cost + " coals. Keep checking in and you’ll get there.", "error");
+          return;
+        }
+        const unlocked = Array.from(stats.unlocked).concat(key).join(",");
+        const done = Boolean(state.todayRecord && state.todayRecord.check_in_completed);
+        saveToday(done, button, el.shopMessage, item.label + " unlocked and equipped.", {
+          ...item.apply,
+          coal_count: stats.coal - item.cost,
+          unlocked_items: unlocked
+        });
+      });
+    });
+
+    ["tired", "stressed", "good"].forEach(feeling => {
+      document.getElementById("assistant-" + feeling).addEventListener("click", () => answerAssistant(feeling));
+    });
+
+    // ---------- Brain Break ----------
+
+    const game = (() => {
+      const canvas = document.getElementById("brain-break-canvas");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+      const MAX_LEVEL = 20;
+      const LEVEL_KEY = "hearth.game.level";
+      const SPEED = 3.6;
+      const JUMP = 9.6;
+      const GRAVITY = 0.45;
+      const levelLabel = document.getElementById("game-level");
+      const message = document.getElementById("game-message");
+      const input = { left: false, right: false };
+      const flameColors = { ember: "#f26d3d", gold: "#f6be6e", moss: "#9db47c" };
+      let paint = readPaint();
+      let level = loadLevel();
+      let world = null;
+      let player = null;
+      let active = false;
+      let finished = false;
+      let frame = 0;
+      let flash = 0;
+
+      // The canvas can't use CSS variables directly, so copy the skin's tokens in.
+      function readPaint() {
+        const css = getComputedStyle(document.documentElement);
+        const token = name => css.getPropertyValue("--" + name).trim();
+        return {
+          skyTop: token("game-sky-top"), skyBottom: token("game-sky-bottom"),
+          ground: token("game-ground"), groundTop: token("game-ground-top"),
+          spike: token("game-spike"), goal: token("game-goal"), goalBase: token("game-goal-base"),
+          veil: token("game-veil"), heading: token("heading"),
+          ink: token("ink-rgb"), accent: token("accent-rgb"), primary: token("primary-rgb")
+        };
+      }
+
+      function loadLevel() {
+        if (DEMO && DEMO.level) return Math.min(MAX_LEVEL, DEMO.level);
+        try {
+          return Math.min(MAX_LEVEL, Math.max(1, Number(localStorage.getItem(LEVEL_KEY)) || 1));
+        } catch (error) {
+          return 1;
+        }
+      }
+
+      function storeLevel() {
+        if (DEMO) return;
+        try { localStorage.setItem(LEVEL_KEY, String(level)); } catch (error) { /* progress just won't persist */ }
+      }
+
+      function random(seed) {
+        return function () {
+          seed = (seed + 0x6D2B79F5) | 0;
+          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      // Levels are generated from their number, so level 7 is always the same level 7.
+      // Gaps widen, steps get taller, ledges shrink and spikes multiply as levels rise.
+      function buildLevel(n) {
+        const rand = random(n * 977 + 13);
+        const count = 3 + (n >= 12 ? 1 : 0);
+        const gapBase = 34 + n * 1.5;
+        const maxStep = Math.min(16 + n * 2.2, 60);
+        const startW = 100;
+        const goalW = 104;
+        const gaps = [];
+        for (let i = 0; i <= count; i += 1) gaps.push(gapBase + rand() * 16);
+        const room = W - startW - goalW - gaps.reduce((sum, gap) => sum + gap, 0);
+        const weights = Array.from({ length: count }, () => 0.75 + rand() * 0.5);
+        const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+
+        const platforms = [{ x: 0, y: 280, w: startW }];
+        const spikes = [];
+        let x = startW;
+        let y = 280;
+        for (let i = 0; i < count; i += 1) {
+          x += gaps[i];
+          const w = room * weights[i] / weightSum;
+          const climb = rand() < 0.65 ? -1 : 1;
+          y = Math.max(150, Math.min(285, y + climb * (maxStep * (0.4 + rand() * 0.6))));
+          platforms.push({ x: x, y: y, w: w });
+          const spikeCount = Math.min(3, Math.floor((w - 50) / 14), 1 + Math.floor(rand() * (1 + n / 6)));
+          if (n >= 2 && spikeCount > 0 && rand() < 0.45 + n * 0.03) {
+            const width = spikeCount * 14;
+            spikes.push({ x: x + w / 2 - width / 2, y: y, w: width });
+          }
+          x += w;
+        }
+        x += gaps[count];
+        const goalY = Math.max(150, Math.min(285, y - maxStep * 0.5 * rand()));
+        platforms.push({ x: x, y: goalY, w: W - x });
+        if (n >= 8) spikes.push({ x: x + 34, y: goalY, w: 14 });
+        return { platforms: platforms, spikes: spikes, goal: { x: W - 46, y: goalY } };
+      }
+
+      function resetPlayer() {
+        player = { x: 28, y: 280 - 26, w: 22, h: 26, vx: 0, vy: 0, grounded: true, facing: 1 };
+      }
+
+      function startLevel(n, text) {
+        level = n;
+        world = buildLevel(level);
+        resetPlayer();
+        levelLabel.textContent = level;
+        storeLevel();
+        if (text) setMessage(message, text, "success");
+      }
+
+      function jump() {
+        if (finished) return;
+        if (player.grounded) {
+          player.vy = -JUMP;
+          player.grounded = false;
+        }
+      }
+
+      function overlaps(a, b) {
+        return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+      }
+
+      function solids() {
+        return world.platforms.map(p => ({ x: p.x, y: p.y, w: p.w, h: H - p.y + 40 }));
+      }
+
+      function step() {
+        if (finished) return;
+        const direction = (input.right ? 1 : 0) - (input.left ? 1 : 0);
+        player.vx = direction * SPEED;
+        if (direction) player.facing = direction;
+
+        const blocks = solids();
+        player.x = Math.max(0, Math.min(W - player.w, player.x + player.vx));
+        blocks.forEach(block => {
+          if (!overlaps(player, block)) return;
+          player.x = player.vx > 0 ? block.x - player.w : block.x + block.w;
+        });
+
+        player.vy = Math.min(player.vy + GRAVITY, 14);
+        player.y += player.vy;
+        player.grounded = false;
+        blocks.forEach(block => {
+          if (!overlaps(player, block)) return;
+          if (player.vy > 0) {
+            player.y = block.y - player.h;
+            player.grounded = true;
+          } else {
+            player.y = block.y + block.h;
+          }
+          player.vy = 0;
+        });
+
+        const hitSpike = world.spikes.some(spike => overlaps(player, { x: spike.x + 3, y: spike.y - 11, w: spike.w - 6, h: 11 }));
+        if (hitSpike || player.y > H) {
+          flash = 18;
+          resetPlayer();
+          setMessage(message, hitSpike ? "Ouch, spikes. Your fire friend is back at the start." : "A little tumble. Try that jump again.", "error");
+          return;
+        }
+
+        const goal = { x: world.goal.x - 6, y: world.goal.y - 40, w: 34, h: 40 };
+        if (overlaps(player, goal)) {
+          if (level >= MAX_LEVEL) {
+            finished = true;
+            setMessage(message, "All 20 levels done. That’s a proper brain break.", "success");
+          } else {
+            startLevel(level + 1, "Level " + level + " cleared. On to level " + (level + 1) + ".");
+          }
+        }
+      }
+
+      function drawFlame(x, y, size, color, eyes) {
+        const wobble = Math.sin(frame / 6) * 1.5;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 1.15 + wobble);
+        ctx.bezierCurveTo(size * 0.9, -size * 0.4, size * 0.95, size * 0.2, size * 0.55, size * 0.5);
+        ctx.quadraticCurveTo(0, size * 0.75, -size * 0.55, size * 0.5);
+        ctx.bezierCurveTo(-size * 0.95, size * 0.2, -size * 0.7, -size * 0.5, 0, -size * 1.15 + wobble);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (eyes) {
+          ctx.fillStyle = "#251517";
+          ctx.beginPath();
+          ctx.ellipse(-size * 0.22 + eyes * 2, size * 0.05, 2, 3, 0, 0, Math.PI * 2);
+          ctx.ellipse(size * 0.22 + eyes * 2, size * 0.05, 2, 3, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function draw() {
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, paint.skyTop);
+        sky.addColorStop(1, paint.skyBottom);
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = "rgba(" + paint.accent + ",0.35)";
+        for (let i = 0; i < 26; i += 1) {
+          const sx = (i * 137 + frame * 0.15 * (1 + (i % 3))) % W;
+          const sy = H - ((i * 53 + frame * (0.3 + (i % 4) * 0.1)) % H);
+          ctx.fillRect(sx, sy, 2, 2);
+        }
+
+        world.platforms.forEach(p => {
+          ctx.fillStyle = paint.ground;
+          ctx.fillRect(p.x, p.y, p.w, H - p.y);
+          ctx.fillStyle = paint.groundTop;
+          ctx.fillRect(p.x, p.y, p.w, 6);
+          ctx.fillStyle = "rgba(" + paint.primary + ",0.55)";
+          ctx.fillRect(p.x, p.y, p.w, 2);
+        });
+
+        world.spikes.forEach(spike => {
+          ctx.fillStyle = paint.spike;
+          for (let sx = spike.x; sx < spike.x + spike.w - 1; sx += 14) {
+            ctx.beginPath();
+            ctx.moveTo(sx, spike.y);
+            ctx.lineTo(sx + 7, spike.y - 13);
+            ctx.lineTo(sx + 14, spike.y);
+            ctx.closePath();
+            ctx.fill();
+          }
+        });
+
+        const g = world.goal;
+        const glow = ctx.createRadialGradient(g.x + 11, g.y - 16, 2, g.x + 11, g.y - 16, 40);
+        glow.addColorStop(0, "rgba(" + paint.accent + ",0.55)");
+        glow.addColorStop(1, "rgba(" + paint.accent + ",0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(g.x - 30, g.y - 56, 82, 56);
+        ctx.fillStyle = paint.goalBase;
+        ctx.fillRect(g.x - 4, g.y - 8, 30, 8);
+        drawFlame(g.x + 11, g.y - 20, 11, paint.goal, 0);
+
+        const color = flameColors[el.creature.dataset.color] || flameColors.ember;
+        drawFlame(player.x + player.w / 2, player.y + player.h * 0.55, 13, color, player.facing);
+
+        ctx.fillStyle = "rgba(" + paint.ink + ",0.75)";
+        ctx.font = "600 14px 'DM Sans', sans-serif";
+        ctx.fillText("Level " + level + " · reach the hearth", 18, 28);
+
+        if (flash > 0) {
+          ctx.fillStyle = "rgba(" + paint.primary + "," + (flash / 60) + ")";
+          ctx.fillRect(0, 0, W, H);
+          flash -= 1;
+        }
+
+        if (finished) {
+          ctx.fillStyle = paint.veil;
+          ctx.fillRect(0, 0, W, H);
+          drawFlame(W / 2, H / 2 - 30, 26, color, 1);
+          ctx.fillStyle = paint.heading;
+          ctx.textAlign = "center";
+          ctx.font = "700 28px 'Fraunces', serif";
+          ctx.fillText("All 20 levels complete", W / 2, H / 2 + 30);
+          ctx.font = "500 15px 'DM Sans', sans-serif";
+          ctx.fillText("Press Restart level to play from the beginning.", W / 2, H / 2 + 58);
+          ctx.textAlign = "left";
+        }
+      }
+
+      function loop() {
+        frame += 1;
+        step();
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      // Arrow keys drive the game only after you've touched it, so the page still scrolls normally.
+      document.addEventListener("pointerdown", event => {
+        active = Boolean(event.target.closest("#brain-break-panel"));
+      });
+      document.addEventListener("keydown", event => {
+        if (!active || /INPUT|TEXTAREA/.test(event.target.tagName)) return;
+        if (["ArrowLeft", "a", "A"].includes(event.key)) input.left = true;
+        else if (["ArrowRight", "d", "D"].includes(event.key)) input.right = true;
+        else if ([" ", "ArrowUp", "w", "W"].includes(event.key)) jump();
+        else return;
+        event.preventDefault();
+      });
+      document.addEventListener("keyup", event => {
+        if (["ArrowLeft", "a", "A"].includes(event.key)) input.left = false;
+        if (["ArrowRight", "d", "D"].includes(event.key)) input.right = false;
+      });
+
+      [["game-left", "left"], ["game-right", "right"]].forEach(([id, key]) => {
+        const button = document.getElementById(id);
+        button.addEventListener("pointerdown", event => { event.preventDefault(); input[key] = true; });
+        ["pointerup", "pointerleave", "pointercancel"].forEach(type => button.addEventListener(type, () => { input[key] = false; }));
+      });
+      document.getElementById("game-jump").addEventListener("pointerdown", event => { event.preventDefault(); jump(); });
+      document.getElementById("game-restart").addEventListener("click", () => {
+        if (finished) {
+          finished = false;
+          startLevel(1, "Fresh start. Level 1.");
+        } else {
+          startLevel(level, "Level " + level + " restarted.");
+        }
+      });
+      canvas.addEventListener("pointerdown", () => canvas.focus());
+
+      startLevel(level);
+      loop();
+      return { jump: jump, repaint: () => { paint = readPaint(); } };
+    })();
+
+    // ---------- Skins ----------
+
+    function applySkin(skin, remember) {
+      document.documentElement.dataset.skin = skin;
+      document.querySelectorAll("[data-skin-choice]").forEach(button => {
+        button.setAttribute("aria-checked", String(button.dataset.skinChoice === skin));
+      });
+      const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg-a").trim();
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", bg);
+      game.repaint();
+      if (remember && !DEMO) {
+        try { localStorage.setItem("hearth.skin", skin); } catch (error) { /* choice just won't persist */ }
+      }
+    }
+
+    document.querySelectorAll("[data-skin-choice]").forEach(button => {
+      button.addEventListener("click", () => applySkin(button.dataset.skinChoice, true));
+    });
+    applySkin(document.documentElement.dataset.skin, false);
+
+    // ---------- Startup ----------
+
+    document.getElementById("today-label").textContent = new Intl.DateTimeFormat("en-US", {
+      weekday: "long", month: "short", day: "numeric"
+    }).format(new Date(TODAY + "T12:00:00"));
+
+    if (window.lucide) lucide.createIcons();
+
+    window.dataSdk.init({
+      onDataChanged(records) {
+        state.records = records;
+        updateUI();
+        if (!state.initialized) {
+          state.initialized = true;
+          if (DEMO) applyDemoView();
+        }
+      }
+    });
+
+    function applyDemoView() {
+      const still = document.createElement("style");
+      still.textContent = "*, *::before, *::after { transition: none !important; }";
+      document.head.appendChild(still);
+      document.documentElement.dataset.pageHeight = document.documentElement.scrollHeight;
+      if (window.parent !== window) window.parent.postMessage({ hearthHeight: document.documentElement.scrollHeight }, "*");
+      if (DEMO.assistant) answerAssistant(DEMO.assistant);
+      const targets = {
+        creature: "creature-panel", survey: "survey-panel", shop: "shop-panel",
+        game: "brain-break-panel", history: "history-panel", ritual: "ritual-panel",
+        feeling: "assistant-heading"
+      };
+      const target = document.getElementById(targets[DEMO.at]);
+      // Shift instead of scrolling: headless Chrome screenshots of a scrolled page come out blank.
+      if (target) {
+        const frameEl = document.querySelector(".app-frame");
+        const room = document.documentElement.scrollHeight - window.innerHeight;
+        const pad = DEMO.at === "feeling" ? 110 : 16; // room for the phone notch above the feelings panel
+        const offset = Math.min(target.getBoundingClientRect().top - pad, Math.max(0, room));
+        frameEl.style.marginTop = -offset + "px";
+      }
+    }
+  </script>
+
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+  <script src="../characters/crew.js"></script>
+  <script type="module">
+    // The 3D keeper. The app script above sets data-keeper / data-look / data-hat / data-color / data-stage
+    // on #creature; this draws the matching character on the stage. If it can't load, the spark stays.
+    import * as THREE from "three";
+    import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
+    import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
+
+    const Crew = makeCrew(THREE, { DecalGeometry, mergeVertices });
+    const creature = document.getElementById("creature");
+    const stage = creature.closest(".creature-stage");
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("keeper-3d"), antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+    camera.position.set(0, 0.6, 3.0);
+    camera.lookAt(0, 0.42, 0);
+    scene.add(new THREE.HemisphereLight(0xfff4e6, 0x5a3a30, 1.5));
+    const key = new THREE.DirectionalLight(0xffffff, 2.1);
+    key.position.set(2, 4, 3);
+    const rim = new THREE.DirectionalLight(0xf26d3d, 2.2); // the creature color glows from behind, like firelight
+    rim.position.set(-1, 1.5, -3);
+    scene.add(key, rim);
+    const GLOW = { ember: 0xf26d3d, gold: 0xf6be6e, moss: 0x9db47c };
+
+    let current = null, built = "";
+    function sync() {
+      const id = creature.dataset.keeper;
+      const on = Crew.CHARACTERS.some(c => c.id === id);
+      stage.classList.toggle("has-3d", on);
+      if (!on) { if (current) scene.remove(current); current = null; built = ""; return; }
+      const look = creature.dataset.look || "toon", hat = creature.dataset.hat || null, final = creature.dataset.stage === "final";
+      const want = [id, look, hat, final].join();
+      if (want !== built) {
+        if (current) scene.remove(current);
+        current = Crew.build(id, look, { hat, sparkle: final });
+        const { size } = current.userData;
+        current.scale.setScalar((final ? 1.12 : 1) / Math.max(size.y, size.x * 0.8));
+        current.rotation.y = 0.25;
+        scene.add(current);
+        built = want;
+      }
+      rim.color.set(GLOW[creature.dataset.color] || GLOW.ember);
+      rim.intensity = creature.dataset.color === "gold" || final ? 3.4 : 2.2;
+    }
+    function resize() {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    new MutationObserver(sync).observe(creature, { attributes: true, attributeFilter: ["data-keeper", "data-look", "data-hat", "data-color", "data-stage"] });
+    new ResizeObserver(resize).observe(stage);
+    resize();
+    sync();
+
+    // Animate only while the stage is on screen; hold still for reduced motion.
+    let onScreen = true;
+    new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; }).observe(stage);
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const dt = Math.min(clock.getDelta(), 0.05);
+      if (!current || !onScreen) return;
+      const t = still ? 0 : clock.elapsedTime;
+      current.userData.tick(still ? 0 : dt, t, {});
+      if (!still) current.rotation.y = 0.25 + Math.sin(t * 0.5) * 0.45;
+      renderer.render(scene, camera);
+    });
+  </script>
+</body>
+</html>

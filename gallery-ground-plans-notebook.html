@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ground Plans Notebook</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Alex's gallery ground plans, drawn in ballpoint on graph paper next to the real notebook sketch.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Reenie+Beanie&display=swap">
+<style>
+/* Version 2 of the ground plans: a graph-paper notebook. Everything is "written" straight onto the grid in ballpoint,
+   photos are taped in, and nothing sits in a box. */
+:root{
+  --paper:#f7f5ef; --grid:rgba(84,108,140,.19); --ink:#22253a; --pencil:#5d6273; --red:#c8332b;
+  --cell:26px;
+  --hand:"Nanum Pen Script","Bradley Hand","Segoe Print",cursive;
+  --scrawl:"Reenie Beanie","Nanum Pen Script","Bradley Hand",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;color:var(--ink);font:25px/var(--cell) var(--hand);overflow-x:clip;min-height:100vh;
+  background-color:var(--paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .3 0 0 0 0 .26 0 0 0 .13 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:320px 320px,var(--cell) var(--cell),var(--cell) var(--cell);
+  background-position:0 0,-1px -1px,-1px -1px}
+/* uneven light across the page, like a photo of real paper */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;mix-blend-mode:multiply;
+  background:radial-gradient(120% 80% at 18% 0%,transparent 55%,rgba(120,104,80,.08)),radial-gradient(70% 60% at 100% 100%,rgba(110,95,70,.10),transparent 70%)}
+a{color:var(--red);text-decoration:none}
+a:hover{text-decoration:underline wavy;text-underline-offset:4px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px dashed var(--red);outline-offset:4px}
+.page{width:min(1260px,100% - 32px);margin:0 auto;padding:calc(var(--cell) * 3) 0 calc(var(--cell) * 6)}
+.scrawl{font-family:var(--scrawl);font-weight:400}
+mark{color:inherit;padding:0 .2em;margin:0 -.1em;border-radius:.6em .3em .7em .25em;
+  background:linear-gradient(100deg,rgba(255,228,80,0) .6%,rgba(255,228,80,.8) 2.5%,rgba(255,226,74,.55) 6%,rgba(255,226,74,.42) 92%,rgba(255,228,80,.78) 97%,rgba(255,228,80,0) 99%)}
+.dash{list-style:none;margin:0;padding:0}
+.dash li{padding-left:1.05em;text-indent:-1.05em;margin-bottom:calc(var(--cell) * .5)}
+.dash li::before{content:"–";display:inline-block;width:1.05em;text-indent:0}
+.dash b{font-weight:400;color:var(--red)}
+.ink-svg{position:absolute;overflow:visible;pointer-events:none}
+
+/* ---------- masthead ---------- */
+.mast{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,360px);gap:calc(var(--cell) * 1) calc(var(--cell) * 2);align-items:start;margin-bottom:calc(var(--cell) * 3)}
+.kicker{grid-column:1/-1;color:var(--pencil);transform:rotate(-.6deg);transform-origin:left}
+h1{margin:calc(var(--cell) * .5) 0 0;font:400 clamp(62px,13.5vw,196px)/.74 var(--scrawl);letter-spacing:-.01em;transform:rotate(-2.2deg);transform-origin:left bottom}
+h1 span{display:block;position:relative;width:max-content;max-width:100%}
+h1 .u{margin-left:.32em}
+.meta{transform:rotate(1.6deg);margin-top:calc(var(--cell) * 2.5);color:var(--ink)}
+.others{grid-column:1/-1;margin:calc(var(--cell) * 1) 0 0 auto;color:var(--pencil);transform:rotate(-1deg)}
+@media (max-width:760px){.mast{grid-template-columns:1fr}.meta{margin-top:0}.others{margin-left:0}}
+
+/* ---------- photos taped in ---------- */
+.snap{position:relative;margin:0;transform:rotate(var(--r,0deg))}
+.snap img{display:block;width:100%;height:auto;box-shadow:0 1px 1px rgba(40,30,20,.18),0 10px 22px -12px rgba(40,30,20,.45)}
+.snap.print img{border:7px solid #fdfcf8}
+.snap .ph{position:relative;display:block}
+.snap .ph::before,.snap .ph::after{content:"";position:absolute;width:118px;height:30px;z-index:2;
+  background:linear-gradient(rgba(255,253,240,.62),rgba(246,242,225,.55));box-shadow:0 1px 1px rgba(60,50,30,.12);
+  clip-path:polygon(0 4%,4% 0,8% 6%,12% 0,100% 0,97% 8%,100% 18%,96% 30%,100% 44%,97% 58%,100% 72%,96% 86%,100% 100%,0 100%,3% 88%,0 76%,4% 62%,0 48%,3% 34%,0 20%)}
+.snap .ph::before{top:-14px;left:50%;transform:translateX(-50%) rotate(-3deg)}
+.snap .ph::after{bottom:-12px;right:-26px;transform:rotate(-38deg);width:96px}
+.snap.t2 .ph::after{right:auto;left:-28px;transform:rotate(36deg)}
+.snap figcaption{margin-top:calc(var(--cell) * .9);transform:rotate(calc(var(--r,0deg) * -1.4));padding-left:4px}
+
+/* ---------- the notebook pages ---------- */
+.sketch{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:calc(var(--cell) * 1);margin-bottom:calc(var(--cell) * 5);position:relative}
+.sketch h2{grid-column:1/-1;font-size:clamp(54px,7vw,92px);line-height:.85;margin:0 0 calc(var(--cell) * 1.5);transform:rotate(-1.2deg)}
+.sketch .p1{grid-column:1/6;grid-row:2/4;--r:-2deg;z-index:1}
+.sketch .p2{grid-column:6/10;grid-row:2/3;--r:2.6deg;margin-top:calc(var(--cell) * 4)}
+.sketch .quotes{grid-column:10/13;grid-row:2/4;padding-top:calc(var(--cell) * 1);transform:rotate(.8deg)}
+.quotes .lbl{margin:0 0 calc(var(--cell) * .5);color:var(--pencil)}
+.quotes .pg{color:var(--red);margin:calc(var(--cell) * 1) 0 calc(var(--cell) * .4)}
+.sketch .why{grid-column:6/10;grid-row:3/4;align-self:start;margin-top:calc(var(--cell) * 2);transform:rotate(-1deg)}
+@media (max-width:1000px){
+  .sketch .p1{grid-column:1/8}.sketch .p2{grid-column:8/13}
+  .sketch .quotes{grid-column:1/8;grid-row:4}.sketch .why{grid-column:8/13;grid-row:4}
+}
+@media (max-width:640px){
+  .sketch{display:block}.sketch .snap{margin:0 8px calc(var(--cell) * 3)}.sketch .quotes,.sketch .why{margin-bottom:calc(var(--cell) * 2)}
+}
+
+/* ---------- exhibits ---------- */
+.exhibits{display:flex;flex-wrap:wrap;align-items:flex-start;gap:calc(var(--cell) * 2) calc(var(--cell) * 1.5);margin-bottom:calc(var(--cell) * 5)}
+.exhibits h2{flex:1 1 100%;font-size:clamp(50px,6vw,80px);line-height:.85;margin:0;transform:rotate(-1deg)}
+.exhibits .snap{flex:0 1 auto}
+.exhibits .e1{width:min(220px,40%);--r:-3deg}
+.exhibits .e2{width:min(330px,56%);--r:2deg;margin-top:calc(var(--cell) * 2)}
+.exhibits .e3{width:min(190px,40%);--r:-1.4deg;margin-top:calc(var(--cell) * .5)}
+.exhibits .e4{width:min(170px,36%);--r:3deg;margin-top:calc(var(--cell) * 2.5)}
+.exhibits figcaption b{font-weight:400;color:var(--red)}
+.exhibits figcaption{font-size:23px}
+
+/* ---------- key ---------- */
+.key{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px;margin:0 0 calc(var(--cell) * 3);transform:rotate(-.5deg);color:var(--pencil)}
+.key b{font-weight:400;color:var(--ink)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key svg{width:40px;height:24px;overflow:visible}
+
+/* ---------- the plans ---------- */
+.intro{max-width:44ch;margin:0 0 calc(var(--cell) * 3) calc(var(--cell) * 2);transform:rotate(-.8deg)}
+.intro h2{font-size:clamp(56px,7vw,96px);line-height:.85;margin:0 0 calc(var(--cell) * .5);margin-left:calc(var(--cell) * -2)}
+.plan{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:calc(var(--cell) * 1);margin-bottom:calc(var(--cell) * 5)}
+.plan header{display:flex;align-items:flex-end;flex-wrap:wrap;gap:4px 18px}
+.plan h3{font:400 clamp(58px,6.6vw,92px)/.8 var(--scrawl);margin:0}
+.num{position:relative;display:inline-grid;place-items:center;width:52px;height:52px;font:400 34px/1 var(--hand);color:var(--red);flex:none}
+.num svg{position:absolute;inset:-6px;width:64px;height:64px;overflow:visible}
+.open{font-size:27px;white-space:nowrap;margin-bottom:6px}
+.tag{margin:calc(var(--cell) * .5) 0 0;color:var(--pencil);max-width:46ch}
+.art{position:relative;margin:calc(var(--cell) * 1) 0}
+.art svg{display:block;width:100%;height:auto;overflow:visible}
+#svg-bike{overflow:hidden}
+.notes{align-self:start}
+.src{color:var(--pencil);font-size:21px;margin:0}
+.plan.lobby header,.plan.lobby .tag{grid-column:1/9}
+.plan.lobby .art{grid-column:1/10}
+.plan.lobby .notes{grid-column:10/13;grid-row:1/4;padding-top:calc(var(--cell) * 4);transform:rotate(.9deg)}
+.plan.lobby .src{grid-column:1/10}
+.plan.kart header,.plan.kart .tag{grid-column:1/6}
+.plan.kart .art{grid-column:6/13;grid-row:1/4;margin-top:calc(var(--cell) * -1)}
+.plan.kart .notes{grid-column:1/6;padding-top:calc(var(--cell) * 1);transform:rotate(-.7deg)}
+.plan.kart .src{grid-column:6/13}
+.plan.bike header,.plan.bike .tag{grid-column:1/9;padding-left:calc(var(--cell) * 2)}
+.plan.bike .art{grid-column:1/8}
+.plan.bike .notes{grid-column:8/13;padding-top:calc(var(--cell) * 2);transform:rotate(.6deg)}
+.plan.bike .src{grid-column:1/8}
+.plan.drift header,.plan.drift .tag{grid-column:3/13}
+.plan.drift .art{grid-column:1/13}
+.plan.drift .notes{grid-column:1/13;columns:3 260px;column-gap:calc(var(--cell) * 2);transform:rotate(-.4deg)}
+.plan.drift .notes li{break-inside:avoid}
+.plan.drift .src{grid-column:1/13;margin-top:calc(var(--cell) * 1)}
+@media (max-width:900px){
+  .plan header,.plan .tag,.plan .art,.plan .notes,.plan .src{grid-column:1/-1 !important;grid-row:auto !important;padding-left:0 !important}
+  .plan .notes{padding-top:0 !important}
+  .plan.kart .art{margin-top:calc(var(--cell) * 1)}
+}
+
+/* ---------- early ideas ---------- */
+.early-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:calc(var(--cell) * 1) calc(var(--cell) * 2);align-items:end;margin-bottom:calc(var(--cell) * 2)}
+.early-head h2{font-size:clamp(54px,7vw,92px);line-height:.85;margin:0;transform:rotate(-1.4deg)}
+.early-head p{margin:calc(var(--cell) * 1) 0 0;max-width:52ch}
+.toggle{font:inherit;color:var(--red);background:none;border:0;padding:0;cursor:pointer;white-space:nowrap}
+.toggle::before{content:"[ ] "}
+.toggle[aria-pressed="true"]::before{content:"[x] "}
+@media (max-width:700px){.early-head{grid-template-columns:1fr}}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:calc(var(--cell) * 3) calc(var(--cell) * 2)}
+.thumb{position:relative;transform:rotate(var(--r,0deg)) translateY(var(--y,0px))}
+.thumb:nth-child(3n+1){--r:-.8deg}
+.thumb:nth-child(3n+2){--r:.7deg;--y:18px}
+.thumb:nth-child(3n){--r:-.3deg;--y:-6px}
+.thumb[hidden]{display:none}
+.th-head{display:flex;align-items:baseline;gap:10px}
+.th-head .no{color:var(--pencil)}
+.thumb h4{font:400 40px/.9 var(--scrawl);margin:0;flex:1}
+.thumb.fav h4 span{background:linear-gradient(100deg,rgba(255,228,80,0) .6%,rgba(255,228,80,.8) 3%,rgba(255,226,74,.5) 8%,rgba(255,226,74,.45) 92%,rgba(255,228,80,.8) 97%,rgba(255,228,80,0) 99%);padding:0 .15em}
+.star{width:44px;height:44px;flex:none;background:none;border:0;padding:0;cursor:pointer;align-self:center}
+.star svg{width:44px;height:44px;overflow:visible;display:block}
+.star .fill{opacity:0;transition:opacity .2s}
+.star[aria-pressed="true"] .fill{opacity:1}
+.mini{display:block;width:100%;height:auto;overflow:visible;margin:4px 0 6px}
+.thumb .t{margin:0;color:var(--ink)}
+.thumb details{margin-top:calc(var(--cell) * .3);color:var(--pencil)}
+.thumb summary{cursor:pointer;color:var(--red);list-style:none;width:max-content}
+.thumb summary::-webkit-details-marker{display:none}
+.thumb summary::after{content:" ↓"}
+.thumb details[open] summary::after{content:" ↑"}
+.thumb details ul{margin-top:calc(var(--cell) * .4)}
+.eff{color:var(--pencil);margin:calc(var(--cell) * .3) 0 0;font-size:22px}
+.pick{grid-column:1/-1;max-width:62ch;margin:calc(var(--cell) * 2) 0 0 auto;transform:rotate(1deg)}
+@media (min-width:1130px){.pick{grid-column:2/span 2;margin:calc(var(--cell) * 1) 0 0 calc(var(--cell) * 2)}}
+.pick h3{font:400 clamp(48px,5.4vw,70px)/.85 var(--scrawl);margin:0 0 calc(var(--cell) * .6)}
+.pick ol{margin:0;padding-left:1.4em}
+.pick li{margin-bottom:calc(var(--cell) * .5)}
+.pick li::marker{color:var(--red)}
+.pick p{margin:0 0 calc(var(--cell) * .6)}
+.foot{margin-top:calc(var(--cell) * 5);color:var(--pencil);font-size:21px;transform:rotate(-.5deg)}
+
+
+/* on phones the two wide plans scroll sideways so the lettering stays readable */
+@media (max-width:600px){.plan.lobby .art,.plan.drift .art{overflow-x:auto;overflow-y:hidden;padding:12px 0 8px}#svg-lobby,#svg-drift{min-width:600px}}
+/* lettering inside the drawings */
+.hand-pen text{font-family:var(--hand);fill:var(--ink)}
+.hand-pen .lb{font-size:15.5px;fill:#3b3f52}
+.hand-pen .lbk{font-size:18px}
+.hand-pen .lbi{font-size:16px;fill:#fbfaf5}
+.hand-pen .lbt{font-size:24px}
+.mini.hand-pen .lb{font-size:19px}
+.hand-pen .st text{font-size:17px;fill:var(--red)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="mast">
+    <div class="kicker">Alex — OCSA Production &amp; Design — process work</div>
+    <h1><span>Gallery</span><span class="u" id="h1u">Ground Plans</span></h1>
+    <ul class="dash meta">
+      <li>the lobby and my 3 games, drawn from above like a set designer's ground plan</li>
+      <li>traced from the real game files, so it's what's <mark>actually in them</mark></li>
+      <li>not to scale (close, though)</li>
+      <li>my 10 early ideas are at the bottom</li>
+    </ul>
+    <p class="others">other versions → <a href="gallery-ground-plans.html">ink tiles</a> · <a href="gallery-ground-plans-marker.html">marker wall</a> · <a href="gallery-ground-plans-watercolor.html">watercolor map</a></p>
+  </header>
+
+  <section class="sketch" aria-labelledby="sk-h">
+    <h2 class="scrawl" id="sk-h">The plan in my notebook</h2>
+    <figure class="snap p1">
+      <span class="ph"><img src="gallery-versions/img/notebook-gallery.jpg" width="1300" height="2098" alt="Alex's notebook page: a ground plan of the whole gallery with a go-kart room and track, Rose, Builds with a fort, the Lobby, Play, a Lego RC room and the Entrance, with notes underneath"></span>
+      <figcaption>p. 1 — the whole gallery. every room is a project</figcaption>
+    </figure>
+    <figure class="snap p2 t2">
+      <span class="ph"><img src="gallery-versions/img/notebook-route.jpg" width="1300" height="2008" alt="Alex's second notebook page: the lobby with game cards, a car showroom with Lego cars, a racetrack and one more room, joined by a path, with notes on the side"></span>
+      <figcaption>p. 2 — lobby → car showroom → racetrack</figcaption>
+    </figure>
+    <div class="quotes">
+      <p class="lbl">what I wrote next to it:</p>
+      <p class="pg">p. 1</p>
+      <ul class="dash">
+        <li>different rooms</li>
+        <li>each room is a project</li>
+        <li>Legos and RC</li>
+        <li>go-kart is drivable</li>
+        <li>Rose blooms when you enter the room</li>
+        <li>you can climb through the fort</li>
+        <li>when you enter a room a sign pops up</li>
+        <li>Play is a stage set</li>
+      </ul>
+      <p class="pg">p. 2</p>
+      <ul class="dash">
+        <li>game cards represent projects</li>
+        <li>exits in each room</li>
+        <li>each car represents a built Lego</li>
+        <li>hop into a car and drive to the racetrack</li>
+        <li>racetrack: time limit 2:00</li>
+      </ul>
+    </div>
+    <p class="why">← I drew these by hand first. Everything below is drawn the same way, but traced from the games I actually built.</p>
+  </section>
+
+  <section class="exhibits" aria-labelledby="ex-h">
+    <h2 class="scrawl" id="ex-h">What's in the gallery</h2>
+    <figure class="snap print e1">
+      <span class="ph"><img src="gallery-versions/img/gokart-top.jpg" width="900" height="1320" alt="Alex's go-kart seen from above: metal deck, steering wheel and a dark stripe down the middle" loading="lazy"></span>
+      <figcaption><b>1. the go-kart</b><br>built full size. real tools, real steering</figcaption>
+    </figure>
+    <figure class="snap print e2 t2">
+      <span class="ph"><img src="gallery-versions/img/lego-f1.jpg" width="1100" height="825" alt="Orange Lego F1 car on the street, shot from road level" loading="lazy"></span>
+      <figcaption><b>2. Lego F1 cars</b><br>the builds, plus the street-level photos</figcaption>
+    </figure>
+    <figure class="snap print e3">
+      <span class="ph"><img src="gallery-versions/img/vr.jpg" width="800" height="1410" alt="Alex sitting in a chair wearing a VR headset" loading="lazy"></span>
+      <figcaption><b>3. VR &amp; virtual</b><br>the headset work, and this gallery itself<br><a href="woven-room/index.html">enter the Woven Room →</a></figcaption>
+    </figure>
+    <figure class="snap print e4 t2">
+      <span class="ph"><img src="gallery-versions/img/hearth.jpg" width="600" height="1298" alt="The Hearth app on a phone, showing the little keeper creature in a crown" loading="lazy"></span>
+      <figcaption><b>4. Hearth app</b><br>a daily-ritual app with a creature that grows<br><a href="hearth/showcase.html">see the app →</a></figcaption>
+    </figure>
+  </section>
+
+  <div class="intro">
+    <h2 class="scrawl">The lobby + the 3 games</h2>
+    <p>You start in the lobby. Every game is a cartridge: plug one into the console and a portal opens into that game.</p>
+  </div>
+
+  <div class="key" aria-label="How to read the plans">
+    <b>key:</b>
+    <span><svg viewBox="0 0 36 22" data-key="w"><path class="w" d="M3 11 H33"/></svg>wall</span>
+    <span><svg viewBox="0 0 36 22" data-key="p"><path class="p" d="M3 11 H31"/></svg>your path</span>
+    <span><svg viewBox="0 0 36 22" data-key="en"><g class="en" transform="translate(18 11)"><path d="M-7 -6 L7 0 L-7 6 Z"/></g></svg>way in</span>
+    <span><svg viewBox="0 0 36 22" data-key="st"><g class="st"><circle cx="18" cy="11" r="9"/><text x="18" y="16" text-anchor="middle" class="stn">1</text></g></svg>stop</span>
+    <span><svg viewBox="0 0 36 22" data-key="b"><path class="bitp" d="M3 11 H33"/></svg>Bit's route</span>
+    <span><svg viewBox="0 0 36 22" data-key="c"><path class="d" d="M8 11 L30 4 M8 11 L30 18"/><rect class="solid" x="2" y="7" width="9" height="8" rx="2"/></svg>camera</span>
+    <span><svg viewBox="0 0 36 22" data-key="cl"><path class="cl" d="M3 11 H33"/></svg>center line</span>
+  </div>
+
+  <article class="plan lobby" id="lobby">
+    <header><span class="num">1</span><h3>The Lobby</h3><a class="open" href="lobby/v2.html">open it →</a></header>
+    <p class="tag">A 70s den where every game is a cartridge, and a little robot named Bit shows you around.</p>
+    <div class="art"><svg id="svg-lobby" viewBox="0 0 560 300" role="img" aria-label="Ground plan of the lobby: a den with a cabinet, TV, console and cartridge rack against the back wall, a round rug, a portal by the window, posters, a beanbag and a plant"></svg></div>
+    <ul class="dash notes">
+      <li>8 × 6 m den. A wood cabinet holds the CRT TV, the wood-grain ALEX-2600 console, a joystick and a 6-slot cartridge rack</li>
+      <li>round rug, synthwave window, posters, a beanbag and a plant</li>
+      <li>you start on the rug facing the cabinet. Take a cartridge from the rack <b>(1)</b>, plug it into the console <b>(2)</b>, and the portal by the window opens <b>(3)</b>. Walk through it into the game</li>
+      <li>Bit flies between 4 stops and points at whatever it's talking about</li>
+      <li><mark>6 slots but only 3 games</mark>, so the empty slots hold "coming soon" cartridges. A new game drops into a slot without changing the room</li>
+    </ul>
+    <p class="src">traced from lobby/v2.html · built, v2.11</p>
+  </article>
+
+  <article class="plan kart" id="gokart">
+    <header><span class="num">2</span><h3>Go-Kart</h3><a class="open" href="gokart/v2.html">open it →</a></header>
+    <p class="tag">My plywood kart on a walled drift track, with Brian's Skyline turning on a stand in the middle.</p>
+    <div class="art"><svg id="svg-kart" viewBox="0 0 400 270" role="img" aria-label="Ground plan of the go-kart drift track: a closed loop with barriers, a start line and grid, a grandstand facing the build sign, light towers and the Skyline on a turntable in the infield"></svg></div>
+    <ul class="dash notes">
+      <li><span id="kart-len">a closed track</span> with concrete barriers both sides, red-and-white curbs on the bends, a start gantry, a grandstand, 9 light towers and hills far off</li>
+      <li>start at the back of a 5-kart grid. Race the crew for 2 laps, or drive free while they cruise laps on their own. Hold Space to drift</li>
+      <li>the Skyline goes wherever the infield has <mark>the most room</mark>, worked out from the track's shape, so it stays in the middle if the track changes</li>
+      <li>the sign about how I built the kart faces the grandstand across the front straight, so the Stands camera looks right at it</li>
+    </ul>
+    <p class="src">traced from gokart/v2.html · built, v2</p>
+  </article>
+
+  <article class="plan bike" id="wheelie">
+    <header><span class="num">3</span><h3>Wheelie Sim</h3><a class="open" href="wheelie-ride/index.html">open it →</a></header>
+    <p class="tag">One straight road that never ends. Pull the front up and see how far back you dare to go.</p>
+    <div class="art"><svg id="svg-bike" viewBox="0 0 400 300" role="img" aria-label="Ground plan of the wheelie road: a straight two-lane road with trees and signs on both sides, the bike in the middle, three camera spots, and a side view showing the hand-drag and loop-out angles"></svg></div>
+    <ul class="dash notes">
+      <li>an 11 m two-lane road with white edge lines, pine trees and Alpinestars signs on both sides</li>
+      <li>5 rides: street, trail and sprint bikes, a Sur-Ron and a Kawasaki Ninja H2R</li>
+      <li>speed up and hold Space to lift the front. Past about 66° your rider drags a hand on the road. Past about 85° you loop out and crash</li>
+      <li>C switches between 3rd person, 1st person and side cam</li>
+      <li>the bike <mark>never really moves forward</mark>. The road, trees and signs slide toward the camera, and once they pass behind you they jump back ahead, like a scrolling backdrop on a stage</li>
+    </ul>
+    <p class="src">traced from wheelie-ride/src/main.js · built, v0.11</p>
+  </article>
+
+  <article class="plan drift" id="drift">
+    <header><span class="num">4</span><h3>Drift Garage</h3><a class="open" href="../drift-garage/index.html">open it →</a></header>
+    <p class="tag">Build a car in the garage, then take it to one of three courses.</p>
+    <div class="art"><svg id="svg-drift" viewBox="0 0 560 236" role="img" aria-label="Ground plans for the drift game: the garage build bay with a turntable, then the three courses: Dockyard Route, Touge Run and Drift Playground"></svg></div>
+    <ul class="dash notes">
+      <li>a build bay with 5 rides: AE86, Silvia S15, Supra MK4, RX-7 FD and Ninja H2</li>
+      <li>tuning: paint, camber, wheel offset, spoiler, wide-body, turbo and sponsor stickers</li>
+      <li>tune your build and save it, pick a course, then drift for points and combos</li>
+      <li>on the Playground you weave through the cones, and they go flying if you hit them</li>
+      <li>each course has <mark>its own scenery</mark> so it feels like a different place: containers, cranes and water at the dockyard; trees, rocks and guardrails on the mountain road; an open lot with cones and light poles at the playground</li>
+    </ul>
+    <p class="src">traced from drift-garage/index.html · it sits next to the Alex folder, so that link only works on this computer</p>
+  </article>
+
+  <section class="early" id="early" aria-labelledby="early-h">
+    <div class="early-head">
+      <div>
+        <h2 class="scrawl" id="early-h">Where it started:<br>10 early ideas</h2>
+        <p>Before the games, I sketched ten ways to build a 3D gallery you could walk or drive through. Star the ones worth keeping. <span id="count"></span></p>
+      </div>
+      <button class="toggle" id="filter" aria-pressed="false">only show starred</button>
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="pick">
+      <h3>How to pick one</h3>
+      <p>Designers narrow down by testing each idea against a few questions. Score the starred ones 1 to 3 on each:</p>
+      <ol>
+        <li><b>Does it show my process?</b> Is there room for sketches, early versions and mistakes, or only finished photos?</li>
+        <li><b>Does it tell a story?</b> Would a visitor feel a beginning, middle and end?</li>
+        <li><b>Does it feel like me?</b> Could only Alex have designed this space?</li>
+        <li><b>Can I build it in time?</b> A simple space done well beats a big one left half finished.</li>
+      </ol>
+      <p>You can also combine plans. For example, enter through The Shop, then walk into the Black Box for the reveal.</p>
+    </div>
+  </section>
+
+  <p class="foot">notebook version · drawn with hand.js over the same plans as the <a href="gallery-ground-plans.html">ink tiles</a> page</p>
+</div>
+
+<script src="gallery-versions/plans.js"></script>
+<script src="gallery-versions/hand.js"></script>
+<script>
+const TOOL = 'pen';
+const PEN = { sentence: true, tilt: 3.5 };
+const NS = 'http://www.w3.org/2000/svg';
+
+// draw each plan when it gets close to the screen, so the page opens fast
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  io.unobserve(e.target); e.target.__draw && e.target.__draw();
+}), { rootMargin: '900px 0px' });
+function later(svg, markup, opts) {
+  svg.__draw = () => { svg.innerHTML = markup(); Hand.draw(svg, TOOL, Object.assign({}, PEN, opts)); };
+  io.observe(svg);
+}
+const kartMarkup = GP.kart();
+document.getElementById('kart-len').textContent = `a ${Math.round(GP.kartLen / 10) * 10} m lap`;
+later(document.getElementById('svg-lobby'), GP.lobby);
+later(document.getElementById('svg-kart'), () => kartMarkup);
+later(document.getElementById('svg-bike'), GP.bike);
+later(document.getElementById('svg-drift'), GP.drift);
+document.querySelectorAll('.key svg').forEach((s, i) => Hand.draw(s, TOOL, { seed: i, tilt: 0 }));
+
+// pen scribbles: circles round the numbers, the double line under the title, stars
+const ring = (cx, cy, rx, ry, turns = 1.12, seed = 1) => {
+  const pts = [], a0 = -2.2 + seed * .7;
+  for (let i = 0; i <= 60 * turns; i++) { const a = a0 + i / 60 * Math.PI * 2, k = 1 + (i / 60) * .06; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+  return pts;
+};
+function svgEl(w, h, cls) { const s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', `0 0 ${w} ${h}`); s.setAttribute('aria-hidden', 'true'); if (cls) s.setAttribute('class', cls); return s; }
+document.querySelectorAll('.num').forEach((n, i) => {
+  const s = svgEl(64, 64);
+  s.innerHTML = Hand.scribble(TOOL, ring(32, 33, 25, 22, 1.12, i + 2), { color: 'accent', sw: 1.6, seed: 11 + i });
+  n.appendChild(s);
+});
+function underline() {
+  const u = document.getElementById('h1u'); u.querySelector('svg')?.remove();
+  const w = u.offsetWidth, h = 40, s = svgEl(w, h, 'ink-svg');
+  s.style.cssText = `left:0;bottom:-${h * .45}px;width:${w}px;height:${h}px`;
+  const line = (y0, y1, seed) => { const pts = []; for (let i = 0; i <= 40; i++) { const t = i / 40; pts.push([w * (.02 + t * .97), y0 + (y1 - y0) * t + Math.sin(t * 5 + seed) * 2.2]); } return pts; };
+  s.innerHTML = Hand.scribble(TOOL, line(14, 9, 1), { sw: 3.4, seed: 3 }) + Hand.scribble(TOOL, line(24, 21, 4).slice(4, 38), { sw: 2.6, seed: 8 });
+  u.appendChild(s);
+}
+document.fonts.ready.then(underline);
+addEventListener('resize', () => { clearTimeout(underline.t); underline.t = setTimeout(underline, 200); });
+
+// ---------- the 10 early ideas ----------
+const thumbs = document.getElementById('thumbs');
+let favs = new Set();
+try { favs = new Set(JSON.parse(localStorage.getItem('gp-favs') || '[]')); } catch (e) {}
+const save = () => { try { localStorage.setItem('gp-favs', JSON.stringify([...favs])); } catch (e) {} };
+const starPts = (cx, cy, R, r) => { const p = []; for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; p.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); } return p; };
+thumbs.innerHTML = GP.concepts.map((p, i) => {
+  const no = String(i + 1).padStart(2, '0'), eff = ['low', 'medium', 'high'][p.effort - 1];
+  return `<article class="thumb" data-i="${i}">
+    <div class="th-head"><span class="no">${no}</span><h4><span>${p.name}</span></h4><button class="star" aria-pressed="false" aria-label="Star ${p.name}"></button></div>
+    <svg class="mini" viewBox="0 0 400 260" role="img" aria-label="Ground plan for ${p.name}"></svg>
+    <p class="t">${p.tag}</p>
+    <details><summary>more</summary><ul class="dash">
+      <li><b>how you move:</b> ${p.move}</li><li><b>why it fits:</b> ${p.fit}</li><li><b>watch out:</b> ${p.watch}</li></ul></details>
+    <p class="eff">build effort: ${eff} ${'●'.repeat(p.effort)}${'○'.repeat(3 - p.effort)}</p>
+  </article>`;
+}).join('');
+thumbs.querySelectorAll('.thumb').forEach((el, i) => {
+  later(el.querySelector('.mini'), GP.concepts[i].svg, { seed: i });
+  const b = el.querySelector('.star'), s = svgEl(44, 44);
+  const fill = [];  // a quick red scribble inside the star
+  for (let k = 0; k < 9; k++) fill.push([10 + k * 3, k % 2 ? 30 : 12], [12 + k * 3, k % 2 ? 14 : 31]);
+  s.innerHTML = `<defs><clipPath id="sc${i}"><path d="M${starPts(22, 23, 17, 7.5).map(p => p.join(' ')).join(' L')} Z"/></clipPath></defs>`
+    + `<g class="fill" clip-path="url(#sc${i})">${Hand.scribble(TOOL, fill, { color: 'accent', sw: 2.2, seed: 40 + i })}</g>`
+    + Hand.scribble(TOOL, starPts(22, 23, 17, 7.5), { sw: 1.6, seed: 20 + i });
+  b.appendChild(s);
+});
+thumbs.appendChild(document.querySelector('.pick'));
+const filterBtn = document.getElementById('filter');
+function sync() {
+  const only = filterBtn.getAttribute('aria-pressed') === 'true';
+  thumbs.querySelectorAll('.thumb').forEach(el => {
+    const i = +el.dataset.i, on = favs.has(i), b = el.querySelector('.star');
+    el.classList.toggle('fav', on); b.setAttribute('aria-pressed', on);
+    el.hidden = only && !on;
+  });
+  document.getElementById('count').textContent = favs.size ? `(${favs.size} starred so far)` : '';
+}
+thumbs.addEventListener('click', e => {
+  const b = e.target.closest('.star'); if (!b) return;
+  const i = +b.closest('.thumb').dataset.i; favs.has(i) ? favs.delete(i) : favs.add(i); save(); sync();
+});
+filterBtn.addEventListener('click', () => { filterBtn.setAttribute('aria-pressed', filterBtn.getAttribute('aria-pressed') !== 'true'); sync(); });
+sync();
+</script>
+</body>
+</html>

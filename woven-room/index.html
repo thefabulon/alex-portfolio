@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Woven Room</title>
+<meta name="description" content="A VR gallery room: Gunta Stölzl's 1927/28 Bauhaus tapestry hung in folds like El Anatsui's metal cloth, with high-shine sculptures inspired by The Broad. Works in a headset or a browser.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Big+Shoulders+Display:wght@800&family=Archivo:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: full-screen WebGL room; one dark HUD top-left (same look as the go-kart and Grand Prix pages). */
+  :root {
+    --ink: #e4eef6; --muted: #9bb2c4; --accent: #ff8a3d; --panel: rgba(13, 27, 41, .86); --line: rgba(207, 225, 239, .25);
+    --display: "Big Shoulders Display", Impact, "Arial Narrow", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  html, body { margin: 0; height: 100%; background: #f2f1ed; color: var(--ink); font-family: var(--body); overflow: hidden; }
+  canvas { display: block; touch-action: none; }
+  .hud { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(16px + env(safe-area-inset-top, 0px));
+    width: min(390px, calc(100vw - 32px)); max-height: calc(100vh - 96px); overflow-y: auto; box-sizing: border-box;
+    background: var(--panel); border: 1px solid var(--line); padding: 14px 16px; backdrop-filter: blur(8px); display: grid; gap: 10px; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .eyebrow { font: 400 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .back { font: 400 11px var(--mono); color: var(--muted); text-decoration: none; white-space: nowrap; }
+  .back:hover { color: var(--ink); }
+  .hud h1 { margin: -6px 0 0; font: 800 36px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+  .hud h1 em { font-style: normal; color: var(--accent); }
+  .lede { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .ctl { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+  .ctl > span { font: 400 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); align-self: center; }
+  button { font: 600 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: transparent;
+    border: 1px solid var(--line); padding: 7px 8px; cursor: pointer; }
+  .ctl button + button { border-left: 0; }
+  button:hover { border-color: var(--accent); }
+  button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #0a1520; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .spots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .spots button { padding: 6px 2px; font-size: 10px; }
+  .help { font: 400 10.5px var(--mono); color: var(--muted); line-height: 1.5; }
+  .help kbd { font: 600 10px var(--mono); color: var(--ink); border: 1px solid var(--line); padding: 0 3px; }
+  details { border-top: 1px solid var(--line); padding-top: 8px; }
+  summary { cursor: pointer; font: 600 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+  .story h2 { margin: 10px 0 6px; font: 800 24px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+  .story p { margin: 0 0 8px; font-size: 13px; line-height: 1.55; color: var(--ink); }
+  .story ol { margin: 10px 0 4px; padding: 0; list-style: none; display: grid; gap: 6px; counter-reset: s; }
+  .story li { font-size: 12.5px; line-height: 1.45; color: var(--muted); display: grid; grid-template-columns: 62px 1fr; gap: 8px; }
+  .story li b { font: 600 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); padding-top: 2px; }
+  .story .credit { font: 400 10.5px var(--mono); color: var(--muted); margin-top: 8px; }
+  details ul { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .loading { position: fixed; inset: 0; display: grid; place-items: center; font: 400 13px var(--mono); color: #566673; pointer-events: none; }
+  @media (max-width: 640px) {
+    .hud { max-height: 52vh; padding: 10px 12px; gap: 8px; }
+    .hud h1 { font-size: 28px; } .lede, .help { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Hanging the tapestry…</div>
+<div class="hud">
+  <div class="top"><span class="eyebrow">Exhibit 3 · VR &amp; Virtual</span><a class="back" href="../gallery-ground-plans.html">← Ground plans</a></div>
+  <h1>The <em>Woven</em> Room</h1>
+  <p class="lede">A wall that's solid but looks like it's moving. Walk up to the tapestry, then switch it from thread to metal and watch the light run across the folds.</p>
+  <div class="ctl"><span>View</span><button data-k="view" data-v="walk">Walk</button><button data-k="view" data-v="orbit">Orbit</button></div>
+  <div class="ctl"><span>Surface</span><button data-k="metal" data-v="0">Thread</button><button data-k="metal" data-v="1">Metal</button></div>
+  <div class="ctl"><span>Shape</span><button data-k="fold" data-v="0">Flat</button><button data-k="fold" data-v="1">Folded</button></div>
+  <div class="ctl"><span>Motion</span><button data-k="breathe" data-v="0">Still</button><button data-k="breathe" data-v="1">Breathing</button></div>
+  <div class="spots" id="spots"></div>
+  <div class="help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows to walk · drag to look · <kbd>M</kbd> metal · <kbd>F</kbd> folds · <kbd>B</kbd> breathing · in a headset, press Enter VR</div>
+  <details class="story" open>
+    <summary>The story behind this room</summary>
+    <h2>Solid, but it moves</h2>
+    <p>At The Broad in Los Angeles I stopped at a huge wall piece by El Anatsui, the Ghanaian artist. From across the room it looked like cloth, folded and rippling down the wall. Up close it's metal: flattened bottle caps and aluminum liquor-bottle labels, joined with copper wire. It's completely rigid, but it drapes like fabric.</p>
+    <p>What got me was how 3D it looked on the wall. It was solid, but it looked fluid. I wanted to bring that into VR, where you can walk right up to it and watch the light move across the folds.</p>
+    <p>For the pattern I used Gunta Stölzl's <i>Slit Tapestry Red-Green</i> (1927/28). She was part of the Bauhaus textile workshop. Here it's blown up to fill the wall and hung in folds the way El Anatsui hangs his metal. The Metal switch turns her thread into something like his bottle caps.</p>
+    <p>The sculptures come from The Broad too: the high-shine, balloon-like pieces such as Jeff Koons's <i>Tulips</i>, which reflect everything around them. Mine are shapes pulled off the tapestry (its waves, its arch, its little windows and its diamonds) in that mirror finish, so they reflect the weaving back at you.</p>
+    <ol>
+      <li><b>See</b>El Anatsui at The Broad: metal that looks like cloth.</li>
+      <li><b>Ask</b>How do I make something solid feel fluid in VR?</li>
+      <li><b>Source</b>Stölzl's tapestry, photographed from a book and flattened square-on.</li>
+      <li><b>Build</b>Hang it in folds, add a metal mode, pull its shapes out as shiny sculptures.</li>
+      <li><b>Test</b>Walk up to it in the headset. Does it still look like it's moving?</li>
+    </ol>
+    <p class="credit">Tapestry: Gunta Stölzl, Slit Tapestry Red-Green, 1927/28, from a book photo. Used for a student portfolio.</p>
+  </details>
+  <details>
+    <summary>VR controls</summary>
+    <ul>
+      <li>Left stick: walk. Right stick: turn in steps.</li>
+      <li>A: thread / metal. B: flat / folded.</li>
+      <li>X: still / breathing. Y: back to the door.</li>
+    </ul>
+  </details>
+</div>
+
+<script src="tapestry.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { VRButton } from "three/addons/webxr/VRButton.js";
+import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const coarse = matchMedia("(pointer: coarse)").matches;
+
+/* ---------- renderer / scene ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95;
+renderer.xr.enabled = true;
+renderer.xr.setReferenceSpaceType("local-floor"); // a standing gallery: y = 0 is your real floor
+document.body.prepend(renderer.domElement);
+document.body.appendChild(VRButton.createButton(renderer));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf2f1ed);
+const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.05, 120);
+const rig = new THREE.Group(); // the visitor: camera + controllers ride in here
+rig.add(camera); scene.add(rig);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.maxDistance = 16; controls.minDistance = 1.5;
+
+/* ---------- the room. Meters; the tapestry wall is at -Z, the door at +Z ---------- */
+const ROOM = { hw: 5.5, hd: 8, h: 10.2, sky: 1.2 }; // half width, half depth, height to the ceiling fins, fin depth
+const WALL_Z = -ROOM.hd;
+const IMG = window.TAPESTRY_IMG;
+const TAP_H = 9, TAP_W = TAP_H * IMG.w / IMG.h, TAP_TOP = 9.9, TAP_Z = WALL_Z + 0.55, TAP_BOTTOM = TAP_TOP - TAP_H;
+const EYE = 1.6;
+
+function paint(w, h, draw, repeat) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); }
+  return t;
+}
+function add(parent, obj, x = 0, y = 0, z = 0) { obj.position.set(x, y, z); parent.add(obj); return obj; }
+function box(w, h, d, m) { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.castShadow = o.receiveShadow = true; return o; }
+
+// Polished concrete, the long pale floor of The Broad.
+const floorTex = paint(512, 512, (x, w, h) => {
+  x.fillStyle = "#d3d0ca"; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 9000; i++) { x.fillStyle = Math.random() < 0.5 ? "rgba(90,86,80,.07)" : "rgba(255,255,255,.12)"; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  x.strokeStyle = "rgba(120,116,110,.35)"; x.lineWidth = 2; x.strokeRect(0, 0, w, h);
+}, [3, 4.5]);
+
+const mat = {
+  wall: new THREE.MeshStandardMaterial({ color: 0xeeede8, roughness: 0.95, envMapIntensity: 0.25 }),
+  floor: new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.3, envMapIntensity: 0.7 }),
+  fin: new THREE.MeshStandardMaterial({ color: 0xf7f7f4, roughness: 0.9, envMapIntensity: 0.4 }),
+  plinth: new THREE.MeshStandardMaterial({ color: 0xf7f7f5, roughness: 0.55, envMapIntensity: 0.5 }),
+  sky: new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 2.2, 2.15) }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xd9dde1, metalness: 1, roughness: 0.15 }),
+};
+
+const room = new THREE.Group(); scene.add(room);
+{
+  const floor = add(room, new THREE.Mesh(new THREE.PlaneGeometry(ROOM.hw * 2, ROOM.hd * 2), mat.floor));
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+  const H = ROOM.h + ROOM.sky, T = 0.3;
+  const wall = (w, h, d, x, y, z) => { const m = add(room, box(w, h, d, mat.wall), x, y, z); m.castShadow = false; return m; };
+  wall(ROOM.hw * 2 + 2 * T, H, T, 0, H / 2, WALL_Z - T / 2);                // tapestry wall
+  wall(T, H, ROOM.hd * 2, -ROOM.hw - T / 2, H / 2, 0);                      // left
+  wall(T, H, ROOM.hd * 2, ROOM.hw + T / 2, H / 2, 0);                       // right
+  // Door wall, with the door frame from the ground plans: it finally leads somewhere.
+  const DW = 1.8, DH = 3;
+  wall(ROOM.hw - DW / 2, H, T, -(ROOM.hw + DW / 2) / 2, H / 2, ROOM.hd + T / 2);
+  wall(ROOM.hw - DW / 2, H, T, (ROOM.hw + DW / 2) / 2, H / 2, ROOM.hd + T / 2);
+  wall(DW, H - DH, T, 0, DH + (H - DH) / 2, ROOM.hd + T / 2);
+  add(room, new THREE.Mesh(new THREE.PlaneGeometry(DW, DH), mat.sky), 0, DH / 2, ROOM.hd + 1.4).rotation.y = Math.PI;
+  for (const s of [-1, 1]) wall(0.05, DH, 1.4, s * DW / 2, DH / 2, ROOM.hd + 0.7);
+  wall(DW, 0.05, 1.4, 0, DH, ROOM.hd + 0.7);
+
+  // The "veil" ceiling: deep white fins in a grid with daylight above them.
+  const sky = add(room, new THREE.Mesh(new THREE.PlaneGeometry(ROOM.hw * 2, ROOM.hd * 2), mat.sky), 0, H, 0);
+  sky.rotation.x = Math.PI / 2;
+  const finGeoZ = new THREE.BoxGeometry(0.08, ROOM.sky, ROOM.hd * 2), finGeoX = new THREE.BoxGeometry(ROOM.hw * 2, ROOM.sky, 0.08);
+  for (let x = -ROOM.hw + 1.5; x < ROOM.hw - 0.1; x += 1.5) add(room, new THREE.Mesh(finGeoZ, mat.fin), x, ROOM.h + ROOM.sky / 2, 0);
+  for (let z = -ROOM.hd + 1.5; z < ROOM.hd - 0.1; z += 1.5) add(room, new THREE.Mesh(finGeoX, mat.fin), 0, ROOM.h + ROOM.sky / 2, z);
+}
+
+/* ---------- light: soft daylight from the ceiling, one raking light so the folds read ---------- */
+scene.add(new THREE.HemisphereLight(0xffffff, 0xbdb7ac, 1.15));
+const sun = new THREE.DirectionalLight(0xfff6ea, 2.6);
+sun.position.set(-8.5, 12, -0.5); sun.target.position.set(0, 3.5, -5.5);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 11, bottom: -10, near: 1, far: 36 });
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
+const fill = new THREE.DirectionalLight(0xf2f5ff, 0.9); fill.position.set(9, 8, 4); scene.add(fill); // so the shaded side wall stays gallery-white
+
+/* ---------- the tapestry: a flat photo, folded on the GPU so it hangs like El Anatsui's metal ---------- */
+// One fold function, written twice (GLSL for the cloth, JS for the fringe) so the fringe stays attached.
+// p.x runs across the tapestry from its center, p.y runs up from its bottom edge, in meters.
+const WEAVE_GLSL = `
+uniform float uTime; uniform float uFold; uniform vec2 uSize;
+varying vec3 vTanX; varying vec3 vTanY;
+float weaveD(vec2 p) {
+  float x = p.x, y = p.y, t = uTime;
+  float hang = smoothstep(0.0, 0.9, uSize.y - y);
+  float folds = (0.6 * sin(x * 5.4 + 1.1 * sin(y * 0.55 + 0.4) + 0.5 * sin(y * 1.3 + x) + 0.35 * sin(t * 0.5))
+              + 0.4 * sin(x * 2.3 - y * 0.4 + 0.6 * sin(t * 0.31 + y * 0.2))) * (0.16 + 0.06 * sin(y * 0.8 + 1.0));
+  float billow = 0.24 * sin(x * 0.95 - y * 0.32 + t * 0.32) * (0.6 + 0.4 * sin(y * 0.45 + 2.0));
+  float crumple = 0.035 * sin(x * 11.0 + y * 7.0 + t * 0.9) * sin(y * 9.0 - x * 5.0 - t * 0.6);
+  return uFold * hang * (folds + billow + crumple);
+}`;
+function weaveD(x, y, t, fold) {
+  const S = Math.sin;
+  const hang = THREE.MathUtils.smoothstep(TAP_H - y, 0, 0.9);
+  const folds = (0.6 * S(x * 5.4 + 1.1 * S(y * 0.55 + 0.4) + 0.5 * S(y * 1.3 + x) + 0.35 * S(t * 0.5))
+              + 0.4 * S(x * 2.3 - y * 0.4 + 0.6 * S(t * 0.31 + y * 0.2))) * (0.16 + 0.06 * S(y * 0.8 + 1.0));
+  const billow = 0.24 * S(x * 0.95 - y * 0.32 + t * 0.32) * (0.6 + 0.4 * S(y * 0.45 + 2.0));
+  const crumple = 0.035 * S(x * 11.0 + y * 7.0 + t * 0.9) * S(y * 9.0 - x * 5.0 - t * 0.6);
+  return fold * hang * (folds + billow + crumple);
+}
+
+const weave = {
+  time: { value: reduceMotion ? 0 : 2 }, fold: { value: 1 }, metal: { value: 0 },
+  size: { value: new THREE.Vector2(TAP_W, TAP_H) }, cells: { value: new THREE.Vector2(60, Math.round(110 * TAP_H / TAP_W)) },
+};
+function hookWeave(shader, full) {
+  Object.assign(shader.uniforms, { uTime: weave.time, uFold: weave.fold, uSize: weave.size, uMetal: weave.metal, uCells: weave.cells });
+  shader.vertexShader = shader.vertexShader
+    .replace("#include <common>", "#include <common>\n" + WEAVE_GLSL)
+    .replace("#include <begin_vertex>", "vec3 transformed = vec3(position.xy, weaveD(vec2(position.x, position.y + uSize.y * 0.5)));");
+  if (!full) return;
+  shader.vertexShader = shader.vertexShader.replace("#include <beginnormal_vertex>", `
+    vec2 np = vec2(position.x, position.y + uSize.y * 0.5);
+    float d0 = weaveD(np), gx = (weaveD(np + vec2(0.02, 0.0)) - d0) / 0.02, gy = (weaveD(np + vec2(0.0, 0.02)) - d0) / 0.02;
+    vec3 objectNormal = normalize(vec3(-gx, -gy, 1.0));
+    vTanX = normalize(normalMatrix * vec3(1.0, 0.0, gx)); vTanY = normalize(normalMatrix * vec3(0.0, 1.0, gy));
+    #ifdef USE_TANGENT
+    vec3 objectTangent = vec3(tangent.xyz);
+    #endif`);
+  // Metal mode: the weave breaks into little tilted plates joined by copper wire, like bottle caps.
+  shader.fragmentShader = shader.fragmentShader
+    .replace("#include <common>", `#include <common>
+      uniform float uMetal; uniform vec2 uCells; varying vec3 vTanX; varying vec3 vTanY;
+      vec2 cellHash(vec2 p) { p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p) * 43758.5453); }`)
+    .replace("#include <map_fragment>", `#include <map_fragment>
+      vec2 cuv = vMapUv * uCells; float row = floor(cuv.y);
+      cuv.x = cuv.x * (0.7 + 0.6 * cellHash(vec2(row, 3.0)).x) + 4.0 * cellHash(vec2(row, 9.0)).y; // rows of uneven, staggered strips
+      vec2 cf = fract(cuv), cid = floor(cuv);
+      float wire = 1.0 - smoothstep(0.015, 0.06, min(min(cf.x, 1.0 - cf.x), min(cf.y, 1.0 - cf.y)));
+      diffuseColor.rgb = mix(diffuseColor.rgb, mix(diffuseColor.rgb * (0.95 + 0.3 * cellHash(cid + 3.0).x), vec3(0.55, 0.3, 0.14), wire * 0.8), uMetal);`)
+    .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>
+      roughnessFactor = mix(roughnessFactor, roughnessFactor * (0.5 + cellHash(cid + 7.0).x), uMetal);`)
+    .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
+      vec2 tilt = cellHash(cid) - 0.5;
+      normal = normalize(normal + uMetal * 0.9 * (tilt.x * vTanX + tilt.y * vTanY));`);
+}
+
+let texReady;
+const tapTex = new THREE.TextureLoader().load(IMG.src, () => texReady());
+const texLoaded = new Promise(r => { texReady = r; });
+tapTex.colorSpace = THREE.SRGBColorSpace; tapTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+const tapMat = new THREE.MeshStandardMaterial({ map: tapTex, roughness: 0.92, metalness: 0, envMapIntensity: 0.45 });
+tapMat.onBeforeCompile = s => hookWeave(s, true);
+tapMat.customProgramCacheKey = () => "weave";
+const tapDepth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
+tapDepth.onBeforeCompile = s => hookWeave(s, false);
+tapDepth.customProgramCacheKey = () => "weave-depth";
+
+const tapestry = add(scene, new THREE.Mesh(new THREE.PlaneGeometry(TAP_W, TAP_H, 150, 205), tapMat), 0, TAP_BOTTOM + TAP_H / 2, TAP_Z);
+tapestry.customDepthMaterial = tapDepth;
+tapestry.castShadow = tapestry.receiveShadow = true;
+tapestry.frustumCulled = false; // the folds move it off its flat bounding box
+
+// Hanging rod and wall brackets.
+{
+  const rod = add(scene, new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, TAP_W + 0.5, 20), mat.steel), 0, TAP_TOP + 0.03, TAP_Z);
+  rod.rotation.z = Math.PI / 2; rod.castShadow = true;
+  for (const s of [-1, 1]) add(scene, box(0.05, 0.05, TAP_Z - WALL_Z, mat.steel), s * (TAP_W / 2 + 0.15), TAP_TOP + 0.03, (TAP_Z + WALL_Z) / 2);
+}
+
+// The fringe: real strands, so it can sway under the folds.
+const FR_N = 190, FR_LEN = 0.75;
+const strandGeo = new THREE.BoxGeometry(0.02, FR_LEN, 0.008); strandGeo.translate(0, -FR_LEN / 2, 0);
+const fringeMat = new THREE.MeshStandardMaterial({ color: 0xe6dcc3, roughness: 0.95, envMapIntensity: 0.4 });
+const fringe = add(scene, new THREE.InstancedMesh(strandGeo, fringeMat, FR_N));
+fringe.castShadow = true; fringe.frustumCulled = false;
+const strands = Array.from({ length: FR_N }, (_, i) => ({
+  x: -TAP_W / 2 + (i + 0.5) * TAP_W / FR_N + (Math.random() - 0.5) * 0.012,
+  len: 0.88 + Math.random() * 0.17, ph: Math.random() * 6.28,
+}));
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _s = new THREE.Vector3();
+let sway = 0, clockT = 0;
+function updateFringe() {
+  const t = weave.time.value, f = weave.fold.value;
+  strands.forEach((s, i) => {
+    const d = weaveD(s.x, 0, t, f), slope = (weaveD(s.x, 0.05, t, f) - d) / 0.05;
+    _p.set(s.x, TAP_BOTTOM + 0.01, TAP_Z + d);
+    _e.set(-slope * 0.5 + sway * 0.07 * Math.sin(clockT * 1.3 + s.ph), 0, sway * 0.04 * Math.sin(clockT * 0.9 + s.ph * 1.7));
+    _m.compose(_p, _q.setFromEuler(_e), _s.set(1, s.len, 1));
+    fringe.setMatrixAt(i, _m);
+  });
+  fringe.instanceMatrix.needsUpdate = true;
+}
+
+/* ---------- the sculptures: tapestry shapes in a high-shine finish (after the pieces at The Broad) ---------- */
+const PAL = { red: 0xc8352b, pink: 0xe37f97, orange: 0xef7f2d, gold: 0xe2ad3c, teal: 0x4f9a8a, navy: 0x24366b, green: 0x5f9a44 };
+const chromeCache = new Map();
+function chrome(hex) {
+  if (!chromeCache.has(hex)) chromeCache.set(hex, new THREE.MeshPhysicalMaterial({ color: hex, metalness: 1, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 1.3 }));
+  return chromeCache.get(hex);
+}
+const enamel = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.12, clearcoat: 1, envMapIntensity: 0.8 });
+function shade(o) { o.traverse(m => { if (m.isMesh) m.castShadow = m.receiveShadow = true; }); return o; }
+function plinth(w, d, h = 0.22) { const p = box(w, h, d, mat.plinth); p.position.y = h / 2; return p; }
+
+// A tube that swells in the middle and pinches at the tied ends, like a balloon.
+function balloonTube(curve, r, m, segs = 140) {
+  const geo = new THREE.TubeGeometry(curve, segs, r, 28), pos = geo.attributes.position, c = new THREE.Vector3(), v = new THREE.Vector3();
+  const ring = 29;
+  for (let i = 0; i <= segs; i++) {
+    const u = i / segs, f = 0.7 + 0.3 * Math.sin(Math.PI * u);
+    curve.getPointAt(u, c);
+    for (let j = 0; j < ring; j++) { const k = i * ring + j; v.fromBufferAttribute(pos, k).sub(c).multiplyScalar(f).add(c); pos.setXYZ(k, v.x, v.y, v.z); }
+  }
+  geo.computeVertexNormals();
+  const g = new THREE.Group(); g.add(new THREE.Mesh(geo, m));
+  for (const u of [0, 1]) add(g, new THREE.Mesh(new THREE.SphereGeometry(r * 0.7, 24, 16), m)).position.copy(curve.getPointAt(u));
+  return shade(g);
+}
+// A puffed-up diamond: a superellipsoid, somewhere between a cushion and a gem.
+function puffDiamond(a, b, c, p, m) {
+  const geo = new THREE.SphereGeometry(1, 64, 48), pos = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const s = Math.pow(Math.abs(v.x / a) ** p + Math.abs(v.y / b) ** p + Math.abs(v.z / c) ** p, -1 / p);
+    pos.setXYZ(i, v.x * s, v.y * s, v.z * s);
+  }
+  geo.computeVertexNormals();
+  return shade(new THREE.Mesh(geo, m));
+}
+
+const sculptures = new THREE.Group(); scene.add(sculptures);
+const obstacles = []; // footprints you can't walk through: { x, z, rot, hw, hd }
+function place(g, x, z, rot, hw, hd) { g.position.set(x, 0, z); g.rotation.y = rot; sculptures.add(g); obstacles.push({ x, z, rot, hw, hd }); }
+
+// 1. Wave: the nested wavy bands at the top of the tapestry, stacked as balloons.
+{
+  const g = new THREE.Group(); g.add(plinth(3.6, 1.2));
+  [PAL.navy, PAL.teal, PAL.pink, PAL.gold, PAL.red].forEach((c, k) => {
+    const L = 1.5 - k * 0.13, y0 = 0.42 + k * 0.33, pts = [];
+    for (let i = 0; i <= 40; i++) { const x = (i / 40 - 0.5) * 2 * L; pts.push(new THREE.Vector3(x, y0 + 0.22 * Math.sin(x * 2.4 + 0.6), 0.07 * Math.sin(x * 1.3 + k))); }
+    g.add(balloonTube(new THREE.CatmullRomCurve3(pts), 0.2, chrome(c)));
+  });
+  place(g, -2.6, -2.6, 0.45, 1.8, 0.6);
+}
+// 2. Arch: the striped rainbow on the right side of the tapestry.
+{
+  const g = new THREE.Group(); g.add(plinth(2.9, 0.8));
+  [[1.15, PAL.navy], [0.84, PAL.gold], [0.53, PAL.red]].forEach(([R, c]) => {
+    const pts = [], base = 0.38, top = base + 1.05;
+    for (let i = 0; i <= 8; i++) pts.push(new THREE.Vector3(-R, base + (top - base) * i / 8, 0));
+    for (let i = 1; i < 30; i++) { const a = Math.PI - Math.PI * i / 30; pts.push(new THREE.Vector3(R * Math.cos(a), top + R * Math.sin(a), 0)); }
+    for (let i = 8; i >= 0; i--) pts.push(new THREE.Vector3(R, base + (top - base) * i / 8, 0));
+    g.add(balloonTube(new THREE.CatmullRomCurve3(pts, false, "centripetal"), 0.14, chrome(c), 200));
+  });
+  place(g, 3.0, -3.6, -0.5, 1.45, 0.4);
+}
+// 3. Windows: the red and pink columns with little white squares, as a stack of puffy blocks.
+{
+  const g = new THREE.Group(); g.add(plinth(1.7, 1.2));
+  const cols = [PAL.red, PAL.pink, PAL.orange, PAL.red, PAL.orange, PAL.pink, PAL.teal];
+  const S = 0.6, blockGeo = new RoundedBoxGeometry(S, S, S, 4, 0.16), winGeo = new RoundedBoxGeometry(0.2, 0.2, 0.05, 2, 0.02);
+  let k = 0;
+  for (let row = 0; row < 3; row++) for (let col = 0; col < (row === 2 ? 1 : 2); col++) {
+    const b = add(g, new THREE.Mesh(blockGeo, chrome(cols[k++ % cols.length])), row === 2 ? 0 : (col - 0.5) * (S + 0.02), 0.22 + S / 2 + row * (S + 0.01), 0);
+    b.rotation.y = (row - 1) * 0.12 + col * 0.08;
+    for (const s of [-1, 1]) add(b, new THREE.Mesh(winGeo, enamel), 0, 0, s * (S / 2 + 0.005));
+  }
+  place(g, 3.3, 2.2, -0.35, 0.85, 0.6);
+  shade(g);
+}
+// 4. Diamonds: the harlequin diamonds on the left edge, as leaning cushions.
+{
+  const g = new THREE.Group(); g.add(plinth(2.0, 1.3));
+  [[PAL.green, -0.45, 0.06, 0.18], [PAL.gold, 0.3, -0.15, -0.22], [PAL.pink, 0.05, 0.35, 0.04]].forEach(([c, x, z, lean]) => {
+    const d = add(g, puffDiamond(0.5, 0.78, 0.3, 1.25, chrome(c)), x, 0.22 + 0.8, z);
+    d.rotation.set(0.05, x * 1.2, lean);
+  });
+  add(g, puffDiamond(0.26, 0.4, 0.18, 1.25, chrome(PAL.navy)), 0.75, 0.22 + 0.42, 0.38).rotation.set(0, 0.6, 0.3);
+  place(g, -3.2, 1.6, 0.35, 1.0, 0.65);
+}
+
+/* ---------- wall text: the story, a museum label for the tapestry, one for the sculptures ---------- */
+const WALL_INK = "#1d2329", WALL_RED = "#c8352b", WALL_BG = "#f4f3ef";
+function wrap(x, text, maxW) {
+  const lines = []; let line = "";
+  for (const w of text.split(" ")) { const t = line ? line + " " + w : w; if (x.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+  if (line) lines.push(line); return lines;
+}
+// Lay out blocks of [font, color, text, gapAfter] top-down, wrapping each one. The panel is as tall as its text.
+// card: a printed label; otherwise vinyl letters straight on the wall.
+function textPanel(wM, pxPerM, blocks, { pad = 0.07, card = true } = {}) {
+  const w = Math.round(wM * pxPerM), p = pad * pxPerM, ctx = document.createElement("canvas").getContext("2d"), lines = [];
+  let y = p;
+  for (const [font, color, text, gap = 0] of blocks) {
+    ctx.font = font; const size = parseFloat(font.match(/(\d+)px/)[1]);
+    for (const ln of wrap(ctx, text, w - 2 * p)) { lines.push([font, color, ln, y]); y += size * 1.38; }
+    y += gap;
+  }
+  const h = Math.round(y + p * 0.6);
+  const tex = paint(w, h, x => {
+    if (card) { x.fillStyle = WALL_BG; x.fillRect(0, 0, w, h); }
+    x.textBaseline = "top";
+    for (const [font, color, ln, ly] of lines) { x.font = font; x.fillStyle = color; x.fillText(ln, p, ly); }
+  });
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(wM, h / pxPerM), new THREE.MeshStandardMaterial({ map: tex, transparent: !card, roughness: 0.95, envMapIntensity: 0.35 }));
+  m.receiveShadow = true; return m;
+}
+const F = { mono: (px, w = 400) => `${w} ${px}px "IBM Plex Mono", monospace`, display: px => `800 ${px}px "Big Shoulders Display", Impact, sans-serif`, body: (px, w = 400) => `${w} ${px}px Archivo, system-ui, sans-serif` };
+
+function hangText() {
+  const story = textPanel(2.1, 760, [
+    [F.mono(30, 600), WALL_RED, "PROCESS  ·  WHERE THIS ROOM CAME FROM", 14],
+    [F.display(140), WALL_INK, "SOLID, BUT IT MOVES", 22],
+    [F.body(40), WALL_INK, "At The Broad in Los Angeles I stopped at a giant wall piece by El Anatsui, the Ghanaian artist. From across the room it looked like cloth, folded and rippling. Up close it's metal: flattened bottle caps and liquor-bottle labels joined with copper wire. It's rigid, but it drapes like fabric.", 22],
+    [F.body(40), WALL_INK, "It looked 3D on the wall. It was solid, but it looked fluid. I wanted that feeling in VR, where you can walk right up to it.", 22],
+    [F.body(40), WALL_INK, "The weaving is Gunta Stölzl's Slit Tapestry Red-Green (1927/28), from the Bauhaus textile workshop, hung here in folds like El Anatsui's metal. The shiny sculptures are its shapes pulled out into 3D, in the high-shine finish of the pieces at The Broad.", 26],
+    [F.mono(34, 600), WALL_INK, "— ALEX"],
+  ], { pad: 0, card: false });
+  add(scene, story, -ROOM.hw + 0.01, 1.8, 4.4).rotation.y = Math.PI / 2;
+
+  const tapLabel = textPanel(0.95, 1100, [
+    [F.mono(30, 600), WALL_RED, "AFTER THE BAUHAUS", 10],
+    [F.display(76), WALL_INK, "GUNTA STÖLZL", 2],
+    [F.body(34, 600), WALL_INK, "Slit Tapestry Red-Green, 1927/28", 14],
+    [F.body(30), WALL_INK, "Woven in the Bauhaus textile workshop, about 1.1 × 1.5 m. Shown here at wall size and hung in folds, after El Anatsui's metal cloth."],
+  ]);
+  add(scene, tapLabel, (TAP_W / 2 + ROOM.hw) / 2 + 0.05, 1.45, WALL_Z + 0.01);
+
+  const shineLabel = textPanel(1.05, 1100, [
+    [F.mono(30, 600), WALL_RED, "ALEX, 2026", 10],
+    [F.display(76), WALL_INK, "PULLED FROM THE WEAVE", 2],
+    [F.body(34, 600), WALL_INK, "Wave · Arch · Windows · Diamonds", 14],
+    [F.body(30), WALL_INK, "Four shapes lifted off the tapestry, in the mirror finish of the sculptures at The Broad. Each one reflects the weaving back at you."],
+  ]);
+  add(scene, shineLabel, ROOM.hw - 0.01, 1.45, -0.4).rotation.y = -Math.PI / 2;
+}
+
+/* ---------- reflections: photograph the room once and give it to everything shiny ---------- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+const cubeRT = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType });
+const cubeCam = add(scene, new THREE.CubeCamera(0.1, 60, cubeRT), 0, 2.4, -0.8);
+let envRT = null;
+function captureEnv() {
+  sculptures.visible = false;
+  const xrOn = renderer.xr.enabled; renderer.xr.enabled = false;
+  cubeCam.update(renderer, scene);
+  renderer.xr.enabled = xrOn; sculptures.visible = true;
+  envRT?.dispose(); envRT = pmrem.fromCubemap(cubeRT.texture); scene.environment = envRT.texture;
+}
+
+const fontsReady = Promise.race([
+  Promise.all(['800 100px "Big Shoulders Display"', '400 40px Archivo', '600 40px Archivo', '600 30px "IBM Plex Mono"'].map(f => document.fonts.load(f))),
+  new Promise(r => setTimeout(r, 2500)),
+]).catch(() => {});
+Promise.all([fontsReady, texLoaded]).then(() => {
+  hangText(); updateFringe(); captureEnv();
+  document.getElementById("loading").remove();
+});
+
+/* ---------- moving around ---------- */
+const state = { view: coarse ? "orbit" : "walk", metal: 0, fold: 1, breathe: reduceMotion ? 0 : 1 };
+const walker = { x: 0, z: 6.2, yaw: 0, pitch: 0.16 };
+const lookYaw = (x, z, tx, tz) => Math.atan2(-(tx - x), -(tz - z));
+const SPOTS = {
+  Door: { x: 0, z: 6.2, yaw: 0, pitch: 0.16 },
+  Weave: { x: 1.2, z: -4.4, yaw: 0.2, pitch: 0.42 },
+  Shine: { x: 0.3, z: 0.6, yaw: lookYaw(0.3, 0.6, -0.4, -3.2), pitch: -0.04 },
+  Story: { x: -3.1, z: 4.4, yaw: Math.PI / 2, pitch: 0.02 },
+};
+const ORBIT = { pos: new THREE.Vector3(4.6, 5.2, 7.4), target: new THREE.Vector3(-0.3, 3.8, -4.4) };
+
+// Keep a point inside the room and out of the plinths.
+function collide(x, z, r = 0.35) {
+  x = THREE.MathUtils.clamp(x, -ROOM.hw + r, ROOM.hw - r);
+  z = THREE.MathUtils.clamp(z, TAP_Z + 0.45 + r, ROOM.hd - r);
+  for (const o of obstacles) {
+    const c = Math.cos(o.rot), s = Math.sin(o.rot), dx = x - o.x, dz = z - o.z;
+    let lx = c * dx - s * dz, lz = s * dx + c * dz; // into the plinth's own frame
+    const px = o.hw + r - Math.abs(lx), pz = o.hd + r - Math.abs(lz);
+    if (px > 0 && pz > 0) {
+      if (px < pz) lx = Math.sign(lx || 1) * (o.hw + r); else lz = Math.sign(lz || 1) * (o.hd + r);
+      x = o.x + c * lx + s * lz; z = o.z - s * lx + c * lz;
+    }
+  }
+  return [x, z];
+}
+
+let glide = null;
+function goTo(name) {
+  const to = SPOTS[name];
+  if (state.view !== "walk") setState("view", "walk");
+  if (renderer.xr.isPresenting) { rig.position.set(to.x, 0, to.z); rig.rotation.y = to.yaw; return; }
+  glide = reduceMotion ? null : { from: { ...walker }, to, t: 0 };
+  if (!glide) Object.assign(walker, to);
+}
+const spotsEl = document.getElementById("spots");
+for (const name of Object.keys(SPOTS)) {
+  const b = document.createElement("button"); b.textContent = name; b.addEventListener("click", () => goTo(name)); spotsEl.append(b);
+}
+
+function setState(k, v) {
+  state[k] = v;
+  document.querySelectorAll(`[data-k="${k}"]`).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(v))));
+  if (k === "view") placeCamera();
+}
+function placeCamera() {
+  if (renderer.xr.isPresenting) return;
+  rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0);
+  controls.enabled = state.view === "orbit";
+  if (state.view === "orbit") { camera.position.copy(ORBIT.pos); controls.target.copy(ORBIT.target); controls.update(); }
+}
+document.querySelectorAll("[data-k]").forEach(b => b.addEventListener("click", () => {
+  const v = b.dataset.k === "view" ? b.dataset.v : Number(b.dataset.v);
+  setState(b.dataset.k, v);
+}));
+for (const k of ["view", "metal", "fold", "breathe"]) setState(k, state[k]);
+if (innerWidth <= 640) document.querySelector(".story").open = false;
+
+const keys = new Set();
+addEventListener("keydown", e => {
+  keys.add(e.code);
+  if (e.code === "KeyM") setState("metal", 1 - state.metal);
+  if (e.code === "KeyF") setState("fold", 1 - state.fold);
+  if (e.code === "KeyB") setState("breathe", 1 - state.breathe);
+  if ((e.code.startsWith("Arrow") || ["KeyW", "KeyA", "KeyS", "KeyD"].includes(e.code)) && state.view !== "walk") setState("view", "walk");
+  if (e.code.startsWith("Arrow")) e.preventDefault();
+});
+addEventListener("keyup", e => keys.delete(e.code));
+addEventListener("blur", () => keys.clear());
+
+let drag = null;
+renderer.domElement.addEventListener("pointerdown", e => { if (state.view === "walk") { drag = { x: e.clientX, y: e.clientY }; glide = null; } });
+addEventListener("pointerup", () => { drag = null; });
+addEventListener("pointermove", e => {
+  if (!drag) return;
+  walker.yaw -= (e.clientX - drag.x) * 0.004;
+  walker.pitch = THREE.MathUtils.clamp(walker.pitch - (e.clientY - drag.y) * 0.004, -1.1, 1.2);
+  drag = { x: e.clientX, y: e.clientY };
+});
+
+function walkStep(dt) {
+  const k = c => keys.has(c);
+  const fwd = (k("KeyW") || k("ArrowUp") ? 1 : 0) - (k("KeyS") || k("ArrowDown") ? 1 : 0);
+  const side = (k("KeyD") ? 1 : 0) - (k("KeyA") ? 1 : 0);
+  walker.yaw += ((k("ArrowLeft") ? 1 : 0) - (k("ArrowRight") ? 1 : 0)) * 1.6 * dt;
+  if (fwd || side) glide = null;
+  if (glide) {
+    glide.t = Math.min(1, glide.t + dt / 1.1);
+    const e = glide.t * glide.t * (3 - 2 * glide.t), a = glide.from, b = glide.to;
+    let dy = (b.yaw - a.yaw) % (Math.PI * 2); if (dy > Math.PI) dy -= Math.PI * 2; if (dy < -Math.PI) dy += Math.PI * 2;
+    Object.assign(walker, { x: a.x + (b.x - a.x) * e, z: a.z + (b.z - a.z) * e, yaw: a.yaw + dy * e, pitch: a.pitch + (b.pitch - a.pitch) * e });
+    if (glide.t === 1) glide = null;
+  } else {
+    const sp = 2.2 * dt, sy = Math.sin(walker.yaw), cy = Math.cos(walker.yaw);
+    [walker.x, walker.z] = collide(walker.x + (-sy * fwd + cy * side) * sp, walker.z + (-cy * fwd - sy * side) * sp);
+  }
+  camera.position.set(walker.x, EYE, walker.z);
+  camera.rotation.set(walker.pitch, walker.yaw, 0, "YXZ");
+}
+
+/* ---------- VR: stick to walk, stick to turn, face buttons for the switches ---------- */
+const factory = new XRControllerModelFactory();
+for (let i = 0; i < 2; i++) { const grip = renderer.xr.getControllerGrip(i); grip.add(factory.createControllerModel(grip)); rig.add(grip); }
+const wasPressed = {};
+const pressedOnce = (id, now) => { const fire = now && !wasPressed[id]; wasPressed[id] = now; return fire; };
+let turnHeld = false;
+const _head = new THREE.Vector3(), _dir = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+
+renderer.xr.addEventListener("sessionstart", () => {
+  controls.enabled = false; glide = null;
+  rig.position.set(walker.x, 0, walker.z); rig.rotation.set(0, walker.yaw, 0);
+});
+renderer.xr.addEventListener("sessionend", () => {
+  camera.getWorldPosition(_head); [walker.x, walker.z] = collide(_head.x, _head.z); // pick up where you took the headset off
+  camera.position.set(walker.x, EYE, walker.z); camera.rotation.set(walker.pitch, walker.yaw, 0, "YXZ");
+  placeCamera();
+});
+
+function readVR(dt) {
+  const pads = {};
+  for (const src of renderer.xr.getSession().inputSources) if (src.gamepad && src.handedness) pads[src.handedness] = src.gamepad;
+  const stick = gp => gp ? (gp.axes.length >= 4 ? [gp.axes[2], gp.axes[3]] : [gp.axes[0] ?? 0, gp.axes[1] ?? 0]) : [0, 0];
+  const btn = (gp, i) => !!gp?.buttons[i]?.pressed;
+  const dz = v => (Math.abs(v) < 0.15 ? 0 : v);
+  const L = pads.left, R = pads.right, [lx, ly] = stick(L), [rx] = stick(R);
+
+  camera.getWorldDirection(_dir).setY(0).normalize();
+  rig.position.x += (_dir.x * -dz(ly) - _dir.z * dz(lx)) * 1.6 * dt;
+  rig.position.z += (_dir.z * -dz(ly) + _dir.x * dz(lx)) * 1.6 * dt;
+
+  if (Math.abs(rx) > 0.6 && !turnHeld) {
+    turnHeld = true;
+    const a = -Math.sign(rx) * Math.PI / 6; camera.getWorldPosition(_head);
+    rig.position.sub(_head).applyAxisAngle(UP, a).add(_head); rig.rotation.y += a;
+  } else if (Math.abs(rx) < 0.3) turnHeld = false;
+
+  camera.getWorldPosition(_head);
+  const [cx, cz] = collide(_head.x, _head.z, 0.3);
+  rig.position.x += cx - _head.x; rig.position.z += cz - _head.z;
+
+  if (pressedOnce("A", btn(R, 4))) setState("metal", 1 - state.metal);
+  if (pressedOnce("B", btn(R, 5))) setState("fold", 1 - state.fold);
+  if (pressedOnce("X", btn(L, 4))) setState("breathe", 1 - state.breathe);
+  if (pressedOnce("Y", btn(L, 5))) goTo("Door");
+}
+
+/* ---------- loop ---------- */
+const clock = new THREE.Clock();
+const thread = new THREE.Color(0xe6dcc3), copper = new THREE.Color(0xb8743f);
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05), ease = 1 - Math.pow(0.03, dt);
+  clockT += dt;
+  if (renderer.xr.isPresenting) readVR(dt);
+  else if (state.view === "walk") walkStep(dt);
+  else {
+    controls.update();
+    camera.position.set(THREE.MathUtils.clamp(camera.position.x, -ROOM.hw + 0.3, ROOM.hw - 0.3), THREE.MathUtils.clamp(camera.position.y, 0.4, ROOM.h - 0.3),
+      THREE.MathUtils.clamp(camera.position.z, TAP_Z + 0.6, ROOM.hd - 0.3));
+  }
+
+  // Ease every switch so you see the change happen, not a jump cut.
+  const m = weave.metal.value += (state.metal - weave.metal.value) * ease;
+  weave.fold.value += (state.fold - weave.fold.value) * ease;
+  sway += (state.breathe - sway) * ease;
+  weave.time.value += dt * sway;
+  tapMat.metalness = 0.85 * m; tapMat.roughness = 0.92 - 0.7 * m; tapMat.envMapIntensity = 0.45 + 1.1 * m;
+  fringeMat.color.copy(thread).lerp(copper, m); fringeMat.metalness = 0.9 * m; fringeMat.roughness = 0.95 - 0.6 * m;
+  updateFringe();
+
+  renderer.render(scene, camera);
+});
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

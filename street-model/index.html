@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Street in 3D</title>
+<meta name="description" content="A 3D point-cloud model of Alex's street, rebuilt from a 360° longboard ride.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #e4eef6; --muted: #9bb2c4; --accent: #ff8a3d; --panel: rgba(13, 27, 41, .82); --line: rgba(207, 225, 239, .25); }
+  html, body { margin: 0; height: 100%; background: #0a1520; color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; overflow: hidden; }
+  canvas { display: block; touch-action: none; }
+  .hud { position: fixed; left: 16px; top: 16px; max-width: min(420px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--line); padding: 14px 16px; backdrop-filter: blur(8px); }
+  .hud h1 { margin: 0 0 4px; font-family: "Big Shoulders Display", Impact, sans-serif; font-size: 34px; line-height: 1; text-transform: uppercase; letter-spacing: .02em; }
+  .hud h1 em { font-style: normal; color: var(--accent); }
+  .hud p { margin: 0 0 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button { font: 600 11px "IBM Plex Mono", monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: transparent; border: 1px solid var(--line); padding: 7px 10px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #0a1520; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  label { font-size: 11px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+  input[type="range"] { accent-color: var(--accent); width: 110px; }
+  .stats { margin-top: 8px; font-size: 11px; color: var(--muted); }
+  .back { position: fixed; right: 16px; top: 16px; font-size: 12px; color: var(--muted); text-decoration: none; background: var(--panel); border: 1px solid var(--line); padding: 7px 10px; }
+  .back:hover { color: var(--ink); }
+  .loading { position: fixed; inset: 0; display: grid; place-items: center; font-size: 13px; color: var(--muted); pointer-events: none; }
+  @media (max-width: 560px) { .hud { top: auto; bottom: 16px; } .hud h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+<div class="loading" id="loading">Loading the street…</div>
+<div class="hud">
+  <h1>My <em>Street</em> in 3D</h1>
+  <p>Rebuilt from a 30-second 360° longboard ride. Each dot is a point the camera saw from several angles. The orange line is the path Alex rode.</p>
+  <div class="row">
+    <button id="ride" aria-pressed="false">▶ Ride along</button>
+    <button id="path" aria-pressed="true">Path</button>
+    <button id="drawn" aria-pressed="false">Drawn</button>
+    <label>Dot size <input id="size" type="range" min="1" max="8" step="0.5" value="5"></label>
+  </div>
+  <div class="stats" id="stats"></div>
+</div>
+<a class="back" href="../gallery-ground-plans.html">← Ground plans</a>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a1520);
+scene.fog = new THREE.Fog(0x0a1520, 60, 160);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 500);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+const data = await (await fetch("street-model.json")).json();
+document.getElementById("loading").remove();
+
+// Points: flat [x, y, z, r, g, b, ...], already aligned so +Y is up and the ride heads down -Z.
+const count = data.points.length / 6;
+const positions = new Float32Array(count * 3);
+const photoColors = new Float32Array(count * 3);
+const drawnColors = new Float32Array(count * 3);
+for (let i = 0; i < count; i++) {
+  for (let k = 0; k < 3; k++) {
+    positions[i * 3 + k] = data.points[i * 6 + k];
+    photoColors[i * 3 + k] = data.points[i * 6 + 3 + k] / 255;
+  }
+  // "Drawn" mode: blueprint ink, brighter with height, like the ground-plan sheets.
+  const h = Math.min(1, Math.max(0, (positions[i * 3 + 1] + 1) / 8));
+  drawnColors[i * 3] = 0.55 + 0.35 * h;
+  drawnColors[i * 3 + 1] = 0.72 + 0.2 * h;
+  drawnColors[i * 3 + 2] = 0.85 + 0.12 * h;
+}
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute("color", new THREE.BufferAttribute(photoColors.slice(), 3));
+const material = new THREE.PointsMaterial({ size: 0.12, vertexColors: true, sizeAttenuation: true });
+const cloud = new THREE.Points(geometry, material);
+scene.add(cloud);
+
+const path = data.path.map(p => new THREE.Vector3(...p));
+const curve = new THREE.CatmullRomCurve3(path);
+const pathLine = new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints(curve.getPoints(400)),
+  new THREE.LineBasicMaterial({ color: 0xff8a3d })
+);
+scene.add(pathLine);
+
+const grid = new THREE.GridHelper(200, 100, 0x1a3550, 0x13283c);
+grid.position.y = data.ground ?? -1.4;
+scene.add(grid);
+
+// Start with an overview from above and behind the start of the ride.
+const box = new THREE.Box3().setFromPoints(path);
+const center = box.getCenter(new THREE.Vector3());
+const span = Math.max(box.getSize(new THREE.Vector3()).length(), 10);
+camera.position.set(center.x + span * 0.32, center.y + span * 0.3, center.z + span * 0.38);
+controls.target.copy(center);
+
+document.getElementById("stats").textContent =
+  count.toLocaleString() + " points · " + data.registered + " of " + data.views + " camera views placed";
+
+const press = (button, on) => button.setAttribute("aria-pressed", String(on));
+let riding = false;
+let rideT = 0;
+const rideButton = document.getElementById("ride");
+rideButton.addEventListener("click", () => {
+  riding = !riding;
+  press(rideButton, riding);
+  rideButton.textContent = riding ? "■ Stop" : "▶ Ride along";
+  controls.enabled = !riding;
+  if (!riding) controls.target.copy(curve.getPointAt(Math.min(rideT + 0.02, 1)));
+});
+const pathButton = document.getElementById("path");
+pathButton.addEventListener("click", () => { pathLine.visible = !pathLine.visible; press(pathButton, pathLine.visible); });
+const drawnButton = document.getElementById("drawn");
+drawnButton.addEventListener("click", () => {
+  const drawn = drawnButton.getAttribute("aria-pressed") !== "true";
+  press(drawnButton, drawn);
+  geometry.attributes.color.array.set(drawn ? drawnColors : photoColors);
+  geometry.attributes.color.needsUpdate = true;
+});
+document.getElementById("size").addEventListener("input", e => { material.size = e.target.value * 0.024; });
+
+// ?drawn=1 starts in drawn mode; ?at=0.4 parks the camera that far along the ride (for stills).
+const params = new URLSearchParams(location.search);
+if (params.get("drawn") === "1") drawnButton.click();
+if (params.has("at")) {
+  const t = Math.min(0.98, Math.max(0, Number(params.get("at"))));
+  const here = curve.getPointAt(t);
+  const ahead = curve.getPointAt(Math.min(t + 0.015, 1));
+  camera.position.copy(here);
+  controls.target.set(ahead.x, here.y, ahead.z);
+}
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = clock.getDelta();
+  if (riding) {
+    rideT = (rideT + dt / 30) % 1; // about the length of the real ride
+    const here = curve.getPointAt(rideT);
+    const ahead = curve.getPointAt(Math.min(rideT + 0.015, 1));
+    camera.position.copy(here);
+    camera.lookAt(ahead.x, here.y, ahead.z);
+  } else {
+    controls.update();
+  }
+  renderer.render(scene, camera);
+});
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

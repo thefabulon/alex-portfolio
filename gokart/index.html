@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Go-Kart in VR</title>
+<meta name="description" content="A drivable 3D model of Alex's plywood go-kart, built from photos. Pick one of Alex's characters to drive it and race the rest of the crew. Works in a VR headset or a browser.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Big+Shoulders+Display:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #e4eef6; --muted: #9bb2c4; --accent: #ff8a3d; --panel: rgba(13, 27, 41, .82); --line: rgba(207, 225, 239, .25); }
+  html, body { margin: 0; height: 100%; background: #0a1520; color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; overflow: hidden; }
+  [hidden] { display: none !important; }
+  canvas { display: block; touch-action: none; }
+  .hud { position: fixed; left: 16px; top: 16px; max-width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto; box-sizing: border-box; background: var(--panel); border: 1px solid var(--line); padding: 14px 16px; backdrop-filter: blur(8px); }
+  .hud h1 { margin: 0 0 4px; font-family: "Big Shoulders Display", Impact, sans-serif; font-size: 34px; line-height: 1; text-transform: uppercase; letter-spacing: .02em; }
+  .hud h1 em { font-style: normal; color: var(--accent); }
+  .hud p { margin: 0 0 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .hud kbd { font: 600 11px "IBM Plex Mono", monospace; color: var(--ink); border: 1px solid var(--line); padding: 0 4px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .lbl { display: block; margin: 12px 0 6px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { padding: 6px 8px; }
+  button { font: 600 11px "IBM Plex Mono", monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: transparent; border: 1px solid var(--line); padding: 7px 10px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #0a1520; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.go { background: var(--accent); border-color: var(--accent); color: #0a1520; }
+  .speed { margin-top: 8px; font-size: 11px; color: var(--muted); }
+  .back { position: fixed; right: 16px; top: 16px; font-size: 12px; color: var(--muted); text-decoration: none; background: var(--panel); border: 1px solid var(--line); padding: 7px 10px; }
+  .back:hover { color: var(--ink); }
+  .back + .back { top: 56px; }
+  .back + .back + .back { top: 96px; }
+  .back + .back + .back + .back { top: 136px; }
+  details summary { cursor: pointer; font-size: 11px; color: var(--muted); margin-top: 10px; }
+  details ul { margin: 6px 0 0; padding-left: 16px; font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .racebar { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); display: flex; gap: 18px; align-items: baseline; background: var(--panel); border: 1px solid var(--line); padding: 8px 16px; backdrop-filter: blur(8px); white-space: nowrap; }
+  .racebar b { font: 800 26px/1 "Big Shoulders Display", Impact, sans-serif; letter-spacing: .03em; }
+  .racebar span { font-size: 10px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; margin-right: 4px; }
+  .count { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font: 800 min(30vw, 220px)/1 "Big Shoulders Display", Impact, sans-serif; color: var(--accent); text-shadow: 0 6px 30px rgba(0,0,0,.45); }
+  .results { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(340px, calc(100vw - 32px)); box-sizing: border-box; background: var(--panel); border: 1px solid var(--accent); padding: 16px; backdrop-filter: blur(8px); }
+  .results h2 { margin: 0 0 8px; font: 800 40px/1 "Big Shoulders Display", Impact, sans-serif; text-transform: uppercase; color: var(--accent); }
+  .results ol { margin: 0 0 12px; padding-left: 22px; font-size: 13px; line-height: 1.7; }
+  .results li.you { color: var(--accent); font-weight: 600; }
+  .results p { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+  @media (max-width: 560px) { .hud { top: auto; bottom: 16px; max-height: 50vh; } .hud h1 { font-size: 26px; } .racebar { top: 60px; gap: 10px; } .racebar b { font-size: 20px; } }
+</style>
+</head>
+<body>
+<div class="hud">
+  <h1>My <em>Go-Kart</em> in VR</h1>
+  <p>Built from photos of the real kart: plywood deck, silver paint, navy stripes, the GRT bumper. Pick a driver from Alex's crew, then drive with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys, or put on a headset and press Enter VR.</p>
+  <div class="row">
+    <button data-view="orbit" aria-pressed="true">Look around</button>
+    <button data-view="chase" aria-pressed="false">Chase cam</button>
+    <button data-view="seat" aria-pressed="false">Driver seat</button>
+    <button id="reset">Reset</button>
+  </div>
+  <span class="lbl" id="driver-label">Driver</span>
+  <div class="chips" id="drivers" role="group" aria-labelledby="driver-label"></div>
+  <span class="lbl" id="look-label">Look</span>
+  <div class="chips" id="looks" role="group" aria-labelledby="look-label"></div>
+  <div class="row" style="margin-top:12px">
+    <button class="go" id="race">Race the crew</button>
+    <span class="speed" id="speed" style="margin:0">0 mph</span>
+  </div>
+  <details>
+    <summary>How the race works</summary>
+    <ul>
+      <li>Three laps around the cone track, against the other four characters.</li>
+      <li>When you're not racing, the other four still drive laps around the track at their own easy pace, so you've always got someone to chase. Once they finish a race, they keep cruising too.</li>
+      <li>Stay between the cones. Cutting across the middle doesn't count toward your lap.</li>
+      <li><kbd>Enter</kbd> starts a race. <kbd>R</kbd> puts you back on the track.</li>
+    </ul>
+  </details>
+  <details>
+    <summary>VR controls</summary>
+    <ul>
+      <li>Right trigger: gas. Left trigger: brake / reverse.</li>
+      <li>Either thumbstick: steer (left stick up/down also drives).</li>
+      <li>Hold both grip buttons and turn your hands like a real wheel to steer.</li>
+      <li>A: switch between sitting in the kart and standing beside it (RC mode).</li>
+      <li>B: recenter your view. Y: put the kart back on the track. X: start a race.</li>
+    </ul>
+  </details>
+</div>
+<a class="back" href="../lobby/index.html">← Lobby</a>
+<a class="back" href="../gallery-ground-plans.html">← Ground plans</a>
+<a class="back" href="../characters/index.html">Meet the crew →</a>
+<a class="back" href="v2.html">Drift v2 →</a>
+<div class="racebar" id="racebar" hidden aria-live="off">
+  <div><span>Lap</span><b id="lap">1/3</b></div>
+  <div><span>Pos</span><b id="pos">5/5</b></div>
+  <div><span>Time</span><b id="time">0:00.0</b></div>
+</div>
+<div class="count" id="count" hidden aria-live="assertive"></div>
+<div class="results" id="results" hidden role="dialog" aria-labelledby="results-title">
+  <h2 id="results-title">P1!</h2>
+  <ol id="standings"></ol>
+  <p id="best"></p>
+  <div class="row"><button class="go" id="again">Race again</button><button id="free">Free drive</button></div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script src="../characters/crew.js"></script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { VRButton } from "three/addons/webxr/VRButton.js";
+import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
+import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
+import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
+
+const Crew = makeCrew(THREE, { DecalGeometry, mergeVertices });
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.xr.enabled = true;
+renderer.xr.setReferenceSpaceType("local"); // origin = your head when you enter VR, so seated play works
+document.body.prepend(renderer.domElement);
+document.body.appendChild(VRButton.createButton(renderer));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xbcd3e6);
+scene.fog = new THREE.Fog(0xbcd3e6, 40, 140);
+const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.02, 400);
+const rig = new THREE.Group(); // the player: camera + controllers ride in here
+rig.add(camera);
+scene.add(rig);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+scene.add(new THREE.HemisphereLight(0xe8f1ff, 0x6b6250, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(6, 10, 4);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 30 });
+scene.add(sun, sun.target);
+
+// ---------- Textures, all painted on canvases so the page needs no image files ----------
+function paint(w, h, draw, repeat = [1, 1]) {
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  draw(c.getContext("2d"), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(...repeat);
+  t.anisotropy = 4;
+  return t;
+}
+const rand = (a, b) => a + Math.random() * (b - a);
+
+// Silver spray paint over plywood, with the scuffs and sanding swirls from the photos.
+function sprayPaint(ctx, w, h) {
+  ctx.fillStyle = "#c3c8cc";
+  ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 220; i++) {
+    const x = rand(0, w), y = rand(0, h), r = rand(10, 70);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    const dark = Math.random() < 0.6;
+    g.addColorStop(0, dark ? "rgba(70,80,95,.13)" : "rgba(255,255,255,.18)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 40; i++) {
+    ctx.strokeStyle = `rgba(80,90,105,${rand(0.06, 0.16)})`;
+    const x = rand(0, w), y = rand(0, h), r = rand(8, 40);
+    for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(x, y, r + k * 4, rand(0, 6), rand(0, 6)); ctx.stroke(); }
+  }
+}
+const silverTex = paint(512, 512, sprayPaint, [1.5, 1.5]);
+const plyTex = paint(64, 64, (ctx, w, h) => {
+  for (let y = 0; y < h; y += 4) { ctx.fillStyle = (y / 4) % 2 ? "#b78f5c" : "#d9b585"; ctx.fillRect(0, y, w, 4); }
+}, [4, 1]);
+const grtTex = paint(840, 310, (ctx, w, h) => {
+  sprayPaint(ctx, w, h);
+  ctx.strokeStyle = "#3a4048";
+  ctx.lineWidth = 4;
+  ctx.font = "bold 150px 'Comic Sans MS', 'Chalkboard SE', sans-serif";
+  ctx.strokeText("GRT", w - 330, h - 50);
+});
+grtTex.repeat.set(1, 1);
+const treadTex = paint(512, 64, (ctx, w, h) => {
+  ctx.fillStyle = "#1b1b1d";
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = "#4a4a50";
+  ctx.lineWidth = 3;
+  for (let x = -h; x < w + h; x += 16) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + h, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + h, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+});
+// Hub face: the black turbine-vane wheels from the photos.
+const hubTex = paint(256, 256, (ctx, w) => {
+  const c = w / 2;
+  ctx.fillStyle = "#1b1b1d"; ctx.fillRect(0, 0, w, w);
+  ctx.fillStyle = "#2c2d31"; ctx.beginPath(); ctx.arc(c, c, c * 0.78, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#0e0e10"; ctx.lineWidth = 6;
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2;
+    ctx.beginPath(); ctx.moveTo(c + Math.cos(a) * 30, c + Math.sin(a) * 30);
+    ctx.quadraticCurveTo(c + Math.cos(a + 0.5) * 70, c + Math.sin(a + 0.5) * 70, c + Math.cos(a + 0.9) * 100, c + Math.sin(a + 0.9) * 100);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#9da3a8"; ctx.beginPath(); ctx.arc(c, c, 22, 0, 7); ctx.fill();
+  ctx.fillStyle = "#555"; ctx.beginPath(); ctx.arc(c, c, 8, 0, 7); ctx.fill();
+});
+const concreteTex = paint(512, 512, (ctx, w, h) => {
+  ctx.fillStyle = "#8f9397"; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 5000; i++) {
+    ctx.fillStyle = Math.random() < 0.5 ? "rgba(40,40,45,.15)" : "rgba(235,235,240,.15)";
+    ctx.fillRect(rand(0, w), rand(0, h), rand(1, 2), rand(1, 2));
+  }
+  ctx.strokeStyle = "rgba(60,62,66,.6)"; ctx.lineWidth = 3;
+  ctx.strokeRect(0, 0, w, h); // expansion joints
+}, [60, 60]);
+const checkerTex = paint(64, 512, (ctx, w, h) => {
+  for (let y = 0; y < h; y += 32) for (let x = 0; x < w; x += 32) { ctx.fillStyle = (x + y) / 32 % 2 ? "#151515" : "#f2f2f2"; ctx.fillRect(x, y, 32, 32); }
+});
+
+const mat = {
+  silver: new THREE.MeshStandardMaterial({ map: silverTex, roughness: 0.55, metalness: 0.35 }),
+  ply: new THREE.MeshStandardMaterial({ map: plyTex, roughness: 0.8 }),
+  grt: new THREE.MeshStandardMaterial({ map: grtTex, roughness: 0.55, metalness: 0.35 }),
+  navy: new THREE.MeshStandardMaterial({ color: 0x1f2a4d, roughness: 0.7 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0xd8b07a, roughness: 0.6 }),
+  blueTape: new THREE.MeshStandardMaterial({ color: 0x2f6fd0, roughness: 0.5 }),
+  black: new THREE.MeshStandardMaterial({ color: 0x18181a, roughness: 0.6 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xc9ced3, roughness: 0.25, metalness: 0.9 }),
+  tread: new THREE.MeshStandardMaterial({ map: treadTex, roughness: 0.9 }),
+  hub: new THREE.MeshStandardMaterial({ map: hubTex, roughness: 0.7 }),
+  foam: new THREE.MeshStandardMaterial({ map: silverTex, color: 0xdfe2e6, roughness: 0.95 }),
+};
+
+// A plywood panel: silver on its two big faces, ply layers on its edges.
+function panel(w, h, d, face = mat.silver) {
+  const dims = [w, h, d];
+  const thin = dims.indexOf(Math.min(...dims));
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+    [0, 1, 2, 3, 4, 5].map(i => (Math.floor(i / 2) === thin ? face : mat.ply)));
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+function rod(from, to, radius, material) {
+  const dir = new THREE.Vector3().subVectors(to, from);
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, dir.length(), 12), material);
+  m.position.copy(from).addScaledVector(dir, 0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  m.castShadow = true;
+  return m;
+}
+function add(parent, obj, x = 0, y = 0, z = 0) { obj.position.set(x, y, z); parent.add(obj); return obj; }
+
+// ---------- The kart. Units are meters, the kart faces -Z, the ground is y = 0 ----------
+// Every racer gets a copy; rivals swap the navy stripes for their own color.
+const WHEEL_R = 0.11, WHEELBASE = 1.1, DECK_Y = 0.12, T = 0.018;
+function makeKart(stripe = mat.navy) {
+  const kart = new THREE.Group();
+  add(kart, panel(0.58, T, 1.44), 0, DECK_Y - T / 2, -0.09); // deck
+
+  // Rear plate rising to the foam roll, with GRT drawn on it.
+  const plate = add(kart, panel(0.84, T, 0.31, mat.grt), 0, 0.22, 0.72);
+  plate.rotation.x = -0.69;
+  const roll = add(kart, new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.86, 20), mat.foam), 0, 0.33, 0.84);
+  roll.rotation.z = Math.PI / 2;
+  roll.castShadow = true;
+
+  // Side fins: triangles that flare outward, stripes on the outside.
+  for (const side of [1, -1]) {
+    const L = 0.62, H = 0.30;
+    const shape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(L, 0), new THREE.Vector2(0, H)]);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: T, bevelEnabled: false });
+    const flare = add(kart, new THREE.Group(), side * 0.28, DECK_Y, 0.10);
+    flare.rotation.z = -side * 0.26;
+    const m = add(flare, new THREE.Mesh(geo, [mat.silver, mat.ply]), side > 0 ? 0 : -T, 0, 0);
+    m.rotation.y = Math.PI / 2; // shape's x now runs toward the nose
+    m.castShadow = m.receiveShadow = true;
+    const outer = side > 0 ? T + 0.002 : -0.002;
+    for (const cx of [0.07, 0.19, 0.32, 0.45]) {
+      const h = 0.85 * H * (1 - (cx + 0.04) / L) - 0.02;
+      add(m, new THREE.Mesh(new THREE.BoxGeometry(0.075, h, 0.003), stripe), cx, h / 2 + 0.02, outer);
+    }
+  }
+
+  // Center dash triangle the steering wheel sits on.
+  {
+    const shape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(0.48, 0), new THREE.Vector2(0, 0.28)]);
+    const m = add(kart, new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: T, bevelEnabled: false }), [mat.silver, mat.ply]), -T / 2, DECK_Y, -0.02);
+    m.rotation.y = Math.PI / 2;
+    m.castShadow = true;
+  }
+
+  // Nose wing: the striped board on a post, sloping down to the front.
+  const wing = add(kart, panel(0.30, T, 0.70), 0, 0.385, -0.56);
+  wing.rotation.x = -0.245;
+  add(wing, new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.003, 0.70), stripe), 0, T / 2 + 0.001, 0);
+  add(kart, panel(0.06, 0.27, T), 0, DECK_Y + 0.135, -0.50);
+
+  // Steering: column runs from the wheel down under the wing to the front.
+  const wheelCenter = new THREE.Vector3(0, 0.44, -0.05);
+  kart.add(rod(wheelCenter, new THREE.Vector3(0, 0.16, -0.86), 0.012, mat.steel));
+  const steerTilt = add(kart, new THREE.Group(), wheelCenter.x, wheelCenter.y, wheelCenter.z);
+  steerTilt.rotation.x = -0.35;
+  const steeringWheel = add(steerTilt, new THREE.Group(), 0, 0, 0.015);
+  const R = 0.14;
+  steeringWheel.add(new THREE.Mesh(new THREE.TorusGeometry(R, 0.013, 10, 48), mat.wood));
+  // Tape: blue on the sides, black at the top and bottom.
+  for (const [start, len, m] of [[-0.75, 1.5, mat.blueTape], [2.4, 1.5, mat.blueTape], [0.9, 1.3, mat.black], [4.05, 1.3, mat.black]]) {
+    const arc = new THREE.Mesh(new THREE.TorusGeometry(R, 0.016, 10, 24, len), m);
+    arc.rotation.z = start;
+    steeringWheel.add(arc);
+  }
+  for (const a of [Math.PI / 6, (5 * Math.PI) / 6, (3 * Math.PI) / 2]) {
+    const spoke = add(steeringWheel, new THREE.Mesh(new THREE.BoxGeometry(R, 0.025, 0.008), mat.black), Math.cos(a) * R / 2, Math.sin(a) * R / 2, 0);
+    spoke.rotation.z = a;
+  }
+  const hub = add(steeringWheel, new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.012, 24), mat.wood), 0, 0, 0.004);
+  hub.rotation.x = Math.PI / 2;
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2 + 0.5;
+    const bolt = add(steeringWheel, new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.006, 8), mat.steel), Math.cos(a) * 0.025, Math.sin(a) * 0.025, 0.012);
+    bolt.rotation.x = Math.PI / 2;
+  }
+  steeringWheel.traverse(o => { o.castShadow = true; });
+  // Where the driver's hands grip: ten and two. They turn with the wheel.
+  const hands = [add(steeringWheel, new THREE.Object3D(), R * 0.87, R * 0.5, 0.02), add(steeringWheel, new THREE.Object3D(), -R * 0.87, R * 0.5, 0.02)];
+
+  // Shifter: black pod with a stick and ball knob.
+  {
+    const pod = add(kart, new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.09, 20), mat.black), 0.2, DECK_Y + 0.045, 0.2);
+    pod.castShadow = true;
+    kart.add(rod(new THREE.Vector3(0.2, DECK_Y + 0.09, 0.2), new THREE.Vector3(0.21, DECK_Y + 0.21, 0.19), 0.006, mat.steel));
+    add(kart, new THREE.Mesh(new THREE.SphereGeometry(0.028, 16, 12), mat.black), 0.21, DECK_Y + 0.23, 0.19).castShadow = true;
+  }
+
+  // Wheels: each is pivot (steers) > spinner (rolls) > tire.
+  const wheels = [];
+  function wheel(x, z, front) {
+    const pivot = add(kart, new THREE.Group(), x, WHEEL_R, z);
+    const spinner = add(pivot, new THREE.Group());
+    const tire = add(spinner, new THREE.Mesh(new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.06, 32), [mat.tread, mat.hub, mat.hub]));
+    tire.rotation.z = Math.PI / 2;
+    tire.castShadow = true;
+    // Axle bracket back to the deck.
+    const inner = Math.sign(x) * 0.26;
+    kart.add(rod(new THREE.Vector3(inner, WHEEL_R, z), new THREE.Vector3(x, WHEEL_R, z), 0.01, mat.steel));
+    add(kart, new THREE.Mesh(new THREE.BoxGeometry(0.03, DECK_Y - WHEEL_R + 0.03, 0.05), mat.steel), inner, (WHEEL_R + DECK_Y) / 2 - 0.01, z);
+    wheels.push({ pivot, spinner, front });
+  }
+  wheel(0.35, 0.45, false); wheel(-0.35, 0.45, false);
+  wheel(0.33, -0.65, true); wheel(-0.33, -0.65, true);
+
+  scene.add(kart);
+  return { kart, wheels, steeringWheel, hands };
+}
+
+// ---------- The lot: concrete, painted lines and a cone track ----------
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ map: concreteTex, roughness: 0.95 }));
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+const startLine = add(scene, new THREE.Mesh(new THREE.PlaneGeometry(0.5, 8), new THREE.MeshStandardMaterial({ map: checkerTex })), -1.5, 0.002, 11);
+startLine.rotation.x = -Math.PI / 2;
+
+const coneGeo = new THREE.ConeGeometry(0.13, 0.4, 16);
+coneGeo.translate(0, 0.2, 0);
+const coneMat = new THREE.MeshStandardMaterial({ color: 0xff6a1a, roughness: 0.6 });
+const cones = [];
+for (const [rx, rz, n] of [[14, 7, 26], [22, 15, 40]]) {
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const c = add(scene, new THREE.Mesh(coneGeo, coneMat), Math.cos(a) * rx, 0, Math.sin(a) * rz);
+    c.castShadow = true;
+    cones.push({ mesh: c, home: c.position.clone(), vel: new THREE.Vector3(), down: 0 });
+  }
+}
+function resetCones() {
+  for (const c of cones) { c.mesh.position.copy(c.home); c.mesh.rotation.set(0, 0, 0); c.vel.set(0, 0, 0); c.down = 0; }
+}
+
+// ---------- Racers: you, plus the rest of the crew in their own karts ----------
+// The track runs between the two cone rings. Its center line is an ellipse, driven counterclockwise from above.
+const TRACK = { rx: 18, rz: 11 };
+const LAPS = 3;
+const GRID = [[1.0, 9.6], [1.0, 12.4], [3.6, 9.6], [3.6, 12.4], [6.2, 11]]; // behind the start line; you start at the back
+const START_HEADING = Math.PI / 2; // pointing down -X
+const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+const trackAngle = p => Math.atan2(p.z / TRACK.rz, p.x / TRACK.rx);
+const LINE_ANGLE = trackAngle({ x: startLine.position.x, z: startLine.position.z });
+const inInfield = p => (p.x / 13.2) ** 2 + (p.z / 6.2) ** 2 < 1;
+
+function makeRacer(isPlayer) {
+  const stripe = isPlayer ? mat.navy : new THREE.MeshStandardMaterial({ roughness: 0.6 });
+  const r = { isPlayer, stripe, ...makeKart(stripe), car: { speed: 0, steer: 0, heading: START_HEADING }, driver: null, prog: 0, lastAngle: 0, finished: false, time: 0 };
+  if (!isPlayer) {
+    const c = document.createElement("canvas");
+    c.width = 256; c.height = 64;
+    r.tagCanvas = c;
+    r.tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+    r.tag.scale.set(1.1, 0.275, 1);
+    r.tag.position.y = 1.25;
+    r.kart.add(r.tag);
+  }
+  return r;
+}
+const player = makeRacer(true);
+const rivals = [makeRacer(false), makeRacer(false), makeRacer(false), makeRacer(false)];
+const racers = [player, ...rivals];
+const AI_TOP = [8.3, 8.0, 7.7, 7.4], AI_LANE = [-1.4, 1.4, 0, -0.7];
+
+// Little speed readout floating over the wheel, so you can see it from the seat in VR.
+const dashCanvas = document.createElement("canvas");
+dashCanvas.width = 256; dashCanvas.height = 96;
+const dashTex = new THREE.CanvasTexture(dashCanvas);
+dashTex.colorSpace = THREE.SRGBColorSpace;
+const dash = add(player.kart, new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.06), new THREE.MeshBasicMaterial({ map: dashTex, transparent: true })), 0, 0.66, -0.12);
+dash.rotation.x = -0.3;
+let lastShown = -1;
+function showSpeed(mph) {
+  if (mph === lastShown) return;
+  lastShown = mph;
+  const ctx = dashCanvas.getContext("2d");
+  ctx.clearRect(0, 0, 256, 96);
+  ctx.fillStyle = "rgba(13,27,41,.85)"; ctx.fillRect(0, 0, 256, 96);
+  ctx.fillStyle = "#ff8a3d"; ctx.font = "bold 60px monospace"; ctx.textAlign = "center";
+  ctx.fillText(mph + " mph", 128, 70);
+  dashTex.needsUpdate = true;
+  document.getElementById("speed").textContent = mph + " mph";
+}
+
+// Seat a character in a kart: shrink them to kid size and slide them up behind the wheel.
+function seat(r, id, look) {
+  if (r.driver) r.kart.remove(r.driver);
+  const d = Crew.build(id, look, { pose: "drive" });
+  const { size, box } = d.userData;
+  const s = Math.min(0.52 / size.y, 0.52 / size.x, 0.6 / size.z);
+  d.scale.setScalar(s);
+  d.rotation.y = Math.PI; // characters face +Z, the kart faces -Z
+  d.position.set(0, DECK_Y, Math.min(0.5, 0.07 + box.max.z * s));
+  r.kart.add(d);
+  r.driver = d;
+  r.id = id;
+  r.look = look;
+  if (!r.isPlayer) {
+    const color = new THREE.Color(Crew.PALETTE[id][look][0]);
+    r.stripe.color.copy(color);
+    const g = r.tagCanvas.getContext("2d");
+    g.clearRect(0, 0, 256, 64);
+    g.fillStyle = "rgba(13,27,41,.85)"; g.fillRect(28, 6, 200, 52);
+    g.fillStyle = "#" + color.getHexString(); g.fillRect(28, 6, 10, 52);
+    g.fillStyle = "#e4eef6"; g.font = "600 30px 'IBM Plex Mono', monospace"; g.textAlign = "center";
+    g.fillText(d.userData.info.name, 134, 43);
+    r.tag.material.map.needsUpdate = true;
+  }
+}
+
+// ---------- Choosing a driver ----------
+const params = new URLSearchParams(location.search);
+const saved = (() => { try { return JSON.parse(localStorage.getItem("gokart.driver")) || {}; } catch { return {}; } })();
+const isChar = id => Crew.CHARACTERS.some(c => c.id === id), isLook = id => Crew.LOOKS.some(l => l.id === id);
+let pick = {
+  id: [params.get("driver"), saved.id].find(isChar) || "jimbob",
+  look: [params.get("look"), saved.look].find(isLook) || "toon"
+};
+function chips(el, items, key) {
+  el.replaceChildren(...items.map(item => {
+    const b = document.createElement("button");
+    b.textContent = item.name;
+    b.dataset.value = item.id;
+    b.title = item.kind ? item.kind : item.note;
+    b.addEventListener("click", () => choose({ ...pick, [key]: item.id }));
+    return b;
+  }));
+}
+chips(document.getElementById("drivers"), Crew.CHARACTERS, "id");
+chips(document.getElementById("looks"), Crew.LOOKS, "look");
+function choose(next) {
+  pick = next;
+  try { localStorage.setItem("gokart.driver", JSON.stringify(pick)); } catch { /* choice just won't persist */ }
+  document.querySelectorAll("#drivers button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === pick.id)));
+  document.querySelectorAll("#looks button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === pick.look)));
+  seat(player, pick.id, pick.look);
+  // The other four characters drive the rival karts, in a spread of looks.
+  const others = Crew.CHARACTERS.filter(c => c.id !== pick.id);
+  const li = Crew.LOOKS.findIndex(l => l.id === pick.look);
+  rivals.forEach((r, i) => seat(r, others[i].id, Crew.LOOKS[(li + 1 + i) % Crew.LOOKS.length].id));
+  placeRig();
+}
+
+// ---------- Driving ----------
+function toGrid(who = racers) {
+  who.forEach(r => {
+    const [x, z] = GRID[r.isPlayer ? 4 : rivals.indexOf(r)];
+    r.kart.position.set(x, 0, z);
+    r.car.heading = START_HEADING; r.car.speed = 0; r.car.steer = 0;
+    r.kart.rotation.y = r.car.heading;
+    r.lastAngle = trackAngle(r.kart.position);
+    r.prog = wrap(r.lastAngle - LINE_ANGLE);
+    r.finished = false;
+  });
+}
+// Back onto the center line, at the same spot around the lap.
+function rescue(r) {
+  const a = trackAngle(r.kart.position);
+  r.kart.position.set(Math.cos(a) * TRACK.rx, 0, Math.sin(a) * TRACK.rz);
+  r.car.heading = Math.atan2(TRACK.rx * Math.sin(a), -TRACK.rz * Math.cos(a));
+  r.car.speed = 0; r.car.steer = 0;
+  r.lastAngle = a;
+}
+// Out of a race only you go back to the start (and the cones stand back up); the crew keep cruising.
+function resetKart() {
+  if (race.state === "free") { toGrid([player]); resetCones(); }
+  else rescue(player);
+}
+
+const keys = new Set();
+addEventListener("keydown", e => {
+  if (e.target.closest && e.target.closest("button, a, input")) { if (e.code === "Enter" || e.code === "Space") return; }
+  keys.add(e.code);
+  if (e.code === "KeyR") resetKart();
+  if (e.code === "KeyC") setView(VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length]);
+  if (e.code === "Enter") startRace();
+  if (e.code.startsWith("Arrow") || e.code === "Space") e.preventDefault();
+});
+addEventListener("keyup", e => keys.delete(e.code));
+
+const MAX_STEER = 0.5, STEER_RATIO = 3; // steering wheel turns 3x the front wheels
+function drive(r, dt, throttle, steerInput, steerDirect) {
+  const car = r.car, kart = r.kart;
+  const target = steerDirect ?? steerInput * MAX_STEER;
+  car.steer += THREE.MathUtils.clamp(target - car.steer, -3 * dt, 3 * dt);
+  if (throttle > 0) car.speed += throttle * 4 * dt;
+  else if (throttle < 0) car.speed += throttle * (car.speed > 0.1 ? 9 : 2.5) * dt;
+  car.speed -= car.speed * 0.35 * dt + Math.sign(car.speed) * (throttle === 0 ? 0.5 : 0) * dt;
+  if (throttle === 0 && Math.abs(car.speed) < 0.05) car.speed = 0;
+  car.speed = THREE.MathUtils.clamp(car.speed, -2.5, 9);
+
+  car.heading += (car.speed * Math.tan(car.steer) / WHEELBASE) * dt;
+  kart.position.x -= Math.sin(car.heading) * car.speed * dt;
+  kart.position.z -= Math.cos(car.heading) * car.speed * dt;
+  if (Math.abs(kart.position.x) > 95 || Math.abs(kart.position.z) > 95) {
+    kart.position.x = THREE.MathUtils.clamp(kart.position.x, -95, 95);
+    kart.position.z = THREE.MathUtils.clamp(kart.position.z, -95, 95);
+    car.speed = 0;
+  }
+  kart.rotation.y = car.heading;
+
+  for (const w of r.wheels) {
+    w.spinner.rotation.x -= (car.speed / WHEEL_R) * dt;
+    if (w.front) w.pivot.rotation.y = car.steer;
+  }
+  r.steeringWheel.rotation.z = car.steer * STEER_RATIO;
+
+  // Knock cones out of the way.
+  const fwd = new THREE.Vector3(-Math.sin(car.heading), 0, -Math.cos(car.heading));
+  for (const c of cones) {
+    const d = c.mesh.position.clone().sub(kart.position).setY(0);
+    if (d.length() < 0.7 && Math.abs(car.speed) > 0.3 && !c.down) {
+      c.vel.copy(d.normalize().multiplyScalar(Math.abs(car.speed) * 0.6)).addScaledVector(fwd, car.speed * 0.6);
+      c.down = 0.001;
+    }
+  }
+
+  // Lap progress: angle swept around the track. Laps don't count while you're in the infield.
+  const a = trackAngle(kart.position);
+  if (!inInfield(kart.position)) r.prog += wrap(a - r.lastAngle);
+  r.lastAngle = a;
+}
+function tumbleCones(dt) {
+  for (const c of cones) {
+    if (!c.down) continue;
+    c.mesh.position.addScaledVector(c.vel, dt);
+    c.vel.multiplyScalar(Math.max(0, 1 - 2.5 * dt));
+    c.down = Math.min(Math.PI / 2, c.down + 6 * dt);
+    c.mesh.rotation.set(0, Math.atan2(c.vel.x, c.vel.z) || c.mesh.rotation.y, 0);
+    c.mesh.rotateX(c.down);
+  }
+}
+// Karts bump each other instead of driving through.
+function bump() {
+  for (let i = 0; i < racers.length; i++) for (let j = i + 1; j < racers.length; j++) {
+    const a = racers[i].kart.position, b = racers[j].kart.position;
+    const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz), min = 0.85;
+    if (d > 0 && d < min) {
+      const push = (min - d) / 2 / d;
+      a.x -= dx * push; a.z -= dz * push; b.x += dx * push; b.z += dz * push;
+      racers[i].car.speed *= 0.97; racers[j].car.speed *= 0.97;
+    }
+  }
+}
+
+// Rival drivers aim at a point a few meters ahead on their own lane.
+// Out of a race (free drive, or once they've crossed the line) they cruise laps at an easy pace,
+// each at their own speed, and swing round anyone slow or parked in their lane.
+const CRUISE = [0.82, 0.74, 0.68, 0.6];
+const laneOf = p => (Math.hypot(p.x / TRACK.rx, p.z / TRACK.rz) - 1) * 14; // meters out from the center line, roughly
+function aiInput(r, i, cruise) {
+  const k = r.kart.position;
+  let lane = AI_LANE[i], slowTo = Infinity;
+  if (cruise) {
+    const fx = -Math.sin(r.car.heading), fz = -Math.cos(r.car.heading);
+    for (const o of racers) {
+      if (o === r) continue;
+      const dx = o.kart.position.x - k.x, dz = o.kart.position.z - k.z, along = dx * fx + dz * fz, ol = laneOf(o.kart.position);
+      if (along < -1 || along > 7 || Math.hypot(dx, dz) > 8 || Math.abs(ol - lane) > 1.4) continue;
+      lane = THREE.MathUtils.clamp(ol + (ol > 0 ? -2 : 2), -3, 3);
+      if (along > 0 && along < 3) slowTo = Math.max(2, o.car.speed);
+      break;
+    }
+  }
+  const rx = TRACK.rx + lane, rz = TRACK.rz + lane * 0.8;
+  const a = Math.atan2(k.z / rz, k.x / rx);
+  const stretch = Math.hypot(rx * Math.sin(a), rz * Math.cos(a));
+  const ahead = a + 3.5 / stretch;
+  const want = Math.atan2(-(rx * Math.cos(ahead) - k.x), -(rz * Math.sin(ahead) - k.z));
+  const diff = wrap(want - r.car.heading);
+  // A little rubber band: ease off when far ahead of you, push when behind.
+  const gap = cruise ? 0 : THREE.MathUtils.clamp((player.prog - r.prog) * 0.6, -0.9, 0.9);
+  const top = Math.min(slowTo, (AI_TOP[i] * (cruise ? CRUISE[i] : 1) + gap) * (1 - Math.min(0.35, Math.abs(diff) * 0.7)));
+  return { throttle: r.car.speed < top ? 1 : 0, steer: 0, steerDirect: THREE.MathUtils.clamp(diff * 2, -MAX_STEER, MAX_STEER) };
+}
+
+// ---------- Race ----------
+const race = { state: "free", t: 0, countdown: 0, order: [] };
+const ui = {
+  bar: document.getElementById("racebar"), lap: document.getElementById("lap"), pos: document.getElementById("pos"), time: document.getElementById("time"),
+  count: document.getElementById("count"), results: document.getElementById("results"), standings: document.getElementById("standings"),
+  title: document.getElementById("results-title"), best: document.getElementById("best"), raceBtn: document.getElementById("race")
+};
+const clockText = s => Math.floor(s / 60) + ":" + (s % 60).toFixed(1).padStart(4, "0");
+const ordinal = n => n + (["th", "st", "nd", "rd"][n] || "th");
+
+function startRace() {
+  toGrid();
+  resetCones();
+  race.state = "countdown";
+  race.countdown = 2.999;
+  race.t = 0;
+  race.order = [];
+  ui.results.hidden = true;
+  ui.bar.hidden = false;
+  ui.count.hidden = false;
+  ui.raceBtn.textContent = "Restart race";
+  if (view === "orbit") setView("chase");
+}
+function freeDrive() {
+  race.state = "free";
+  ui.results.hidden = ui.bar.hidden = ui.count.hidden = true;
+  ui.raceBtn.textContent = "Race the crew";
+  toGrid();
+  resetCones();
+}
+function standings() {
+  const running = racers.filter(r => !r.finished).sort((a, b) => b.prog - a.prog);
+  return [...race.order, ...running];
+}
+function finish(r) {
+  r.finished = true;
+  r.time = race.t;
+  race.order.push(r);
+  if (!r.isPlayer) return;
+  race.state = "done";
+  const place = race.order.length;
+  let best = Infinity;
+  try { best = Number(localStorage.getItem("gokart.best")) || Infinity; } catch { /* no saved best */ }
+  const record = r.time < best;
+  if (record) { try { localStorage.setItem("gokart.best", String(r.time)); } catch { /* best just won't persist */ } }
+  ui.title.textContent = place === 1 ? "You win!" : ordinal(place) + " place";
+  ui.best.textContent = "Your time " + clockText(r.time) + (record ? " · new best!" : " · best " + clockText(best));
+  showStandings();
+  ui.results.hidden = false;
+  ui.bar.hidden = true;
+}
+function showStandings() {
+  ui.standings.replaceChildren(...standings().map(r => {
+    const li = document.createElement("li");
+    li.textContent = r.driver.userData.info.name + (r.isPlayer ? " (you)" : "") + (r.finished ? " · " + clockText(r.time) : " · still racing");
+    if (r.isPlayer) li.className = "you";
+    return li;
+  }));
+}
+function updateRace(dt) {
+  if (race.state === "countdown") {
+    race.countdown -= dt;
+    const n = Math.ceil(race.countdown);
+    ui.count.textContent = n > 0 ? n : "GO!";
+    if (race.countdown <= 0) { race.state = "racing"; setTimeout(() => { if (race.state !== "countdown") ui.count.hidden = true; }, 700); }
+    return;
+  }
+  if (race.state !== "racing" && race.state !== "done") return;
+  race.t += dt;
+  for (const r of racers) if (!r.finished && r.prog >= LAPS * Math.PI * 2) finish(r);
+  if (race.state === "racing") {
+    const lap = THREE.MathUtils.clamp(Math.floor(player.prog / (Math.PI * 2)) + 1, 1, LAPS);
+    ui.lap.textContent = lap + "/" + LAPS;
+    ui.pos.textContent = (standings().indexOf(player) + 1) + "/" + racers.length;
+    ui.time.textContent = clockText(race.t);
+  } else if (!ui.results.hidden) {
+    showStandings();
+  }
+}
+ui.raceBtn.addEventListener("click", startRace);
+document.getElementById("again").addEventListener("click", startRace);
+document.getElementById("free").addEventListener("click", freeDrive);
+
+// ---------- Views ----------
+const SEAT_HEAD = new THREE.Vector3(0, 0.8, 0.5);
+const RC_SPOT = new THREE.Vector3(0, 1.55, 17);
+const VIEWS = ["orbit", "chase", "seat"];
+let view = "orbit";
+let vrView = "seat";
+const headOffset = new THREE.Vector3(); // where your head was when you last recentered
+let lookYaw = 0, lookPitch = -0.15;
+
+function setView(v) {
+  view = v;
+  document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+  placeRig();
+}
+document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+document.getElementById("reset").addEventListener("click", resetKart);
+
+function placeRig() {
+  const inVR = renderer.xr.isPresenting;
+  const mode = inVR ? vrView : view;
+  controls.enabled = !inVR && mode === "orbit";
+  rig.rotation.set(0, 0, 0);
+  // From the driver seat you are the character: hide their body, keep their hands on the wheel.
+  player.driver?.userData.setBodyVisible(mode !== "seat");
+  if (mode === "seat") {
+    player.kart.add(rig);
+    rig.position.copy(SEAT_HEAD);
+    if (inVR) rig.position.sub(headOffset);
+  } else {
+    scene.add(rig);
+    rig.position.copy(inVR && mode === "rc" ? RC_SPOT.clone().sub(headOffset) : new THREE.Vector3());
+  }
+  if (!inVR) {
+    const k = player.kart.position;
+    if (mode === "seat") { camera.position.set(0, 0, 0); lookYaw = 0; lookPitch = -0.15; }
+    if (mode === "orbit") { camera.position.set(k.x - 1.6, 1.3, k.z + 2.4); controls.target.set(k.x, 0.4, k.z); }
+  }
+}
+
+// Drag to look around from the driver seat.
+let dragging = null;
+renderer.domElement.addEventListener("pointerdown", e => { if (view === "seat") dragging = { x: e.clientX, y: e.clientY }; });
+addEventListener("pointerup", () => { dragging = null; });
+addEventListener("pointermove", e => {
+  if (!dragging) return;
+  lookYaw -= (e.clientX - dragging.x) * 0.005;
+  lookPitch = THREE.MathUtils.clamp(lookPitch - (e.clientY - dragging.y) * 0.005, -1.2, 1.2);
+  dragging = { x: e.clientX, y: e.clientY };
+});
+
+// ---------- VR controllers ----------
+const factory = new XRControllerModelFactory();
+const grips = {};
+for (let i = 0; i < 2; i++) {
+  const grip = renderer.xr.getControllerGrip(i);
+  grip.add(factory.createControllerModel(grip));
+  grip.addEventListener("connected", e => { grips[e.data.handedness] = grip; });
+  rig.add(grip);
+}
+const wasPressed = {};
+function pressedOnce(id, now) { const fire = now && !wasPressed[id]; wasPressed[id] = now; return fire; }
+
+renderer.xr.addEventListener("sessionstart", () => { headOffset.set(0, 0, 0); vrView = "seat"; placeRig(); });
+renderer.xr.addEventListener("sessionend", () => { camera.position.set(0, 0, 0); camera.rotation.set(0, 0, 0); placeRig(); });
+
+function readVR() {
+  const out = { throttle: 0, steer: 0, steerDirect: null };
+  const session = renderer.xr.getSession();
+  const pads = {};
+  for (const src of session.inputSources) if (src.gamepad && src.handedness) pads[src.handedness] = src.gamepad;
+  const stick = gp => gp ? (gp.axes.length >= 4 ? [gp.axes[2], gp.axes[3]] : [gp.axes[0] ?? 0, gp.axes[1] ?? 0]) : [0, 0];
+  const btn = (gp, i) => !!gp?.buttons[i]?.pressed;
+  const val = (gp, i) => gp?.buttons[i]?.value ?? 0;
+  const L = pads.left, R = pads.right;
+  const [lx, ly] = stick(L), [rx] = stick(R);
+  const dz = v => (Math.abs(v) < 0.12 ? 0 : v);
+  out.throttle = THREE.MathUtils.clamp(val(R, 0) - val(L, 0) - dz(ly), -1, 1);
+  out.steer = -(dz(rx) || dz(lx));
+
+  // Both grips held while seated: steer by turning your hands like the real wheel.
+  if (vrView === "seat" && val(L, 1) > 0.5 && val(R, 1) > 0.5 && grips.left && grips.right) {
+    const l = player.kart.worldToLocal(grips.left.getWorldPosition(new THREE.Vector3()));
+    const r = player.kart.worldToLocal(grips.right.getWorldPosition(new THREE.Vector3()));
+    const angle = Math.atan2(r.y - l.y, r.x - l.x);
+    out.steerDirect = THREE.MathUtils.clamp(angle / STEER_RATIO, -MAX_STEER, MAX_STEER);
+  }
+  if (pressedOnce("A", btn(R, 4))) { vrView = vrView === "seat" ? "rc" : "seat"; placeRig(); }
+  if (pressedOnce("B", btn(R, 5))) { headOffset.copy(camera.position); placeRig(); } // camera.position is your head inside the rig
+  if (pressedOnce("X", btn(L, 4))) startRace();
+  if (pressedOnce("Y", btn(L, 5))) resetKart();
+  return out;
+}
+
+function readKeys() {
+  const k = c => keys.has(c);
+  const throttle = (k("KeyW") || k("ArrowUp") ? 1 : 0) - (k("KeyS") || k("ArrowDown") || k("Space") ? 1 : 0);
+  const steer = (k("KeyA") || k("ArrowLeft") ? 1 : 0) - (k("KeyD") || k("ArrowRight") ? 1 : 0);
+  return { throttle, steer, steerDirect: null };
+}
+
+// ---------- Start ----------
+toGrid();
+choose(pick);
+if (params.get("race") === "1") startRace();
+
+// ---------- Loop ----------
+const clock = new THREE.Clock();
+const chasePos = new THREE.Vector3(), chaseLook = new THREE.Vector3();
+const handL = new THREE.Vector3(), handR = new THREE.Vector3();
+const idle = { throttle: 0, steer: 0, steerDirect: null };
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const now = clock.elapsedTime;
+  const inVR = renderer.xr.isPresenting;
+  const input = race.state === "countdown" ? idle : inVR ? readVR() : readKeys();
+  drive(player, dt, input.throttle, input.steer, input.steerDirect);
+  // The crew are always out driving: racing you in a race, cruising laps the rest of the time.
+  rivals.forEach((r, i) => {
+    const ai = race.state !== "countdown" ? aiInput(r, i, race.state === "free" || r.finished) : idle;
+    drive(r, dt, ai.throttle, ai.steer, ai.steerDirect);
+  });
+  bump();
+  tumbleCones(dt);
+  updateRace(dt);
+  showSpeed(Math.round(Math.abs(player.car.speed) * 2.237));
+  for (const r of racers) {
+    r.driver.userData.tick(dt, now, {
+      speed: r.car.speed, steer: r.car.steer,
+      hands: [r.hands[0].getWorldPosition(handL), r.hands[1].getWorldPosition(handR)]
+    });
+  }
+
+  const kart = player.kart, car = player.car;
+  sun.position.set(kart.position.x + 6, 10, kart.position.z + 4);
+  sun.target.position.copy(kart.position);
+
+  if (!inVR) {
+    if (view === "orbit") {
+      controls.target.lerp(new THREE.Vector3(kart.position.x, 0.4, kart.position.z), 0.1);
+      controls.update();
+    } else if (view === "chase") {
+      const back = new THREE.Vector3(Math.sin(car.heading), 0, Math.cos(car.heading));
+      chasePos.copy(kart.position).addScaledVector(back, 3).setY(1.5);
+      camera.position.lerp(chasePos, 1 - Math.pow(0.002, dt));
+      chaseLook.copy(kart.position).setY(0.5);
+      camera.lookAt(chaseLook);
+    } else {
+      camera.rotation.set(lookPitch, lookYaw, 0, "YXZ");
+    }
+  }
+  renderer.render(scene, camera);
+});
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

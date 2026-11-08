@@ -1,0 +1,13 @@
+.DS_Store
+*.swp
+
+# Raw 360 camera footage and video exports: too big for GitHub (100 MB file limit), keep them on the drive
+*.OSV
+*.osv
+*.LRF
+*.lrf
+3D video/
+
+# Raw OpenStreetMap and elevation downloads for the Wheelie Ride v2 map (~130 MB).
+# tools/fetch_osm.py downloads them again; only the built src/v2/oc-map.js is kept.
+wheelie-ride/tools/cache/

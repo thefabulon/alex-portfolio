@@ -1,0 +1,23 @@
+<!doctype html><body><script>
+// Play the video and grab n evenly spaced frames as playback passes them (seeking is unreliable headless).
+const p=new URLSearchParams(location.search), n=+p.get('n')||6, tag=p.get('tag'), maxW=+p.get('w')||2048, rate=+p.get('rate')||1;
+const post=o=>fetch('/',{method:'POST',body:JSON.stringify(o)});
+const v=document.createElement('video'); v.muted=true; v.playsInline=true; v.preload='auto'; v.src=p.get('src');
+document.body.appendChild(v);
+v.onerror=()=>post({name:tag+'_info.json',error:v.error&&v.error.code});
+v.onloadedmetadata=()=>{
+  const c=document.createElement('canvas'); c.width=Math.min(maxW,v.videoWidth); c.height=Math.round(c.width*v.videoHeight/v.videoWidth);
+  const ctx=c.getContext('2d'); const targets=Array.from({length:n},(_,i)=>v.duration*(i+.5)/n); let k=0; const times=[]; let pending=Promise.resolve();
+  const onFrame=(now,meta)=>{
+    while(k<n && meta.mediaTime>=targets[k]){
+      ctx.drawImage(v,0,0,c.width,c.height); const i=k, t=meta.mediaTime; times.push(t);
+      const url=c.toDataURL('image/jpeg',.88);
+      pending=pending.then(()=>post({name:tag+'_'+String(i).padStart(3,'0')+'_'+t.toFixed(2)+'s.jpg', img:url})); k++;
+    }
+    if(k<n && !v.ended) v.requestVideoFrameCallback(onFrame);
+  };
+  v.requestVideoFrameCallback(onFrame);
+  v.onended=()=>pending.then(()=>post({name:tag+'_info.json', duration:v.duration, w:v.videoWidth, h:v.videoHeight, got:k, times}));
+  v.playbackRate=rate; v.play();
+};
+</script></body>

@@ -1,0 +1,105 @@
+/* Device frames drawn in CSS. Put a screenshot <img> (or a scroller) inside .screen. */
+
+.phone {
+  --w: 300px;
+  width: var(--w);
+  aspect-ratio: 390 / 844;
+  box-sizing: content-box;
+  padding: calc(var(--w) * 0.035);
+  border-radius: calc(var(--w) * 0.16);
+  background: linear-gradient(145deg, #3a3236, #17131a 55%, #2b2428);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.08),
+    0 0 0 1px #0b090c,
+    0 30px 60px -20px rgba(0,0,0,.65),
+    0 18px 30px -18px rgba(0,0,0,.5);
+  position: relative;
+  flex: 0 0 auto;
+}
+.phone::before {
+  /* side button */
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 24%;
+  width: 3px;
+  height: 12%;
+  border-radius: 0 3px 3px 0;
+  background: #2b2428;
+}
+.phone .screen {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--w) * 0.125);
+  overflow: hidden;
+  position: relative;
+  background: #181112;
+}
+.phone .screen::before {
+  /* dynamic island */
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--w) * 0.03);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 31%;
+  height: calc(var(--w) * 0.085);
+  border-radius: 999px;
+  background: #050405;
+}
+.phone .screen > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+.laptop { --w: 760px; width: var(--w); max-width: 100%; flex: 0 1 auto; }
+.laptop .lid {
+  padding: 2.4% 2.4% 3.2%;
+  border-radius: calc(var(--w) * 0.025) calc(var(--w) * 0.025) 0 0;
+  background: linear-gradient(180deg, #2e2a2e, #1a171a);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.07), 0 0 0 1px #0b090c;
+  position: relative;
+}
+.laptop .lid::before {
+  /* camera */
+  content: "";
+  position: absolute;
+  top: 1%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: #3c3a3e;
+}
+.laptop .screen {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #181112;
+  position: relative;
+}
+.laptop .screen > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.laptop .base {
+  height: calc(var(--w) * 0.028);
+  margin: 0 -6.5%;
+  border-radius: 0 0 calc(var(--w) * 0.03) calc(var(--w) * 0.03) / 0 0 calc(var(--w) * 0.018) calc(var(--w) * 0.018);
+  background: linear-gradient(180deg, #cfc9cf 0%, #8f8a90 55%, #4b474c 100%);
+  position: relative;
+  box-shadow: 0 26px 40px -18px rgba(0,0,0,.7);
+}
+.laptop .base::before {
+  /* thumb notch */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 15%;
+  height: 40%;
+  transform: translateX(-50%);
+  border-radius: 0 0 8px 8px;
+  background: #77727a;
+}
+
+/* A screen you can scroll with a full-page screenshot inside. */
+.screen.scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.screen.scroll::-webkit-scrollbar { display: none; }
+.screen.scroll > img { height: auto; object-fit: initial; }

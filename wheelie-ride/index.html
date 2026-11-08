@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wheelie Ride</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
+</head>
+<body>
+  <div class="game-shell">
+    <div class="game-inner">
+      <header class="page-header">
+        <div>
+          <a class="lobby-button mono" href="../lobby/v2.html">← Back to lobby</a>
+          <p class="eyebrow mono">The Open Road / 01</p>
+          <h1 class="title">WHEELIE RIDE</h1>
+        </div>
+        <p class="help">↑ accelerate · ↓ brake · ← → steer · hold SPACE to wheelie · lean back far enough to hand drag · E to drag · C to switch camera</p>
+      </header>
+
+      <main>
+        <section class="stage" aria-label="3D bicycle game">
+          <div id="scene" role="img" aria-label="3D bicycle riding along a road"></div>
+
+          <div class="hud" aria-live="off">
+            <div class="hud-box">
+              <span class="hud-label">Speed</span>
+              <span id="speed" class="hud-value">0</span>
+            </div>
+            <div class="hud-box">
+              <span class="hud-label">Distance</span>
+              <span id="distance" class="hud-value">0 m</span>
+            </div>
+            <div class="hud-box">
+              <span class="hud-label">Hand drag</span>
+              <span id="hand-drag" class="hud-value">0 m</span>
+            </div>
+          </div>
+
+          <div class="view-switch" role="group" aria-labelledby="view-label">
+            <span id="view-label" class="hud-label">Camera · C</span>
+            <div class="view-row">
+              <button class="view-button" data-view="third" type="button" aria-pressed="true">3rd person</button>
+              <button class="view-button" data-view="first" type="button" aria-pressed="false">1st person</button>
+              <button class="view-button" data-view="side" type="button" aria-pressed="false">Side cam</button>
+            </div>
+          </div>
+
+          <div id="drag-callout" class="drag-callout mono" hidden>HAND DRAG!</div>
+
+          <div class="lean-box">
+            <div class="lean-row">
+              <span class="hud-label">Wheelie angle<span class="lean-key"> · orange = hand drag · red line = crash</span></span>
+              <span id="lean-readout" class="mono lean-readout" aria-live="off">0°</span>
+            </div>
+            <div id="meter" class="meter-track" role="progressbar" aria-label="Wheelie lean toward crash" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="meter-zone" aria-hidden="true"></div>
+              <div id="meter-fill" class="meter-fill"></div>
+              <div class="meter-marker"></div>
+            </div>
+          </div>
+
+          <div id="crash-screen" class="crash-screen" hidden>
+            <div class="crash-card">
+              <p class="crash-kicker mono">Ride over</p>
+              <h2 class="crash-title">Too far back!</h2>
+              <p id="crash-description" class="crash-description">You crossed the lean limit. Keep the front wheel lower on your next run.</p>
+              <div class="crash-actions">
+                <button id="restart" type="button" class="primary-button">Ride again</button>
+                <a class="secondary-button" href="../lobby/v2.html">Back to lobby</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="controls-panel">
+          <div>
+            <h2 class="panel-title">CHOOSE YOUR BIKE</h2>
+            <div class="button-row" role="group" aria-label="Choose a bike">
+              <button class="bike-button active" data-bike="street" type="button" aria-pressed="true">● Street</button>
+              <button class="bike-button" data-bike="trail" type="button" aria-pressed="false">● Trail</button>
+              <button class="bike-button" data-bike="sprint" type="button" aria-pressed="false">● Sprint</button>
+              <button class="bike-button" data-bike="sur-ron" type="button" aria-pressed="false">● Sur Ron</button>
+              <button class="bike-button" data-bike="kawasaki" type="button" aria-pressed="false">● Kawasaki Ninja H2R</button>
+            </div>
+          </div>
+          <div>
+            <p class="touch-label">ON-SCREEN CONTROLS</p>
+            <div class="button-row" aria-label="Touch controls">
+              <button class="touch-button" data-control="ArrowLeft" type="button" aria-label="Steer left">←</button>
+              <button class="touch-button" data-control="ArrowUp" type="button" aria-label="Accelerate">↑</button>
+              <button class="touch-button" data-control="ArrowDown" type="button" aria-label="Brake">↓</button>
+              <button class="touch-button" data-control="ArrowRight" type="button" aria-label="Steer right">→</button>
+              <button class="touch-button wheelie-touch" data-control="Space" type="button">WHEELIE</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <p class="footer-tip">TIP / Build up speed before lifting the front wheel. Keep holding Space past the orange mark and the rider drags a hand on the road. Tap Space to hold it there. Release Space to bring the front wheel down. Press C (or use the CAMERA switch in the top corner of the game) to switch between 3rd person, 1st person and the side cam. In 1st person, drag on the road to look around.</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="src/main.js"></script>
+</body>
+</html>

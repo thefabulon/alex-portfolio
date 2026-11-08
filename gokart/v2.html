@@ -1,0 +1,2135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go-Kart Drift v2</title>
+<meta name="description" content="Version 2 of Alex's plywood go-kart: a handbrake you can drift with, a walled drift track with Brian's Skyline on show in the middle, and sponsor stickers. Race the crew or just chase drift points while they cruise laps around you. Works in a VR headset or a browser.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Rajdhani:wght@500;600;700&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #f4f7fb; --muted: #a9bccb; --accent: #ff8a3d; --pink: #ff2f8e; --teal: #35d6c8; --yellow: #ffd23f;
+    --panel: rgba(9, 16, 28, .74); --panel-solid: #0d1724; --line: rgba(255, 255, 255, .16);
+    --num: "Russo One", "Arial Black", Impact, sans-serif; --ui: "Rajdhani", "Arial Narrow", sans-serif;
+    --shadow: 0 2px 0 rgba(0, 0, 0, .35), 0 0 16px rgba(0, 0, 0, .3);
+  }
+  html, body { margin: 0; height: 100%; background: #0a1520; color: var(--ink); font-family: var(--ui); overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  canvas { display: block; touch-action: none; }
+  button { font-family: var(--ui); cursor: pointer; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  kbd { display: inline-block; min-width: 1.2em; text-align: center; font: 700 12px/1 var(--ui); color: var(--ink); background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .28); border-bottom-width: 3px; border-radius: 5px; padding: 3px 5px 2px; }
+  kbd.hb { border-color: var(--pink); color: var(--pink); }
+
+  /* ---------- Top left: position, lap, time, drift points, track map ---------- */
+  .tl { position: fixed; left: 20px; top: 16px; pointer-events: none; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  .tl button { pointer-events: auto; }
+  .race-info { font-style: italic; text-shadow: var(--shadow); }
+  .pos { display: flex; align-items: flex-start; line-height: .9; }
+  .pos b { font: 400 68px/.9 var(--num); font-style: italic; }
+  .pos-side { display: flex; flex-direction: column; justify-content: space-between; align-self: stretch; margin-left: 4px; padding: 4px 0 6px; }
+  .pos sup { font: 400 24px/1 var(--num); font-style: italic; text-transform: uppercase; }
+  .pos-side span { font: 400 20px/1 var(--num); font-style: italic; color: var(--muted); }
+  .lapline { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+  .lapline span { font: 700 15px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-style: normal; }
+  .lapline b { font: 400 30px/1 var(--num); font-style: italic; }
+  .clock { font: 400 24px/1 var(--num); font-style: italic; letter-spacing: .02em; margin-top: 4px; }
+  .free-info { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .tag { font: 400 30px/1 var(--num); font-style: italic; text-transform: uppercase; text-shadow: var(--shadow); }
+  .tag em { font-style: inherit; color: var(--accent); }
+  .cta { display: inline-flex; align-items: center; gap: 10px; font: 700 15px/1 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: #160b02; background: linear-gradient(180deg, #ffb070, var(--accent)); border: 0; padding: 10px 18px 9px 16px; clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+  .cta kbd { color: #160b02; background: rgba(0, 0, 0, .12); border-color: rgba(0, 0, 0, .3); }
+  .cta:hover { filter: brightness(1.08); }
+  .dchip { display: flex; align-items: baseline; gap: 8px; background: var(--panel); padding: 5px 14px 4px 10px; border-left: 3px solid var(--pink); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+  .dchip span { font: 700 12px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--pink); }
+  .dchip b { font: 400 18px/1 var(--num); font-style: italic; }
+  .dchip small { font: 600 12px/1 var(--ui); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+  #minimap { width: 160px; height: 160px; margin-top: 4px; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .35)); }
+
+  /* ---------- Top right: round icon buttons ---------- */
+  .tr { position: fixed; right: 16px; top: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .icons { display: flex; gap: 8px; align-items: center; }
+  .ico { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; padding: 0; color: var(--ink); background: rgba(9, 16, 28, .78); border: 2px solid rgba(255, 255, 255, .22); box-shadow: 0 3px 10px rgba(0, 0, 0, .3); transition: transform .12s, border-color .12s; }
+  .ico:hover { border-color: var(--accent); transform: scale(1.06); }
+  .ico:active { transform: scale(.94); }
+  .ico svg { width: 22px; height: 22px; }
+  .ico[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #160b02; }
+  .vr-pill { position: static !important; width: auto !important; height: 46px !important; padding: 0 16px !important; border-radius: 23px !important; font: 700 13px/1 var(--ui) !important; letter-spacing: .12em; background: var(--pink) !important; border: 0 !important; color: #fff !important; opacity: 1 !important; inset: auto !important; }
+  .camname { font: 700 13px/1 var(--ui); letter-spacing: .16em; text-transform: uppercase; background: var(--panel); padding: 6px 12px; border-right: 3px solid var(--accent); transition: opacity .4s; pointer-events: none; }
+  .camname.gone { opacity: 0; }
+  .pill { font: 700 13px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); background: var(--panel); border: 2px solid var(--accent); border-radius: 20px; padding: 8px 14px; }
+
+  /* ---------- Bottom right: speedometer ---------- */
+  .gauge { position: fixed; right: 18px; bottom: 14px; width: 210px; height: 210px; pointer-events: none; }
+  .gauge svg { width: 100%; height: 100%; overflow: visible; }
+  .g-face { fill: rgba(9, 16, 28, .8); stroke: rgba(255, 255, 255, .2); stroke-width: 2; }
+  .g-seg { fill: none; stroke-width: 13; stroke: rgba(255, 255, 255, .1); transition: stroke .08s; }
+  .g-lbl { font: 400 13px var(--num); fill: var(--muted); text-anchor: middle; dominant-baseline: middle; font-style: italic; }
+  .g-needle { fill: var(--pink); filter: drop-shadow(0 0 4px rgba(255, 47, 142, .8)); }
+  .g-hub { fill: #1b2738; stroke: var(--pink); stroke-width: 3; }
+  .g-read { position: absolute; left: 0; right: 0; top: 60%; text-align: center; line-height: 1; }
+  .g-read b { display: block; font: 400 40px/1 var(--num); font-style: italic; text-shadow: 0 0 12px rgba(0, 0, 0, .6); }
+  .g-read span { font: 700 11px/1 var(--ui); letter-spacing: .24em; color: var(--muted); }
+  .lamps { position: absolute; left: 0; right: 0; bottom: 2px; display: flex; justify-content: center; gap: 5px; }
+  .lamps i { font: 700 10px/1 var(--ui); font-style: normal; letter-spacing: .1em; padding: 3px 5px 2px; border-radius: 3px; color: rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .12); }
+  .lamps i.on { color: #fff; background: var(--pink); border-color: var(--pink); box-shadow: 0 0 10px var(--pink); }
+  .lamps i.gear { color: var(--teal); border-color: rgba(53, 214, 200, .5); min-width: 10px; text-align: center; }
+  .lamps i.gear.rev { color: var(--yellow); border-color: var(--yellow); }
+
+  /* ---------- Bottom centre: drift combo ---------- */
+  .drift { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); pointer-events: none; text-align: center; min-width: 230px; }
+  .d-label { display: inline-block; font: 400 16px/1 var(--num); font-style: italic; letter-spacing: .06em; text-transform: uppercase; color: #fff; background: var(--pink); padding: 5px 16px 4px; clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+  .d-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 2px; }
+  .d-row b { font: 400 54px/1 var(--num); font-style: italic; text-shadow: var(--shadow); }
+  .d-row i { font: 400 22px/1 var(--num); font-style: italic; color: #160b02; background: var(--yellow); border-radius: 50%; width: 44px; height: 44px; display: grid; place-items: center; box-shadow: 0 0 14px rgba(255, 210, 63, .6); }
+  .d-row i:empty { display: none; }
+  .d-meter { display: flex; gap: 4px; justify-content: center; margin-top: 6px; }
+  .d-meter span { width: 38px; height: 7px; background: rgba(255, 255, 255, .18); transform: skewX(-20deg); overflow: hidden; position: relative; }
+  .d-meter span.full { background: var(--yellow); box-shadow: 0 0 8px rgba(255, 210, 63, .7); }
+  .d-meter span em { position: absolute; inset: 0 auto 0 0; background: var(--yellow); }
+  .drift.banked .d-label { background: var(--teal); color: #04201d; }
+  .drift.banked .d-row b { color: var(--teal); }
+  .drift.banked .d-meter { visibility: hidden; }
+  .drift.lost .d-label { background: #5a6675; }
+  .drift.lost .d-row b { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 4px; }
+  .drift.lost .d-meter { visibility: hidden; }
+
+  /* ---------- Bottom left: keyboard hints (fade away once you're driving) ---------- */
+  .hints { position: fixed; left: 20px; bottom: 20px; display: flex; flex-wrap: wrap; gap: 6px 14px; max-width: calc(100vw - 300px); font: 600 13px/1 var(--ui); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); text-shadow: var(--shadow); pointer-events: none; transition: opacity .8s; }
+  .hints span { display: inline-flex; align-items: center; gap: 4px; background: var(--panel); padding: 5px 10px 5px 6px; border-radius: 4px; }
+  .hints.fade { opacity: 0; }
+
+  /* ---------- Speech bubble over a kart when someone overtakes ---------- */
+  .bubble { position: fixed; left: 0; top: 0; pointer-events: none; font: 400 17px/1 var(--num); font-style: italic; text-transform: uppercase; color: #121a26; background: #fff; padding: 9px 14px 8px; transform: translate(-50%, -100%) skewX(-8deg); box-shadow: 0 4px 0 rgba(0, 0, 0, .25); white-space: nowrap; }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -10px; border: 10px solid transparent; border-top-color: #fff; border-bottom: 0; margin-left: -10px; }
+  .bubble.me { background: var(--yellow); }
+  .bubble.me::after { border-top-color: var(--yellow); }
+
+  /* ---------- Start lights ---------- */
+  .lights { position: fixed; left: 50%; top: 18%; transform: translateX(-50%); pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .gantry { display: flex; gap: 14px; background: #10161f; padding: 12px 18px; border-radius: 14px; border: 3px solid #2a3442; box-shadow: 0 8px 30px rgba(0, 0, 0, .5); }
+  .gantry i { width: 46px; height: 46px; border-radius: 50%; background: #2a1316; box-shadow: inset 0 3px 6px rgba(0, 0, 0, .6); }
+  .gantry i.red { background: radial-gradient(circle at 40% 35%, #ff8a8a, #ff1d2e 55%, #a3000e); box-shadow: 0 0 22px #ff1d2e; }
+  .gantry i.green { background: radial-gradient(circle at 40% 35%, #b4ffcf, #19e36a 55%, #04822f); box-shadow: 0 0 22px #19e36a; }
+  .lights b { font: 400 min(22vw, 120px)/1 var(--num); font-style: italic; color: #fff; text-shadow: 0 6px 0 rgba(0, 0, 0, .3), 0 0 30px rgba(0, 0, 0, .4); }
+  .lights.go b { color: #19e36a; }
+
+  /* ---------- Touch controls (phones and tablets) ---------- */
+  .tpad { position: fixed; inset: auto 0 0 0; height: 0; }
+  .tpad button { position: fixed; touch-action: none; -webkit-touch-callout: none; border: 0; padding: 0; color: rgba(255, 255, 255, .9); }
+  .t-steer { width: 76px; height: 76px; bottom: 22px; border-radius: 50%; background: rgba(255, 255, 255, .22); border: 3px solid rgba(255, 255, 255, .35) !important; display: grid; place-items: center; backdrop-filter: blur(4px); }
+  .t-steer svg { width: 34px; height: 34px; }
+  .t-left { left: 18px; }
+  .t-right { left: 108px; }
+  .t-gas { right: 18px; bottom: 22px; width: 74px; height: 128px; border-radius: 16px; background: radial-gradient(circle, rgba(60, 60, 64, .9) 5px, transparent 6px) 0 0 / 22px 22px, linear-gradient(180deg, #e9ecef, #b9bfc6); box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .5), 0 6px 0 #6b737c; }
+  .t-brake { right: 104px; bottom: 22px; width: 70px; height: 84px; border-radius: 12px; background: repeating-linear-gradient(180deg, #c9ced4 0 7px, #8e969f 7px 11px); box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .45), 0 6px 0 #5d656e; }
+  .t-drift { right: 106px; bottom: 120px; width: 66px; height: 66px; border-radius: 50%; font: 400 13px/1 var(--num) !important; font-style: italic !important; color: #fff !important; background: radial-gradient(circle at 40% 35%, #ff6bb0, var(--pink)); box-shadow: 0 0 0 4px rgba(255, 47, 142, .35), 0 5px 0 #8c0d48; }
+  .tpad button.on { filter: brightness(1.25); transform: translateY(3px) scale(.97); }
+  .t-gas.on, .t-brake.on { box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .5), 0 3px 0 #6b737c; }
+
+  /* ---------- Pause menu ---------- */
+  .menu { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(5, 10, 18, .55); backdrop-filter: blur(6px); padding: 16px; box-sizing: border-box; }
+  .m-panel { width: min(860px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; box-sizing: border-box; background: linear-gradient(160deg, rgba(20, 32, 50, .97), rgba(9, 16, 28, .97)); border: 1px solid var(--line); border-top: 4px solid var(--accent); box-shadow: 0 20px 60px rgba(0, 0, 0, .5); padding: 22px 24px 20px; user-select: text; -webkit-user-select: text; }
+  .m-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .m-head h1 { margin: 0; font: 400 38px/1 var(--num); font-style: italic; text-transform: uppercase; }
+  .m-head h1 em { font-style: inherit; color: var(--accent); }
+  .m-head h1 small { font-size: 16px; color: var(--muted); margin-left: 6px; }
+  .m-paused { font: 700 13px/1 var(--ui); letter-spacing: .3em; text-transform: uppercase; color: var(--pink); }
+  .m-grid { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+  .m-main { display: flex; flex-direction: column; gap: 8px; }
+  .m-btn { display: flex; align-items: center; justify-content: space-between; text-decoration: none; font: 700 17px/1 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); background: rgba(255, 255, 255, .06); border: 0; border-left: 4px solid transparent; padding: 13px 16px 12px; text-align: left; clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); transition: background .12s, border-color .12s, padding .12s; }
+  .m-btn:hover, .m-btn:focus-visible { background: rgba(255, 138, 61, .16); border-left-color: var(--accent); padding-left: 20px; outline: none; }
+  .m-btn.primary { background: linear-gradient(90deg, var(--accent), #ffb070); color: #160b02; }
+  .m-btn.primary:hover { filter: brightness(1.06); }
+  .m-btn kbd { font-size: 11px; }
+  .m-btn.small { font-size: 14px; padding: 10px 16px 9px; color: var(--muted); }
+  .m-side section { margin-bottom: 14px; }
+  .m-side h2 { margin: 0 0 7px; font: 700 12px/1 var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { font: 700 14px/1 var(--ui); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: rgba(255, 255, 255, .06); border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px 7px; }
+  .chips button:hover { border-color: var(--accent); }
+  .chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #160b02; }
+  .m-side details { border-top: 1px solid var(--line); padding: 9px 0; }
+  .m-side summary { cursor: pointer; font: 700 14px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; }
+  .m-side summary:hover { color: var(--accent); }
+  .m-side ul, .m-side p { margin: 8px 0 0; font: 500 15px/1.5 var(--ui); color: var(--muted); }
+  .m-side ul { padding-left: 18px; }
+  .m-side li + li { margin-top: 3px; }
+  .ctl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; margin-top: 8px; font: 500 15px/1.3 var(--ui); color: var(--muted); }
+  .ctl dt { display: flex; gap: 3px; justify-content: flex-end; }
+  .ctl dd { margin: 0; }
+
+  /* ---------- Race results ---------- */
+  .results { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 15; width: min(440px, calc(100vw - 32px)); box-sizing: border-box; background: linear-gradient(160deg, rgba(20, 32, 50, .97), rgba(9, 16, 28, .97)); border-top: 4px solid var(--accent); box-shadow: 0 20px 60px rgba(0, 0, 0, .5); padding: 20px 22px; }
+  .results h2 { margin: 0 0 12px; font: 400 46px/1 var(--num); font-style: italic; text-transform: uppercase; color: var(--accent); }
+  .results ol { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .results li { display: grid; grid-template-columns: 34px 6px 1fr auto; gap: 10px; align-items: center; background: rgba(255, 255, 255, .05); padding: 7px 10px; font: 600 16px/1 var(--ui); }
+  .results li .p { font: 400 20px/1 var(--num); font-style: italic; text-align: center; }
+  .results li .sw { height: 20px; transform: skewX(-15deg); }
+  .results li .t { font: 400 15px/1 var(--num); font-style: italic; color: var(--muted); }
+  .results li.you { background: rgba(255, 138, 61, .18); color: var(--accent); }
+  .results p { margin: 0 0 6px; font: 600 15px/1.4 var(--ui); color: var(--muted); }
+  .results .row { display: flex; gap: 8px; margin-top: 12px; }
+  .results .row .m-btn { flex: 1; justify-content: center; }
+
+  /* ---------- Touch layout ---------- */
+  body.touch .hints { display: none; }
+  body.touch .cta kbd, body.touch .m-btn kbd { display: none; }
+  body.touch .gauge { top: 72px; bottom: auto; right: 12px; width: 132px; height: 132px; }
+  body.touch .g-read b { font-size: 26px; }
+  body.touch .g-lbl { font-size: 15px; }
+  body.touch .lamps { bottom: -14px; }
+  body.touch .drift { bottom: 170px; }
+  body.touch .ico { width: 42px; height: 42px; }
+  @media (max-width: 700px) {
+    .tl { left: 12px; top: 12px; }
+    .tr { right: 12px; top: 12px; }
+    .pos b { font-size: 46px; }
+    .pos sup { font-size: 18px; }
+    .pos-side span { font-size: 15px; }
+    .lapline b { font-size: 22px; }
+    .clock { font-size: 18px; }
+    .tag { font-size: 22px; }
+    #minimap { width: 112px; height: 112px; }
+    .icons { gap: 6px; }
+    .ico { width: 40px; height: 40px; }
+    .ico svg { width: 19px; height: 19px; }
+    .gauge { width: 150px; height: 150px; }
+    .g-read b { font-size: 30px; }
+    .d-row b { font-size: 40px; }
+    .d-meter span { width: 28px; }
+    .m-grid { grid-template-columns: 1fr; gap: 16px; }
+    .m-head h1 { font-size: 28px; }
+    .gantry i { width: 34px; height: 34px; }
+    .lights { top: 34%; }
+  }
+  @media (max-height: 480px) {
+    #minimap { width: 96px; height: 96px; }
+    .pos b { font-size: 42px; }
+    body.touch .gauge { top: 62px; width: 112px; height: 112px; }
+    body.touch .drift { bottom: auto; top: 12px; }
+    body.touch .t-gas { height: 104px; }
+    body.touch .t-drift { bottom: 96px; }
+  }
+</style>
+</head>
+<body>
+<!-- Top left: race position, lap and time (in a race), or Free Drive; drift points and the track map -->
+<div class="tl" id="tl">
+  <div class="race-info" id="racebar" hidden aria-live="off">
+    <div class="pos"><b id="pos">5</b><span class="pos-side"><sup id="pos-suf">th</sup><span id="pos-of">/5</span></span></div>
+    <div class="lapline"><span>Lap</span><b id="lap">1/2</b></div>
+    <div class="clock" id="time">00'00"00</div>
+  </div>
+  <div class="free-info" id="freebar">
+    <div class="tag">Free <em>drive</em></div>
+    <button class="cta" id="race-cta">Race the crew <kbd>Enter</kbd></button>
+  </div>
+  <div class="dchip"><span>Drift</span><b id="dtotal">0</b><small id="dbest"></small></div>
+  <canvas id="minimap" role="img" aria-label="Track map: your kart and the crew"></canvas>
+</div>
+
+<!-- Top right: menu, camera, night, reset -->
+<div class="tr" id="tr">
+  <div class="icons" id="icons">
+    <button class="ico" id="menu-btn" title="Menu (Esc)" aria-label="Pause menu"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+    <button class="ico" id="cam-btn" title="Switch camera (C)" aria-label="Switch camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8h3.5l2-2.5h7l2 2.5H21v11H3z"/><circle cx="12" cy="13" r="3.6"/></svg></button>
+    <button class="ico" id="night" title="Night" aria-label="Night" aria-pressed="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z"/></svg></button>
+    <button class="ico" id="reset" title="Back on the track (R)" aria-label="Back on the track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4.5 3.5v4.5H9"/></svg></button>
+  </div>
+  <div class="camname gone" id="camname" aria-live="polite">Chase cam</div>
+  <button class="pill" id="readsign" hidden>Watch the kart</button>
+</div>
+
+<!-- Bottom right: speedometer -->
+<div class="gauge" id="gauge" aria-hidden="true">
+  <svg viewBox="0 0 200 200">
+    <circle class="g-face" cx="100" cy="100" r="96"/>
+    <g id="g-segs"></g>
+    <g id="g-lbls"></g>
+    <polygon class="g-needle" id="g-needle" points="96,104 104,104 100,26"/>
+    <circle class="g-hub" cx="100" cy="100" r="8"/>
+  </svg>
+  <div class="g-read"><b id="g-mph">0</b><span>MPH</span></div>
+  <div class="lamps"><i id="lamp-hb">HB</i><i id="lamp-drift">DRIFT</i><i class="gear" id="lamp-gear">D</i></div>
+</div>
+
+<!-- Bottom centre: drift combo -->
+<div class="drift" id="drift" hidden aria-live="off">
+  <div class="d-label" id="drift-label">Drift</div>
+  <div class="d-row"><b id="drift-pts">0</b><i id="drift-mult">×1</i></div>
+  <div class="d-meter" id="drift-meter"><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<div class="hints" id="hints">
+  <span><kbd>W</kbd><kbd>S</kbd> Gas / brake</span>
+  <span><kbd>A</kbd><kbd>D</kbd> Steer</span>
+  <span><kbd class="hb">Space</kbd> Drift</span>
+  <span><kbd>C</kbd> Camera</span>
+  <span><kbd>Esc</kbd> Menu</span>
+</div>
+
+<div class="bubble" id="bubble" hidden></div>
+
+<div class="lights" id="count" hidden aria-live="assertive">
+  <div class="gantry"><i></i><i></i><i></i></div>
+  <b id="count-text">3</b>
+</div>
+
+<!-- Touch controls: steer arrows bottom left, pedals and drift button bottom right -->
+<div class="tpad" id="touch" hidden>
+  <button class="t-steer t-left" data-t="left" aria-label="Steer left"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 4 6.5 12l9 8z"/></svg></button>
+  <button class="t-steer t-right" data-t="right" aria-label="Steer right"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 4l9 8-9 8z"/></svg></button>
+  <button class="t-drift" data-t="hb" aria-label="Handbrake (drift)">DRIFT</button>
+  <button class="t-brake" data-t="brake" aria-label="Brake"></button>
+  <button class="t-gas" data-t="gas" aria-label="Gas"></button>
+</div>
+
+<!-- Pause menu -->
+<div class="menu" id="hud" hidden role="dialog" aria-modal="true" aria-labelledby="menu-title">
+  <div class="m-panel">
+    <header class="m-head">
+      <h1 id="menu-title">Go-Kart <em>Drift</em><small>v2</small></h1>
+      <span class="m-paused">Paused</span>
+    </header>
+    <div class="m-grid">
+      <nav class="m-main" aria-label="Game">
+        <button class="m-btn primary" id="resume">Resume <kbd>Esc</kbd></button>
+        <button class="m-btn" id="race">Race the crew <kbd>Enter</kbd></button>
+        <button class="m-btn" id="free-menu">Free drive</button>
+        <button class="m-btn" id="reset-menu">Back on the track <kbd>R</kbd></button>
+        <a class="m-btn small" href="../lobby/v2.html">← Lobby</a>
+        <a class="m-btn small" href="../characters/index.html">Meet the crew →</a>
+      </nav>
+      <div class="m-side">
+        <section>
+          <h2 id="cam-label">Camera</h2>
+          <div class="chips" role="group" aria-labelledby="cam-label">
+            <button data-view="chase" aria-pressed="true">Chase</button>
+            <button data-view="seat" aria-pressed="false">Driver seat</button>
+            <button data-view="stands" aria-pressed="false">Stands</button>
+            <button data-view="orbit" aria-pressed="false">Look around</button>
+          </div>
+        </section>
+        <section>
+          <h2 id="driver-label">Driver</h2>
+          <div class="chips" id="drivers" role="group" aria-labelledby="driver-label"></div>
+        </section>
+        <section>
+          <h2 id="look-label">Look</h2>
+          <div class="chips" id="looks" role="group" aria-labelledby="look-label"></div>
+        </section>
+        <details open>
+          <summary>How to drift</summary>
+          <ul>
+            <li>Steer into a corner and hold <kbd class="hb">Space</kbd> to kick the back end out.</li>
+            <li>Keep holding it, with the gas down, to hold the slide. Steer in harder to tighten it.</li>
+            <li>Let go of <kbd class="hb">Space</kbd> to straighten up. Let go and press it again while you're counter-steering to flick into the next drift.</li>
+            <li>Longer drifts fill the meter and build a multiplier, up to ×5. Brushing a wall is fine, but hitting one hard loses the combo.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>Controls</summary>
+          <dl class="ctl">
+            <dt><kbd>W</kbd><kbd>S</kbd></dt><dd>Gas and brake / reverse (arrow keys work too)</dd>
+            <dt><kbd>A</kbd><kbd>D</kbd></dt><dd>Steer</dd>
+            <dt><kbd class="hb">Space</kbd></dt><dd>Handbrake: hold to drift, let go to straighten up</dd>
+            <dt><kbd>Enter</kbd></dt><dd>Start a race</dd>
+            <dt><kbd>R</kbd></dt><dd>Put the kart back on the track</dd>
+            <dt><kbd>C</kbd></dt><dd>Switch camera</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Pause menu (<kbd>H</kbd> and <kbd>P</kbd> work too)</dd>
+          </dl>
+          <p>On a phone or tablet: arrows on the left to steer, gas and brake pedals on the right, and the pink DRIFT button for the handbrake.</p>
+        </details>
+        <details>
+          <summary>VR controls</summary>
+          <ul>
+            <li>Right trigger: gas. Left trigger: brake / reverse.</li>
+            <li>Either thumbstick: steer. Click and hold either thumbstick in: handbrake (let go to straighten up).</li>
+            <li>Hold both grip buttons and turn your hands like a real wheel to steer.</li>
+            <li>A: switch between sitting in the kart and watching from the stands. The sign about the kart is straight across the track from the stands.</li>
+            <li>B: recenter your view. Y: put the kart back on the track. X: start a race.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>How the race works</summary>
+          <ul>
+            <li>Two laps of the drift track against the other four characters.</li>
+            <li>When you're not racing, the other four still drive laps around the track at their own easy pace, so you've always got someone to chase. Once they finish a race, they keep cruising too.</li>
+            <li>You get drift points during the race as well. They show up in your results.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>About the kart</summary>
+          <p id="about-sub"></p>
+          <ul id="about-list"></ul>
+          <p>Brian's Skyline is on show in the middle of the track, turning on a stand, so you can see the kart and the car it came from together. Try it at night to see the underglow.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="results" id="results" hidden role="dialog" aria-labelledby="results-title">
+  <h2 id="results-title">P1!</h2>
+  <ol id="standings"></ol>
+  <p id="best"></p>
+  <p id="drift-sum"></p>
+  <div class="row"><button class="m-btn primary" id="again">Race again</button><button class="m-btn" id="free">Free drive</button></div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script src="../characters/crew.js"></script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { VRButton } from "three/addons/webxr/VRButton.js";
+import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
+import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
+import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
+
+const Crew = makeCrew(THREE, { DecalGeometry, mergeVertices });
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.xr.enabled = true;
+renderer.xr.setReferenceSpaceType("local"); // origin = your head when you enter VR, so seated play works
+document.body.prepend(renderer.domElement);
+const vrButton = document.body.appendChild(VRButton.createButton(renderer));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xbcd3e6);
+scene.fog = new THREE.Fog(0xbcd3e6, 80, 330);
+const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.05, 700);
+const rig = new THREE.Group(); // the player: camera + controllers ride in here
+rig.add(camera);
+scene.add(rig);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+const hemi = new THREE.HemisphereLight(0xe8f1ff, 0x5d6b4a, 1.6);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(6, 10, 4);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 30 });
+scene.add(sun, sun.target);
+
+// ---------- Textures, all painted on canvases so the page needs no image files ----------
+function paint(w, h, draw, repeat = [1, 1]) {
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  draw(c.getContext("2d"), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(...repeat);
+  t.anisotropy = 8;
+  return t;
+}
+const rand = (a, b) => a + Math.random() * (b - a);
+function speckle(ctx, w, h, n, dark, light) {
+  for (let i = 0; i < n; i++) {
+    ctx.fillStyle = Math.random() < 0.5 ? dark : light;
+    ctx.fillRect(rand(0, w), rand(0, h), rand(1, 2.5), rand(1, 2.5));
+  }
+}
+
+// Silver spray paint over plywood, with the scuffs and sanding swirls from the photos.
+function sprayPaint(ctx, w, h) {
+  ctx.fillStyle = "#c3c8cc";
+  ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 220; i++) {
+    const x = rand(0, w), y = rand(0, h), r = rand(10, 70);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    const dark = Math.random() < 0.6;
+    g.addColorStop(0, dark ? "rgba(70,80,95,.13)" : "rgba(255,255,255,.18)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 40; i++) {
+    ctx.strokeStyle = `rgba(80,90,105,${rand(0.06, 0.16)})`;
+    const x = rand(0, w), y = rand(0, h), r = rand(8, 40);
+    for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(x, y, r + k * 4, rand(0, 6), rand(0, 6)); ctx.stroke(); }
+  }
+}
+const silverTex = paint(512, 512, sprayPaint, [1.5, 1.5]);
+const plyTex = paint(64, 64, (ctx, w, h) => {
+  for (let y = 0; y < h; y += 4) { ctx.fillStyle = (y / 4) % 2 ? "#b78f5c" : "#d9b585"; ctx.fillRect(0, y, w, 4); }
+}, [4, 1]);
+const grtTex = paint(840, 310, (ctx, w, h) => {
+  sprayPaint(ctx, w, h);
+  ctx.strokeStyle = "#3a4048";
+  ctx.lineWidth = 4;
+  ctx.font = "bold 150px 'Comic Sans MS', 'Chalkboard SE', sans-serif";
+  ctx.strokeText("GRT", w - 330, h - 50);
+});
+const treadTex = paint(512, 64, (ctx, w, h) => {
+  ctx.fillStyle = "#1b1b1d";
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = "#4a4a50";
+  ctx.lineWidth = 3;
+  for (let x = -h; x < w + h; x += 16) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + h, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + h, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+});
+// Hub face: the black turbine-vane wheels from the photos.
+const hubTex = paint(256, 256, (ctx, w) => {
+  const c = w / 2;
+  ctx.fillStyle = "#1b1b1d"; ctx.fillRect(0, 0, w, w);
+  ctx.fillStyle = "#2c2d31"; ctx.beginPath(); ctx.arc(c, c, c * 0.78, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#0e0e10"; ctx.lineWidth = 6;
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2;
+    ctx.beginPath(); ctx.moveTo(c + Math.cos(a) * 30, c + Math.sin(a) * 30);
+    ctx.quadraticCurveTo(c + Math.cos(a + 0.5) * 70, c + Math.sin(a + 0.5) * 70, c + Math.cos(a + 0.9) * 100, c + Math.sin(a + 0.9) * 100);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#9da3a8"; ctx.beginPath(); ctx.arc(c, c, 22, 0, 7); ctx.fill();
+  ctx.fillStyle = "#555"; ctx.beginPath(); ctx.arc(c, c, 8, 0, 7); ctx.fill();
+});
+// Asphalt: across the road is u (0 = left edge, 1 = right edge), along it is v.
+const asphaltTex = paint(256, 256, (ctx, w, h) => {
+  ctx.fillStyle = "#3d3f43"; ctx.fillRect(0, 0, w, h);
+  speckle(ctx, w, h, 6000, "rgba(20,20,24,.35)", "rgba(200,200,205,.12)");
+  // Rubbered-in line where everyone drives, a bit darker.
+  const g = ctx.createLinearGradient(0, 0, w, 0);
+  g.addColorStop(0.2, "rgba(0,0,0,0)"); g.addColorStop(0.5, "rgba(10,10,12,.22)"); g.addColorStop(0.8, "rgba(0,0,0,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = "#e9e9e4";
+  ctx.fillRect(5, 0, 5, h); ctx.fillRect(w - 10, 0, 5, h);
+});
+const grassTex = paint(256, 256, (ctx, w, h) => {
+  ctx.fillStyle = "#5f8a45"; ctx.fillRect(0, 0, w, h);
+  speckle(ctx, w, h, 9000, "rgba(40,70,30,.35)", "rgba(150,190,100,.25)");
+}, [140, 140]);
+const curbTex = paint(32, 64, (ctx, w, h) => {
+  ctx.fillStyle = "#d8262c"; ctx.fillRect(0, 0, w, h / 2);
+  ctx.fillStyle = "#f4f4f0"; ctx.fillRect(0, h / 2, w, h / 2);
+});
+const wallTex = paint(256, 64, (ctx, w, h) => {
+  ctx.fillStyle = "#a8abae"; ctx.fillRect(0, 0, w, h);
+  speckle(ctx, w, h, 1500, "rgba(60,60,65,.2)", "rgba(240,240,240,.2)");
+  ctx.fillStyle = "rgba(60,62,66,.5)"; ctx.fillRect(0, 0, 2, h); // joint between barrier blocks
+});
+const checkerTex = paint(512, 64, (ctx, w, h) => {
+  for (let y = 0; y < h; y += 32) for (let x = 0; x < w; x += 32) { ctx.fillStyle = (x + y) / 32 % 2 ? "#151515" : "#f2f2f2"; ctx.fillRect(x, y, 32, 32); }
+});
+const smokeTex = paint(64, 64, (ctx, w) => {
+  const g = ctx.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(0.5, "rgba(255,255,255,.5)"); g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, w);
+});
+const glowTex = paint(128, 128, (ctx, w) => {
+  const g = ctx.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(0.45, "rgba(255,255,255,.55)"); g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, w);
+});
+
+// ---------- Sponsor stickers ----------
+// Lettering in the spirit of the drift brands, drawn here as plain type (not their real logos).
+// Each sponsor paints itself into a w x h box; the same art goes on karts, walls and the start gantry.
+const FACE = "'Arial Black', 'Helvetica Neue', Impact, sans-serif";
+function word(g, text, x, y, maxW, px, color, style = "italic 900") {
+  g.font = `${style} ${px}px ${FACE}`;
+  g.textAlign = "center"; g.textBaseline = "middle";
+  const s = Math.min(1, maxW / g.measureText(text).width);
+  g.save(); g.translate(x, y); g.scale(s, 1); g.fillStyle = color; g.fillText(text, 0, 0); g.restore();
+}
+const fill = (g, color, x, y, w, h) => { g.fillStyle = color; g.fillRect(x, y, w, h); };
+const SPONSORS = {
+  power326: (g, w, h) => { fill(g, "#121014", 0, 0, w, h); word(g, "326", w * .3, h * .53, w * .46, h * .9, "#ff2f8e"); word(g, "POWER", w * .73, h * .56, w * .42, h * .42, "#fff"); },
+  topsecret: (g, w, h) => {
+    fill(g, "#0e0e0e", 0, 0, w, h);
+    g.strokeStyle = "#d9b34a"; g.lineWidth = h * .05; g.strokeRect(h * .12, h * .14, w - h * .24, h * .72);
+    word(g, "TOP SECRET", w / 2, h * .53, w * .8, h * .44, "#e8c25a");
+  },
+  hks: (g, w, h) => { fill(g, "#f6f6f2", 0, 0, w, h); word(g, "HKS", w / 2, h * .46, w * .62, h * .8, "#111"); fill(g, "#d7141a", w * .2, h * .8, w * .6, h * .08); },
+  greddy: (g, w, h) => { fill(g, "#f6f6f2", 0, 0, w, h); word(g, "GReddy", w / 2, h * .54, w * .84, h * .62, "#d7141a"); },
+  advan: (g, w, h) => {
+    fill(g, "#111", 0, 0, w, h);
+    g.fillStyle = "#d7141a"; g.beginPath(); g.moveTo(w * .06, h); g.lineTo(w * .2, 0); g.lineTo(w * .3, 0); g.lineTo(w * .16, h); g.fill();
+    word(g, "ADVAN", w * .62, h * .54, w * .6, h * .6, "#fff");
+  },
+  tein: (g, w, h) => { fill(g, "#123f9c", 0, 0, w, h); word(g, "TEIN", w / 2, h * .54, w * .6, h * .7, "#fff"); },
+  work: (g, w, h) => { fill(g, "#f6f6f2", 0, 0, w, h); word(g, "WORK", w / 2, h * .42, w * .66, h * .6, "#111"); word(g, "WHEELS", w / 2, h * .8, w * .4, h * .2, "#d7141a", "900"); },
+  bride: (g, w, h) => { fill(g, "#111", 0, 0, w, h); fill(g, "#d7141a", 0, 0, w, h * .14); word(g, "BRIDE", w / 2, h * .58, w * .7, h * .6, "#fff"); },
+  // Alex's own team.
+  grt: (g, w, h) => { fill(g, "#ff8a3d", 0, 0, w, h); word(g, "GRT", w * .33, h * .54, w * .4, h * .78, "#1f2a4d"); word(g, "RACING", w * .73, h * .56, w * .38, h * .3, "#1f2a4d"); },
+};
+const SPONSOR_IDS = Object.keys(SPONSORS);
+function art(g, id, x, y, w, h) { g.save(); g.translate(x, y); g.beginPath(); g.rect(0, 0, w, h); g.clip(); SPONSORS[id](g, w, h); g.restore(); }
+
+// A die-cut sticker: white border, rounded corners, see-through outside.
+const STICKER_ASPECT = 512 / 192;
+const stickerMats = {};
+function stickerMat(id) {
+  if (stickerMats[id]) return stickerMats[id];
+  const tex = paint(512, 192, (g, w, h) => {
+    g.fillStyle = "#fff"; g.beginPath(); g.roundRect(4, 4, w - 8, h - 8, 30); g.fill();
+    g.save(); g.beginPath(); g.roundRect(16, 16, w - 32, h - 32, 18); g.clip();
+    SPONSORS[id](g, w, h);
+    g.restore();
+  });
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  return (stickerMats[id] = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, roughness: 0.35, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+}
+function sticker(id, width) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(width, width / STICKER_ASPECT), stickerMat(id));
+  m.receiveShadow = true;
+  return m;
+}
+
+// The wall banners: every sponsor in a row, 1 m tall, repeating every 16 m.
+const BANNER_PX = 455, BANNER_REPEAT = 16;
+const bannerTex = paint(BANNER_PX * SPONSOR_IDS.length, 256, (g, w, h) => {
+  fill(g, "#a8abae", 0, 0, w, h);
+  speckle(g, w, h, 8000, "rgba(60,60,65,.2)", "rgba(240,240,240,.2)");
+  SPONSOR_IDS.forEach((id, i) => art(g, id, i * BANNER_PX + 10, 34, BANNER_PX - 20, 188));
+});
+
+const mat = {
+  silver: new THREE.MeshStandardMaterial({ map: silverTex, roughness: 0.55, metalness: 0.35 }),
+  ply: new THREE.MeshStandardMaterial({ map: plyTex, roughness: 0.8 }),
+  grt: new THREE.MeshStandardMaterial({ map: grtTex, roughness: 0.55, metalness: 0.35 }),
+  navy: new THREE.MeshStandardMaterial({ color: 0x1f2a4d, roughness: 0.7 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0xd8b07a, roughness: 0.6 }),
+  blueTape: new THREE.MeshStandardMaterial({ color: 0x2f6fd0, roughness: 0.5 }),
+  black: new THREE.MeshStandardMaterial({ color: 0x18181a, roughness: 0.6 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xc9ced3, roughness: 0.25, metalness: 0.9 }),
+  tread: new THREE.MeshStandardMaterial({ map: treadTex, roughness: 0.9 }),
+  hub: new THREE.MeshStandardMaterial({ map: hubTex, roughness: 0.7 }),
+  foam: new THREE.MeshStandardMaterial({ map: silverTex, color: 0xdfe2e6, roughness: 0.95 }),
+  road: new THREE.MeshStandardMaterial({ map: asphaltTex, roughness: 0.92, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
+  curb: new THREE.MeshStandardMaterial({ map: curbTex, roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+  wall: new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.9, side: THREE.DoubleSide }),
+  banner: new THREE.MeshStandardMaterial({ map: bannerTex, roughness: 0.75, side: THREE.DoubleSide }),
+};
+
+// A plywood panel: silver on its two big faces, ply layers on its edges.
+function panel(w, h, d, face = mat.silver) {
+  const dims = [w, h, d];
+  const thin = dims.indexOf(Math.min(...dims));
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+    [0, 1, 2, 3, 4, 5].map(i => (Math.floor(i / 2) === thin ? face : mat.ply)));
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+function rod(from, to, radius, material) {
+  const dir = new THREE.Vector3().subVectors(to, from);
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, dir.length(), 12), material);
+  m.position.copy(from).addScaledVector(dir, 0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  m.castShadow = true;
+  return m;
+}
+function add(parent, obj, x = 0, y = 0, z = 0) { obj.position.set(x, y, z); parent.add(obj); return obj; }
+
+// ---------- The kart. Units are meters, the kart faces -Z, the ground is y = 0 ----------
+// Every racer gets a copy; rivals swap the navy stripes for their own color and get their own stickers.
+const WHEEL_R = 0.11, WHEELBASE = 1.1, DECK_Y = 0.12, T = 0.018;
+const SKYLINE_BLUE = 0x2f8cff;
+function makeKart(stripe = mat.navy, decals = { rear: "power326", fin: "topsecret", wingFront: "hks", wingBack: "greddy" }, glowColor = SKYLINE_BLUE) {
+  const kart = new THREE.Group();
+  const body = add(kart, new THREE.Group()); // leans in the corners; the wheels stay on the ground
+  add(body, panel(0.58, T, 1.44), 0, DECK_Y - T / 2, -0.09); // deck
+
+  // Rear plate rising to the foam roll, with GRT drawn on it.
+  const plate = add(body, panel(0.84, T, 0.31, mat.grt), 0, 0.22, 0.72);
+  plate.rotation.x = -0.69;
+  // Sticker on the underside of the plate, the side you see from behind.
+  const rear = add(plate, sticker(decals.rear, 0.27), -0.2, -T / 2 - 0.002, 0);
+  rear.rotation.x = Math.PI / 2;
+  const roll = add(body, new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.86, 20), mat.foam), 0, 0.33, 0.84);
+  roll.rotation.z = Math.PI / 2;
+  roll.castShadow = true;
+
+  // Side fins: triangles that flare outward, stripes on the outside, a sticker low down.
+  for (const side of [1, -1]) {
+    const L = 0.62, H = 0.30;
+    const shape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(L, 0), new THREE.Vector2(0, H)]);
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: T, bevelEnabled: false });
+    const flare = add(body, new THREE.Group(), side * 0.28, DECK_Y, 0.10);
+    flare.rotation.z = -side * 0.26;
+    const m = add(flare, new THREE.Mesh(geo, [mat.silver, mat.ply]), side > 0 ? 0 : -T, 0, 0);
+    m.rotation.y = Math.PI / 2; // shape's x now runs toward the nose
+    m.castShadow = m.receiveShadow = true;
+    const outer = side > 0 ? T + 0.002 : -0.002;
+    for (const cx of [0.07, 0.19, 0.32, 0.45]) {
+      const h = 0.85 * H * (1 - (cx + 0.04) / L) - 0.02;
+      add(m, new THREE.Mesh(new THREE.BoxGeometry(0.075, h, 0.003), stripe), cx, h / 2 + 0.02, outer);
+    }
+    const s = add(m, sticker(decals.fin, 0.21), 0.27, 0.058, outer + side * 0.003);
+    if (side < 0) s.rotation.y = Math.PI;
+  }
+
+  // Center dash triangle the steering wheel sits on.
+  {
+    const shape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(0.48, 0), new THREE.Vector2(0, 0.28)]);
+    const m = add(body, new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: T, bevelEnabled: false }), [mat.silver, mat.ply]), -T / 2, DECK_Y, -0.02);
+    m.rotation.y = Math.PI / 2;
+    m.castShadow = true;
+  }
+
+  // Nose wing: the striped board on a post, sloping down to the front. Two stickers across it.
+  const wing = add(body, panel(0.30, T, 0.70), 0, 0.385, -0.56);
+  wing.rotation.x = -0.245;
+  add(wing, new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.003, 0.70), stripe), 0, T / 2 + 0.001, 0);
+  for (const [id, z] of [[decals.wingFront, -0.2], [decals.wingBack, 0.16]]) {
+    add(wing, sticker(id, 0.25), 0, T / 2 + 0.004, z).rotation.x = -Math.PI / 2;
+  }
+  add(body, panel(0.06, 0.27, T), 0, DECK_Y + 0.135, -0.50);
+
+  // Steering: column runs from the wheel down under the wing to the front.
+  const wheelCenter = new THREE.Vector3(0, 0.44, -0.05);
+  body.add(rod(wheelCenter, new THREE.Vector3(0, 0.16, -0.86), 0.012, mat.steel));
+  const steerTilt = add(body, new THREE.Group(), wheelCenter.x, wheelCenter.y, wheelCenter.z);
+  steerTilt.rotation.x = -0.35;
+  const steeringWheel = add(steerTilt, new THREE.Group(), 0, 0, 0.015);
+  const R = 0.14;
+  steeringWheel.add(new THREE.Mesh(new THREE.TorusGeometry(R, 0.013, 10, 48), mat.wood));
+  // Tape: blue on the sides, black at the top and bottom.
+  for (const [start, len, m] of [[-0.75, 1.5, mat.blueTape], [2.4, 1.5, mat.blueTape], [0.9, 1.3, mat.black], [4.05, 1.3, mat.black]]) {
+    const arc = new THREE.Mesh(new THREE.TorusGeometry(R, 0.016, 10, 24, len), m);
+    arc.rotation.z = start;
+    steeringWheel.add(arc);
+  }
+  for (const a of [Math.PI / 6, (5 * Math.PI) / 6, (3 * Math.PI) / 2]) {
+    const spoke = add(steeringWheel, new THREE.Mesh(new THREE.BoxGeometry(R, 0.025, 0.008), mat.black), Math.cos(a) * R / 2, Math.sin(a) * R / 2, 0);
+    spoke.rotation.z = a;
+  }
+  const hub = add(steeringWheel, new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.012, 24), mat.wood), 0, 0, 0.004);
+  hub.rotation.x = Math.PI / 2;
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2 + 0.5;
+    const bolt = add(steeringWheel, new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.006, 8), mat.steel), Math.cos(a) * 0.025, Math.sin(a) * 0.025, 0.012);
+    bolt.rotation.x = Math.PI / 2;
+  }
+  steeringWheel.traverse(o => { o.castShadow = true; });
+  // Where the driver's hands grip: ten and two. They turn with the wheel.
+  const hands = [add(steeringWheel, new THREE.Object3D(), R * 0.87, R * 0.5, 0.02), add(steeringWheel, new THREE.Object3D(), -R * 0.87, R * 0.5, 0.02)];
+
+  // Shifter: black pod with a stick and ball knob.
+  {
+    const pod = add(body, new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.09, 20), mat.black), 0.2, DECK_Y + 0.045, 0.2);
+    pod.castShadow = true;
+    body.add(rod(new THREE.Vector3(0.2, DECK_Y + 0.09, 0.2), new THREE.Vector3(0.21, DECK_Y + 0.21, 0.19), 0.006, mat.steel));
+    add(body, new THREE.Mesh(new THREE.SphereGeometry(0.028, 16, 12), mat.black), 0.21, DECK_Y + 0.23, 0.19).castShadow = true;
+  }
+
+  // Wheels: each is pivot (steers) > spinner (rolls) > tire.
+  const wheels = [];
+  function wheel(x, z, front) {
+    const pivot = add(kart, new THREE.Group(), x, WHEEL_R, z);
+    const spinner = add(pivot, new THREE.Group());
+    const tire = add(spinner, new THREE.Mesh(new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.06, 32), [mat.tread, mat.hub, mat.hub]));
+    tire.rotation.z = Math.PI / 2;
+    tire.castShadow = true;
+    // Axle bracket back to the deck.
+    const inner = Math.sign(x) * 0.26;
+    kart.add(rod(new THREE.Vector3(inner, WHEEL_R, z), new THREE.Vector3(x, WHEEL_R, z), 0.01, mat.steel));
+    add(kart, new THREE.Mesh(new THREE.BoxGeometry(0.03, DECK_Y - WHEEL_R + 0.03, 0.05), mat.steel), inner, (WHEEL_R + DECK_Y) / 2 - 0.01, z);
+    wheels.push({ pivot, spinner, front, last: null });
+  }
+  wheel(0.35, 0.45, false); wheel(-0.35, 0.45, false);
+  wheel(0.33, -0.65, true); wheel(-0.33, -0.65, true);
+
+  // Underglow, like the neon under Brian's Skyline: two tubes under the deck and the pool of light they throw.
+  const neon = new THREE.MeshBasicMaterial({ color: glowColor });
+  for (const x of [0.25, -0.25]) add(body, new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.1, 8), neon), x, 0.075, -0.1).rotation.x = Math.PI / 2;
+  const glow = add(kart, new THREE.Mesh(new THREE.PlaneGeometry(1.5, 2.3), new THREE.MeshBasicMaterial({
+    map: glowTex, color: glowColor, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6 })), 0, 0.035, -0.1);
+  glow.rotation.x = -Math.PI / 2;
+
+  scene.add(kart);
+  return { kart, body, wheels, steeringWheel, hands, neon, glow };
+}
+
+// ---------- The drift track ----------
+// A closed spline through these points (meters, seen from above), driven in this order.
+// Long front straight, a fast sweeper, an S, a hairpin, a tight left and a long fast bend home.
+const TRACK_PTS = [[-30, -28], [0, -30], [28, -28], [42, -18], [41, -2], [28, 6], [22, 17], [25, 26], [22, 36], [12, 42],
+  [-6, 34], [-16, 21], [-31, 20], [-42, 29], [-52, 26], [-59, 12], [-51, -14]];
+const HALF = 3.5;      // half the asphalt width
+const WALL = 5.5;      // concrete barrier, this far either side of the center line
+const curve = new THREE.CatmullRomCurve3(TRACK_PTS.map(([x, z]) => new THREE.Vector3(x * 1.3, 0, z * 1.3)), true, "centripetal");
+const N = 800;
+const CL = curve.getSpacedPoints(N); CL.pop(); // N evenly spaced center-line points
+const SP = curve.getLength() / N;              // meters between them
+const TAN = CL.map((p, i) => CL[(i + 1) % N].clone().sub(CL[(i + N - 1) % N]).setY(0).normalize());
+const NRM = TAN.map(t => new THREE.Vector3(-t.z, 0, t.x)); // points to the right of the driving direction
+const wrapN = i => ((i % N) + N) % N;
+const wrapS = d => wrapN(d + N / 2) - N / 2; // signed sample difference, shortest way round
+const headingAt = i => Math.atan2(-TAN[i].x, -TAN[i].z);
+const at = (i, off, y = 0) => new THREE.Vector3(CL[i].x + NRM[i].x * off, y, CL[i].z + NRM[i].z * off);
+// How sharply the track bends at each point (1 / radius).
+const CURV = TAN.map((_, i) => TAN[wrapN(i - 3)].angleTo(TAN[wrapN(i + 3)]) / (6 * SP));
+// How fast the rivals can take each point: corner grip, plus braking room for what's coming up.
+const SAFE = (() => {
+  const raw = CURV.map(k => Math.min(13, Math.sqrt(7 / Math.max(k, 1e-3))));
+  return raw.map((_, i) => {
+    let v = Infinity;
+    for (let j = 0; j < 45; j++) v = Math.min(v, Math.sqrt(raw[wrapN(i + j)] ** 2 + 2 * 5 * j * SP));
+    return v;
+  });
+})();
+
+// A strip that follows the track. edge(i) gives its two sides at point i (left one first, so it faces up).
+function ribbon(edge, uv, material, keep) {
+  const pos = [], uvs = [], idx = [];
+  for (let i = 0; i <= N; i++) {
+    const [a, b] = edge(i % N);
+    pos.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    uvs.push(...uv(i * SP, 0), ...uv(i * SP, 1));
+    if (i < N && (!keep || keep(i))) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, material);
+  m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+ribbon(i => [at(i, -HALF, 0.01), at(i, HALF, 0.01)], (s, j) => [j, s / 6], mat.road);
+// Red and white curbs wherever the track really bends.
+const bendy = i => CURV[i] > 1 / 40;
+ribbon(i => [at(i, HALF - 0.05, 0.02), at(i, HALF + 0.6, 0.02)], (s, j) => [j, s / 1.6], mat.curb, bendy);
+ribbon(i => [at(i, -HALF - 0.6, 0.02), at(i, -HALF + 0.05, 0.02)], (s, j) => [j, s / 1.6], mat.curb, bendy);
+// Concrete barriers both sides. The track side of each one is plastered in sponsor banners,
+// laid out so the writing reads left to right from the driver's seat.
+const WALL_H = 1, WALL_T = 0.35;
+for (const side of [1, -1]) {
+  const o = side * WALL, o2 = side * (WALL + WALL_T);
+  ribbon(i => [at(i, o, 0), at(i, o, WALL_H)], (s, j) => [-side * s / BANNER_REPEAT, j], mat.banner);
+  ribbon(i => side > 0 ? [at(i, o, WALL_H), at(i, o2, WALL_H)] : [at(i, o2, WALL_H), at(i, o, WALL_H)], (s, j) => [s / 4, j * 0.3], mat.wall);
+  ribbon(i => [at(i, o2, 0), at(i, o2, WALL_H)], (s, j) => [s / 4, j], mat.wall);
+}
+
+// Start / finish: checkered line and a gantry with the big banner.
+const S0 = Math.round(30 / SP); // 30 m down the front straight
+{
+  const g = add(scene, new THREE.Group(), CL[S0].x, 0, CL[S0].z);
+  g.rotation.y = headingAt(S0);
+  const line = add(g, new THREE.Mesh(new THREE.PlaneGeometry(HALF * 2, 0.6), new THREE.MeshStandardMaterial({ map: checkerTex, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })), 0, 0.02, 0);
+  line.rotation.x = -Math.PI / 2;
+  const span = (HALF + 0.9) * 2;
+  for (const x of [-span / 2, span / 2]) add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 3.8, 12), mat.steel), x, 1.9, 0).castShadow = true;
+  const gantryTex = paint(2048, 256, (c, w, h) => {
+    fill(c, "#101215", 0, 0, w, h);
+    art(c, "power326", 16, 24, 520, 208);
+    art(c, "topsecret", w - 536, 24, 520, 208);
+    word(c, "GRT DRIFT PARK", w / 2, h * .42, 900, 120, "#fff");
+    word(c, "START · FINISH", w / 2, h * .8, 500, 40, "#ff8a3d", "600");
+  });
+  const banner = add(g, new THREE.Mesh(new THREE.BoxGeometry(span + 0.4, 1.0, 0.12), [mat.steel, mat.steel, mat.steel, mat.steel, new THREE.MeshStandardMaterial({ map: gantryTex, roughness: 0.6 }), new THREE.MeshStandardMaterial({ map: gantryTex, roughness: 0.6 })]), 0, 3.4, 0);
+  banner.castShadow = true;
+}
+
+// Light towers outside the walls, and hills far off.
+const towerMat = new THREE.MeshStandardMaterial({ color: 0xf6f3e4, emissive: 0x6d6a5c });
+for (let k = 0; k < 9; k++) {
+  const i = wrapN(Math.round((k + 0.5) * N / 9)), side = k % 2 ? 1 : -1;
+  const p = at(i, side * (WALL + 2));
+  add(scene, new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 9, 8), mat.steel), p.x, 4.5, p.z);
+  const head = add(scene, new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 0.3), towerMat), p.x, 9, p.z);
+  head.rotation.y = headingAt(i);
+}
+
+// ---------- The stands, and the sign about the build ----------
+// A grandstand outside the front straight. Its local +X points at the track.
+const STAND_I = wrapN(S0 + Math.round(12 / SP));
+const ROWS = 7, ROW_D = 0.9, ROW_H = 0.45, STAND_L = 22;
+const stands = add(scene, new THREE.Group(), ...at(STAND_I, -(WALL + 1.2)).toArray());
+stands.rotation.y = headingAt(STAND_I);
+{
+  const concrete = new THREE.MeshStandardMaterial({ color: 0x8d9298, roughness: 0.9 });
+  const seats = new THREE.MeshStandardMaterial({ color: 0x2f6fd0, roughness: 0.6 });
+  for (let k = 0; k < ROWS; k++) {
+    const top = (k + 1) * ROW_H, x = -(k + 0.5) * ROW_D;
+    add(stands, new THREE.Mesh(new THREE.BoxGeometry(ROW_D, top, STAND_L), concrete), x, top / 2, 0);
+    add(stands, new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, STAND_L), seats), x - 0.18, top + 0.06, 0);
+  }
+  const back = -ROWS * ROW_D, roofY = ROWS * ROW_H + 3;
+  add(stands, new THREE.Mesh(new THREE.BoxGeometry(0.2, roofY, STAND_L), concrete), back - 0.1, roofY / 2, 0);
+  add(stands, new THREE.Mesh(new THREE.BoxGeometry(-back + 1.2, 0.15, STAND_L + 1), mat.steel), back / 2 + 0.2, roofY, 0);
+  for (const z of [-STAND_L / 2, STAND_L / 2]) add(stands, new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, roofY - ROW_H, 8), mat.steel), -0.3, (roofY + ROW_H) / 2, z);
+  add(stands, new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.9, STAND_L), mat.steel), 0.02, ROW_H + 0.45, 0); // front rail
+  // The crowd: simple figures in random shirts, with an aisle in the middle so the camera can see.
+  // TV camera platform on the front edge of the roof, where the spectator view looks from.
+  add(stands, new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.12, 2), mat.steel), 0, roofY + 0.14, 0);
+  add(stands, new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.9, 2), mat.steel), 0.68, roofY + 0.65, 0);
+  const crowd = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.2, 0.45, 4, 8), new THREE.MeshStandardMaterial({ roughness: 0.8 }), 160);
+  const shirts = [0xff8a3d, 0x2f6fd0, 0xe4eef6, 0xd7141a, 0x1f2a4d, 0xff2f8e, 0x6bbf59, 0xf2c94c, 0x222222];
+  const m = new THREE.Matrix4(), c = new THREE.Color();
+  let n = 0;
+  for (let k = 0; k < ROWS && n < 160; k++) {
+    for (let z = -STAND_L / 2 + 0.6; z < STAND_L / 2 - 0.3 && n < 160; z += 0.75) {
+      if (Math.random() < 0.3 || Math.abs(z) < 1.4 + k * 0.25) continue;
+      crowd.setMatrixAt(n, m.makeTranslation(-(k + 0.5) * ROW_D - 0.15 + rand(-0.05, 0.05), (k + 1) * ROW_H + 0.62, z + rand(-0.1, 0.1)));
+      crowd.setColorAt(n++, c.setHex(shirts[Math.floor(Math.random() * shirts.length)]));
+    }
+  }
+  crowd.count = n;
+  stands.add(crowd);
+}
+stands.updateMatrixWorld(true);
+const STANDS_EYE = stands.localToWorld(new THREE.Vector3(0, ROWS * ROW_H + 3 + 1.6, 0));
+
+// What the kart is based on and how it was built. Edit the words here: they go on the sign and in the panel.
+const ABOUT = {
+  title: "Where this kart came from",
+  sub: "Inspired by Brian's Nissan Skyline GT-R from Fast & Furious",
+  parts: [
+    ["The inspiration", "I based my go-kart on Brian O'Conner's Nissan Skyline GT-R from Fast & Furious: silver paint, blue graphics, and a blue glow underneath."],
+    ["Showing the details", "The underglow and the body art kit carry the Skyline's details over to the kart. The silver paint and navy stripes are the body art, and the blue underglow lights up the ground the way the car's neon does."],
+    ["How I built it", "The whole kart is made of wood. I cut every piece to shape and put it all together with screws."],
+    ["The hard part", "The front plate wouldn't screw in, because the wood kept splitting."],
+    ["Why wood", "I've worked with wood before, and that's one of the reasons I took this build on."],
+  ]
+};
+const SIGN_W = 9, SIGN_H = SIGN_W * 1152 / 2048, SIGN_Y = 1.7 + SIGN_H / 2;
+const signGroup = add(scene, new THREE.Group(), ...at(STAND_I, WALL + 3.5).toArray());
+signGroup.rotation.y = headingAt(STAND_I) - Math.PI / 2; // faces the stands
+{
+  const tex = paint(2048, 1152, (g, w, h) => {
+    fill(g, "#0d1b29", 0, 0, w, h);
+    g.strokeStyle = "#c3c8cc"; g.lineWidth = 16; g.strokeRect(8, 8, w - 16, h - 16);
+    fill(g, "#2f8cff", 60, 214, 520, 10); // Skyline blue
+    g.textAlign = "left"; g.textBaseline = "alphabetic";
+    g.fillStyle = "#e4eef6"; g.font = `italic 900 92px ${FACE}`;
+    g.fillText(ABOUT.title.toUpperCase(), 60, 140, w - 120);
+    g.fillStyle = "#9bb2c4"; g.font = "600 44px 'Helvetica Neue', Arial, sans-serif";
+    g.fillText(ABOUT.sub, 600, 228, w - 660);
+    // Two columns of short blocks.
+    const colW = (w - 180) / 2, cols = [[60, 300], [120 + colW, 300]];
+    ABOUT.parts.forEach(([head, body], i) => {
+      const col = cols[i < 3 ? 0 : 1];
+      g.fillStyle = "#2f8cff"; g.font = `900 38px ${FACE}`;
+      g.fillText(head.toUpperCase(), col[0], col[1]);
+      g.fillStyle = "#e4eef6"; g.font = "400 40px 'Helvetica Neue', Arial, sans-serif";
+      let y = col[1] + 56, line = "";
+      for (const wd of body.split(" ")) {
+        if (g.measureText(line + wd).width > colW && line) { g.fillText(line.trim(), col[0], y); y += 52; line = ""; }
+        line += wd + " ";
+      }
+      g.fillText(line.trim(), col[0], y);
+      col[1] = y + 90;
+    });
+    word(g, "GRT", w - 200, h - 90, 260, 90, "#ff8a3d");
+  });
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  // Lit from inside like a scoreboard, so it reads the same in the sun, in its own shadow and at night.
+  add(signGroup, new THREE.Mesh(new THREE.PlaneGeometry(SIGN_W, SIGN_H), new THREE.MeshBasicMaterial({ map: tex })), 0, SIGN_Y, 0.01);
+  add(signGroup, new THREE.Mesh(new THREE.BoxGeometry(SIGN_W + 0.3, SIGN_H + 0.3, 0.12), mat.steel), 0, SIGN_Y, -0.07);
+  for (const x of [-SIGN_W / 3, SIGN_W / 3]) add(signGroup, new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, SIGN_Y, 8), mat.steel), x, SIGN_Y / 2, -0.2);
+}
+signGroup.updateMatrixWorld(true);
+const SIGN_CENTER = signGroup.localToWorld(new THREE.Vector3(0, SIGN_Y, 0));
+// The same words in the side panel, for reading on a phone or with a screen reader.
+document.getElementById("about-list").replaceChildren(...ABOUT.parts.map(([head, body]) => {
+  const li = document.createElement("li");
+  const b = document.createElement("b");
+  b.textContent = head + ": ";
+  li.append(b, body);
+  return li;
+}));
+document.getElementById("about-sub").textContent = ABOUT.sub + ".";
+{
+  const hillMat = new THREE.MeshStandardMaterial({ color: 0x6c8a63, roughness: 1, flatShading: true });
+  for (let k = 0; k < 18; k++) {
+    const a = (k / 18) * Math.PI * 2 + rand(-0.1, 0.1), d = rand(220, 290), h = rand(30, 70);
+    add(scene, new THREE.Mesh(new THREE.ConeGeometry(rand(45, 80), h, 7), hillMat), Math.cos(a) * d, h / 2 - 2, Math.sin(a) * d);
+  }
+}
+
+// ---------- Brian's Skyline, on show in the middle of the infield ----------
+// The car the kart is based on: silver paint, blue side graphics, round taillights, a big wing and blue underglow.
+// Real size (about 4.6 m long), built from simple shapes. It turns slowly on a stand tall enough to see over the walls.
+// It goes wherever the infield has the most room, so it stays in the middle if the track points change.
+const SKY_SPOT = (() => {
+  const box = new THREE.Box3().setFromPoints(CL);
+  let best = new THREE.Vector3(), bestD = 0;
+  for (let x = box.min.x; x <= box.max.x; x += 2) for (let z = box.min.z; z <= box.max.z; z += 2) {
+    let inside = false, d = Infinity;
+    for (let i = 0, j = N - 1; i < N; j = i++) {
+      const a = CL[j], b = CL[i];
+      if ((a.z > z) !== (b.z > z) && x < (b.x - a.x) * (z - a.z) / (b.z - a.z) + a.x) inside = !inside;
+      d = Math.min(d, (b.x - x) ** 2 + (b.z - z) ** 2);
+    }
+    if (inside && d > bestD) { bestD = d; best.set(x, 0, z); }
+  }
+  return best;
+})();
+const skyline = (() => {
+  const STAND_H = 0.7;
+  const base = add(scene, new THREE.Group(), SKY_SPOT.x, 0, SKY_SPOT.z);
+  const concrete = new THREE.MeshStandardMaterial({ color: 0x3a3f46, roughness: 0.85 });
+  add(base, new THREE.Mesh(new THREE.CylinderGeometry(4.3, 4.5, 0.3, 48), concrete), 0, 0.15, 0); // step
+  add(base, new THREE.Mesh(new THREE.CylinderGeometry(3.7, 3.7, STAND_H - 0.3, 48), concrete), 0, 0.3 + (STAND_H - 0.3) / 2, 0);
+  const ringMat = new THREE.MeshBasicMaterial({ color: SKYLINE_BLUE });
+  const ring = add(base, new THREE.Mesh(new THREE.TorusGeometry(3.72, 0.045, 8, 96), ringMat), 0, STAND_H - 0.06, 0);
+  ring.rotation.x = Math.PI / 2;
+  const spin = add(base, new THREE.Group(), 0, STAND_H, 0); // the turntable; the render loop turns it
+  add(spin, new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, 0.04, 48), new THREE.MeshStandardMaterial({ color: 0x8e959c, roughness: 0.4, metalness: 0.6 })), 0, 0.02, 0);
+  const car = add(spin, new THREE.Group(), 0, 0.04, 0); // faces +X, wheels on y = 0
+
+  // Paint: silver, with the blue graphics drawn on the sides. The canvas covers x -2.4..2.4 m, y 0..1 m of the side.
+  const L = 4.8, AX = 1.33, WR = 0.33;
+  const X = x => (x / L + 0.5) * 1024, Y = y => (1 - y) * 256;
+  const liveryTex = paint(1024, 256, (g, w, h) => {
+    const shine = g.createLinearGradient(0, 0, 0, h);
+    shine.addColorStop(0, "#eef1f4"); shine.addColorStop(0.35, "#cfd4d9"); shine.addColorStop(1, "#8f959b");
+    g.fillStyle = shine; g.fillRect(0, 0, w, h);
+    // Three blue blades, pointed at the front and fanning out toward the back.
+    const blade = (tip, end, top, bot, color) => {
+      g.beginPath();
+      g.moveTo(X(tip[0]), Y(tip[1]));
+      g.quadraticCurveTo(X((tip[0] + end) / 2), Y(top + 0.02), X(end), Y(top));
+      g.lineTo(X(end), Y(bot));
+      g.quadraticCurveTo(X((tip[0] + end) / 2 + 0.4), Y(bot - 0.08), X(tip[0]), Y(tip[1]));
+      g.fillStyle = color; g.fill();
+      g.lineWidth = 4; g.strokeStyle = "#0b1f4d"; g.stroke();
+    };
+    blade([2.05, 0.6], -2.4, 0.9, 0.66, "#1d4fb8");
+    blade([1.35, 0.5], -2.4, 0.63, 0.45, "#2f8cff");
+    blade([0.55, 0.38], -2.4, 0.42, 0.3, "#1d4fb8");
+  });
+  liveryTex.wrapS = liveryTex.wrapT = THREE.ClampToEdgeWrapping;
+  liveryTex.repeat.set(1 / L, 1);
+  liveryTex.offset.set(0.5, 0);
+  const silver = new THREE.MeshStandardMaterial({ color: 0xc9ced3, roughness: 0.3, metalness: 0.45 });
+  const livery = new THREE.MeshStandardMaterial({ map: liveryTex, roughness: 0.3, metalness: 0.45 });
+  const glass = new THREE.MeshStandardMaterial({ color: 0x0e1a26, roughness: 0.12, metalness: 0.7 });
+  const trim = new THREE.MeshStandardMaterial({ color: 0x1b1d21, roughness: 0.6 });
+  const chrome = mat.steel;
+
+  // An outline (seen from the side) pushed out to a given width, centered on the car.
+  function slab(pts, width, materials, bevel = 0) {
+    const s = new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
+    const geo = new THREE.ExtrudeGeometry(s, { depth: width - bevel * 2, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel * 0.8, bevelSegments: 3 });
+    geo.translate(0, 0, -(width - bevel * 2) / 2);
+    const m = new THREE.Mesh(geo, materials);
+    m.castShadow = true;
+    return add(car, m);
+  }
+  // The same outline as a thin panel stuck on both sides (pillars and so on).
+  function sides(pts, z, material) {
+    for (const s of [1, -1]) {
+      const m = slab(pts, 0.015, material);
+      m.position.z = s * (z + 0.0075);
+    }
+  }
+
+  // Lower body, with the wheel arches cut out. Front is +X.
+  const body = new THREE.Shape();
+  const dx = Math.sqrt(0.42 ** 2 - 0.17 ** 2), a0 = Math.atan2(-0.17, dx);
+  body.moveTo(2.12, 0.16);
+  body.lineTo(AX + dx, 0.16); body.absarc(AX, WR, 0.42, a0, Math.PI - a0, false);
+  body.lineTo(-AX + dx, 0.16); body.absarc(-AX, WR, 0.42, a0, Math.PI - a0, false);
+  for (const [x, y] of [[-2.16, 0.16], [-2.3, 0.3], [-2.33, 0.62], [-2.27, 0.9], [-1.7, 0.95], [0.8, 0.9], [2.2, 0.72], [2.32, 0.6], [2.34, 0.35], [2.28, 0.2]]) body.lineTo(x, y);
+  const bodyGeo = new THREE.ExtrudeGeometry(body, { depth: 1.66, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.05, bevelSegments: 3, curveSegments: 16 });
+  bodyGeo.translate(0, 0, -0.83);
+  add(car, new THREE.Mesh(bodyGeo, [livery, silver])).castShadow = true; // group 0 = the two sides, group 1 = everything else
+
+  // Cabin: glass all round, then the roof and pillars laid over it.
+  slab([[0.8, 0.88], [-0.02, 1.3], [-0.9, 1.31], [-1.72, 0.93]], 1.48, glass, 0.04);
+  add(car, new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.05, 1.42), silver), -0.46, 1.335, 0);
+  sides([[0.8, 0.9], [0.66, 0.9], [-0.1, 1.31], [0.02, 1.31]], 0.74, silver);     // A-pillar
+  sides([[-0.1, 0.94], [-0.18, 0.94], [-0.2, 1.3], [-0.12, 1.3]], 0.74, trim);     // B-pillar, blacked out
+  sides([[-0.86, 1.32], [-0.7, 1.24], [-1.25, 0.94], [-1.72, 0.94]], 0.74, silver); // the wide C-pillar
+
+  // Front: angular headlights, grille, big lower intake and a lip.
+  const lamp = new THREE.MeshStandardMaterial({ color: 0xdfe8ff, emissive: 0xdfe8ff, emissiveIntensity: 0.3, roughness: 0.2 });
+  for (const z of [0.58, -0.58]) {
+    const hl = add(car, new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.09, 0.44), lamp), 2.24, 0.66, z);
+    hl.rotation.z = -0.5;
+  }
+  add(car, new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.09, 0.56), trim), 2.3, 0.57, 0);
+  add(car, new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.15, 1.15), trim), 2.36, 0.33, 0);
+  add(car, new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 1.72), trim), 2.15, 0.13, 0);
+  // Side skirts and mirrors.
+  for (const s of [1, -1]) {
+    add(car, new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.09, 0.06), trim), 0, 0.17, s * 0.88);
+    add(car, new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.09, 0.12), silver), 0.6, 0.99, s * 0.84);
+  }
+
+  // Back: four round taillights, twin exhaust, and the wing on the trunk.
+  const tail = new THREE.MeshStandardMaterial({ color: 0xd0101e, emissive: 0xff2030, emissiveIntensity: 0.35, roughness: 0.3 });
+  for (const z of [0.46, 0.68, -0.46, -0.68]) {
+    const t = add(car, new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.05, 24), tail), -2.32, 0.74, z);
+    t.rotation.z = Math.PI / 2;
+  }
+  for (const z of [0.5, 0.62]) {
+    const e = add(car, new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.16, 16), chrome), -2.33, 0.24, z);
+    e.rotation.z = Math.PI / 2;
+  }
+  for (const z of [0.52, -0.52]) add(car, new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.22, 0.04), trim), -2.0, 1.04, z);
+  const wing = add(car, new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.035, 1.62), silver), -2.04, 1.16, 0);
+  wing.rotation.z = -0.08;
+  for (const z of [0.82, -0.82]) add(car, new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.12, 0.02), trim), -2.04, 1.15, z);
+
+  // Wheels: black tire, chrome five-spoke rim, and a dark wheel well behind so you can't see through the arches.
+  const rubber = new THREE.MeshStandardMaterial({ color: 0x151517, roughness: 0.85 });
+  for (const x of [AX, -AX]) {
+    const well = add(car, new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.22, 24), trim), x, WR, 0);
+    well.rotation.x = Math.PI / 2;
+    for (const s of [1, -1]) {
+      const w = add(car, new THREE.Group(), x, WR, s * 0.74);
+      add(w, new THREE.Mesh(new THREE.CylinderGeometry(WR, WR, 0.24, 32), rubber)).rotation.x = Math.PI / 2;
+      add(w, new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.02, 32), trim), 0, 0, s * 0.115).rotation.x = Math.PI / 2;
+      add(w, new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.03, 12), chrome), 0, 0, s * 0.125).rotation.x = Math.PI / 2;
+      for (let k = 0; k < 5; k++) {
+        const spoke = add(w, new THREE.Group(), 0, 0, s * 0.125);
+        spoke.rotation.z = k * Math.PI * 2 / 5;
+        add(spoke, new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.02), chrome), 0, 0.115, 0);
+      }
+      add(w, new THREE.Mesh(new THREE.TorusGeometry(0.225, 0.012, 6, 32), chrome), 0, 0, s * 0.122);
+    }
+  }
+
+  // Underglow: neon tubes down both sides and the pool of blue light on the turntable.
+  const neon = new THREE.MeshBasicMaterial({ color: SKYLINE_BLUE });
+  for (const s of [1, -1]) add(car, new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 1.7, 8), neon), 0, 0.1, s * 0.7).rotation.z = Math.PI / 2;
+  const glow = add(car, new THREE.Mesh(new THREE.PlaneGeometry(7.4, 4.4), new THREE.MeshBasicMaterial({
+    map: glowTex, color: SKYLINE_BLUE, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6 })), 0, 0.005, 0);
+  glow.rotation.x = -Math.PI / 2;
+  const light = add(car, new THREE.PointLight(SKYLINE_BLUE, 0.5, 6), 0, 0.5, 0);
+
+  return {
+    spin,
+    setNight(on) {
+      glow.material.opacity = on ? 1 : 0.7;
+      light.intensity = on ? 2.5 : 0.5;
+      lamp.emissiveIntensity = on ? 1.2 : 0.3;
+      tail.emissiveIntensity = on ? 1 : 0.35;
+    },
+  };
+})();
+
+// ---------- Tire smoke and skid marks ----------
+const smoke = Array.from({ length: 160 }, () => {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, color: 0xeeeeee, transparent: true, depthWrite: false, opacity: 0 }));
+  s.visible = false;
+  scene.add(s);
+  return { s, life: 0, v: new THREE.Vector3() };
+});
+let smokeNext = 0;
+function puff(pos, vx, vz) {
+  const p = smoke[smokeNext++ % smoke.length];
+  p.life = 1;
+  p.s.position.copy(pos).setY(0.15);
+  p.v.set(vx * 0.25 + rand(-0.4, 0.4), rand(0.3, 0.7), vz * 0.25 + rand(-0.4, 0.4));
+  p.s.visible = true;
+}
+function tickSmoke(dt) {
+  for (const p of smoke) {
+    if (!p.s.visible) continue;
+    p.life -= dt / 1.4;
+    if (p.life <= 0) { p.s.visible = false; continue; }
+    p.s.position.addScaledVector(p.v, dt);
+    p.v.multiplyScalar(1 - 1.5 * dt);
+    p.s.scale.setScalar(0.4 + (1 - p.life) * 2.6);
+    p.s.material.opacity = 0.5 * p.life;
+  }
+}
+const SKID_MAX = 3000;
+const skids = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0x141416, transparent: true, opacity: 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), SKID_MAX);
+skids.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+skids.count = 0;
+skids.frustumCulled = false;
+scene.add(skids);
+let skidNext = 0;
+const skidM = new THREE.Matrix4(), skidQ = new THREE.Quaternion(), skidS = new THREE.Vector3(), skidP = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+function skid(from, to) {
+  const dx = to.x - from.x, dz = to.z - from.z;
+  skidP.set((from.x + to.x) / 2, 0.03, (from.z + to.z) / 2);
+  skidQ.setFromAxisAngle(UP, Math.atan2(dx, dz));
+  skidS.set(0.07, 1, Math.hypot(dx, dz) + 0.02);
+  skids.setMatrixAt(skidNext, skidM.compose(skidP, skidQ, skidS));
+  skidNext = (skidNext + 1) % SKID_MAX;
+  skids.count = Math.min(SKID_MAX, skids.count + 1);
+  skids.instanceMatrix.needsUpdate = true;
+}
+
+// ---------- Racers: you, plus the rest of the crew in their own karts ----------
+const LAPS = 2;
+const GRID = [[3, -1.4], [3, 1.4], [6, -1.4], [6, 1.4], [9, 0]]; // meters behind the line, meters right of center; you start at the back
+const RIVAL_DECALS = [
+  { rear: "greddy", fin: "advan", wingFront: "tein", wingBack: "bride" },
+  { rear: "hks", fin: "work", wingFront: "power326", wingBack: "topsecret" },
+  { rear: "topsecret", fin: "tein", wingFront: "work", wingBack: "hks" },
+  { rear: "advan", fin: "bride", wingFront: "greddy", wingBack: "grt" },
+];
+const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+
+function makeRacer(isPlayer, decals) {
+  const stripe = isPlayer ? mat.navy : new THREE.MeshStandardMaterial({ roughness: 0.6 });
+  const r = {
+    isPlayer, stripe, ...makeKart(stripe, decals),
+    car: { vx: 0, vz: 0, speed: 0, steer: 0, show: 0, heading: 0, drift: 0, slip: 0, roll: 0, hbWas: false },
+    driver: null, idx: 0, off: 0, prog: 0, finished: false, time: 0, stuck: 0, smokeAcc: 0
+  };
+  if (!isPlayer) {
+    const c = document.createElement("canvas");
+    c.width = 256; c.height = 64;
+    r.tagCanvas = c;
+    r.tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+    r.tag.scale.set(1.1, 0.275, 1);
+    r.tag.position.y = 1.25;
+    r.kart.add(r.tag);
+  }
+  return r;
+}
+const player = makeRacer(true);
+const rivals = RIVAL_DECALS.map(d => makeRacer(false, d));
+const racers = [player, ...rivals];
+// Your kart's underglow also lights up its own wheels and the deck from below.
+add(player.kart, new THREE.PointLight(SKYLINE_BLUE, 0.8, 1.8), 0, 0.06, -0.1);
+const AI_TOP = [10.6, 10.2, 9.8, 9.4], AI_LANE = [-1.2, 1.2, 0, -0.6];
+
+// Little readout floating over the wheel, so you can see speed and drift points from the seat in VR.
+const dashCanvas = document.createElement("canvas");
+dashCanvas.width = 256; dashCanvas.height = 128;
+const dashTex = new THREE.CanvasTexture(dashCanvas);
+dashTex.colorSpace = THREE.SRGBColorSpace;
+const dash = add(player.body, new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.08), new THREE.MeshBasicMaterial({ map: dashTex, transparent: true })), 0, 0.67, -0.12);
+dash.rotation.x = -0.3;
+let lastDash = "";
+function showDash(mph, driftText) {
+  const key = mph + "|" + driftText;
+  if (key === lastDash) return;
+  lastDash = key;
+  const ctx = dashCanvas.getContext("2d");
+  ctx.clearRect(0, 0, 256, 128);
+  ctx.fillStyle = "rgba(13,27,41,.85)"; ctx.fillRect(0, 0, 256, 128);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#ff8a3d"; ctx.font = "bold 56px monospace";
+  ctx.fillText(mph + " mph", 128, 60);
+  ctx.fillStyle = "#ff2f8e"; ctx.font = "bold 30px monospace";
+  ctx.fillText(driftText, 128, 108);
+  dashTex.needsUpdate = true;
+}
+
+// Seat a character in a kart: shrink them to kid size and slide them up behind the wheel.
+function seat(r, id, look) {
+  if (r.driver) r.body.remove(r.driver);
+  const d = Crew.build(id, look, { pose: "drive" });
+  const { size, box } = d.userData;
+  const s = Math.min(0.52 / size.y, 0.52 / size.x, 0.6 / size.z);
+  d.scale.setScalar(s);
+  d.rotation.y = Math.PI; // characters face +Z, the kart faces -Z
+  d.position.set(0, DECK_Y, Math.min(0.5, 0.07 + box.max.z * s));
+  r.body.add(d);
+  r.driver = d;
+  r.id = id;
+  r.look = look;
+  if (!r.isPlayer) {
+    const color = new THREE.Color(Crew.PALETTE[id][look][0]);
+    r.stripe.color.copy(color);
+    r.neon.color.copy(color);
+    r.glow.material.color.copy(color);
+    const g = r.tagCanvas.getContext("2d");
+    g.clearRect(0, 0, 256, 64);
+    g.fillStyle = "rgba(13,27,41,.85)"; g.fillRect(28, 6, 200, 52);
+    g.fillStyle = "#" + color.getHexString(); g.fillRect(28, 6, 10, 52);
+    g.fillStyle = "#e4eef6"; g.font = "600 30px 'IBM Plex Mono', monospace"; g.textAlign = "center";
+    g.fillText(d.userData.info.name, 134, 43);
+    r.tag.material.map.needsUpdate = true;
+  }
+}
+
+// ---------- Choosing a driver ----------
+const params = new URLSearchParams(location.search);
+const store = {
+  get(k, fallback) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? fallback; } catch { return fallback; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* just won't persist */ } }
+};
+// ---------- Pause menu ----------
+// Esc (or the pause button) opens it. Everything stops while it's open, like a real racing game.
+// In VR you can't see it, so the game keeps running there.
+const hud = document.getElementById("hud");
+let paused = false;
+function setMenu(open) {
+  paused = open;
+  hud.hidden = !open;
+  keys.clear();
+  for (const k in touchIn) touchIn[k] = 0;
+  if (open) document.getElementById("resume").focus();
+  else if (hud.contains(document.activeElement)) document.activeElement.blur();
+}
+document.getElementById("menu-btn").addEventListener("click", () => setMenu(true));
+document.getElementById("resume").addEventListener("click", () => setMenu(false));
+hud.addEventListener("click", e => { if (e.target === hud) setMenu(false); }); // click outside the panel
+
+// ---------- Touch controls ----------
+// Shown on phones and tablets (or with ?touch=1). Each button is held down like a key.
+const touchIn = { left: 0, right: 0, gas: 0, brake: 0, hb: 0 };
+function useTouch(on) {
+  document.body.classList.toggle("touch", on);
+  document.getElementById("touch").hidden = !on;
+  sizeMinimap();
+}
+document.querySelectorAll("#touch button").forEach(b => {
+  const set = v => { touchIn[b.dataset.t] = v; b.classList.toggle("on", !!v); };
+  b.addEventListener("pointerdown", e => { e.preventDefault(); b.setPointerCapture(e.pointerId); set(1); });
+  for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) b.addEventListener(ev, () => set(0));
+  b.addEventListener("contextmenu", e => e.preventDefault());
+});
+addEventListener("touchstart", () => { if (!document.body.classList.contains("touch")) useTouch(true); }, { passive: true });
+
+// ---------- Track map ----------
+const mm = document.getElementById("minimap"), mmg = mm.getContext("2d");
+let mmPath, mmXY, mmDpr = 1;
+function sizeMinimap() {
+  mmDpr = Math.min(devicePixelRatio, 2);
+  const size = mm.clientWidth || 160, W = Math.round(size * mmDpr);
+  mm.width = mm.height = W;
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (const p of CL) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); }
+  const pad = 9 * mmDpr, s = (W - 2 * pad) / Math.max(x1 - x0, z1 - z0);
+  const ox = (W - (x1 - x0) * s) / 2, oz = (W - (z1 - z0) * s) / 2;
+  mmXY = (x, z) => [ox + (x - x0) * s, oz + (z - z0) * s];
+  mmPath = new Path2D();
+  CL.forEach((p, i) => mmPath[i ? "lineTo" : "moveTo"](...mmXY(p.x, p.z)));
+  mmPath.closePath();
+}
+function drawMinimap() {
+  const g = mmg, d = mmDpr;
+  g.clearRect(0, 0, mm.width, mm.height);
+  g.lineJoin = g.lineCap = "round";
+  g.strokeStyle = "rgba(8, 14, 24, .7)"; g.lineWidth = 11 * d; g.stroke(mmPath);
+  g.strokeStyle = "#f4f7fb"; g.lineWidth = 6 * d; g.stroke(mmPath);
+  // Start / finish line: a little checkered bar across the track.
+  const [sx, sz] = mmXY(CL[S0].x, CL[S0].z), n = NRM[S0];
+  g.save(); g.translate(sx, sz); g.rotate(Math.atan2(n.z, n.x));
+  for (let k = -2; k < 2; k++) for (let j = 0; j < 2; j++) { g.fillStyle = (k + j) % 2 ? "#111" : "#fff"; g.fillRect(k * 2.5 * d, (j - 1) * 2.5 * d, 2.5 * d, 2.5 * d); }
+  g.restore();
+  // The crew as dots in their colors, you as a bigger arrow.
+  for (const r of rivals) {
+    const [x, y] = mmXY(r.kart.position.x, r.kart.position.z);
+    g.beginPath(); g.arc(x, y, 4.2 * d, 0, Math.PI * 2);
+    g.fillStyle = "#" + r.stripe.color.getHexString(); g.fill();
+    g.lineWidth = 1.6 * d; g.strokeStyle = "#0b1420"; g.stroke();
+  }
+  const [px, py] = mmXY(player.kart.position.x, player.kart.position.z);
+  g.save(); g.translate(px, py); g.rotate(-player.car.heading);
+  g.beginPath(); g.moveTo(0, -8 * d); g.lineTo(6 * d, 6 * d); g.lineTo(0, 3 * d); g.lineTo(-6 * d, 6 * d); g.closePath();
+  g.fillStyle = "#ff2f8e"; g.fill(); g.lineWidth = 2 * d; g.strokeStyle = "#fff"; g.stroke();
+  g.restore();
+}
+
+// ---------- Speedometer ----------
+// 0 to 30 mph over a 270° sweep, lit in segments from teal through yellow to pink.
+const MAX_MPH = 30, SEGS = 30, SWEEP = 270;
+const gaugeEl = {
+  needle: document.getElementById("g-needle"), mph: document.getElementById("g-mph"),
+  hb: document.getElementById("lamp-hb"), drift: document.getElementById("lamp-drift"), gear: document.getElementById("lamp-gear"), segs: []
+};
+{
+  const NS = "http://www.w3.org/2000/svg";
+  const pt = (deg, r) => [100 + r * Math.sin(deg * Math.PI / 180), 100 - r * Math.cos(deg * Math.PI / 180)];
+  const mix = (a, b, t) => "#" + a.map((v, i) => Math.round(v + (b[i] - v) * t).toString(16).padStart(2, "0")).join("");
+  const TEAL = [53, 214, 200], YELLOW = [255, 210, 63], PINK = [255, 47, 142];
+  const step = SWEEP / SEGS;
+  for (let i = 0; i < SEGS; i++) {
+    const a0 = -SWEEP / 2 + i * step + 0.9, a1 = a0 + step - 1.8, r = 84;
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("d", `M${pt(a0, r).join(",")} A${r},${r} 0 0 1 ${pt(a1, r).join(",")}`);
+    p.setAttribute("class", "g-seg");
+    const t = i / (SEGS - 1);
+    p.dataset.on = t < 0.55 ? mix(TEAL, YELLOW, t / 0.55) : mix(YELLOW, PINK, (t - 0.55) / 0.45);
+    document.getElementById("g-segs").append(p);
+    gaugeEl.segs.push(p);
+  }
+  for (let v = 0; v <= MAX_MPH; v += 10) {
+    const [x, y] = pt(-SWEEP / 2 + (v / MAX_MPH) * SWEEP, 62);
+    const t = document.createElementNS(NS, "text");
+    Object.entries({ x, y, class: "g-lbl" }).forEach(([k, val]) => t.setAttribute(k, val));
+    t.textContent = v;
+    document.getElementById("g-lbls").append(t);
+  }
+}
+const gaugeState = { v: 0, lit: -1, mph: -1, hb: null, drift: null, gear: "" };
+function updateGauge(dt, handbrake) {
+  const car = player.car, mphNow = Math.abs(car.speed) * 2.237;
+  gaugeState.v += (mphNow - gaugeState.v) * Math.min(1, 10 * dt);
+  const frac = clamp(gaugeState.v / MAX_MPH, 0, 1);
+  gaugeEl.needle.setAttribute("transform", `rotate(${-SWEEP / 2 + frac * SWEEP} 100 100)`);
+  const lit = Math.round(frac * SEGS);
+  if (lit !== gaugeState.lit) {
+    gaugeEl.segs.forEach((s, i) => { s.style.stroke = i < lit ? s.dataset.on : ""; });
+    gaugeState.lit = lit;
+  }
+  const mph = Math.round(mphNow);
+  if (mph !== gaugeState.mph) { gaugeEl.mph.textContent = mph; gaugeState.mph = mph; }
+  const drifting = !!car.drift && mphNow > 4;
+  if (handbrake !== gaugeState.hb) { gaugeEl.hb.classList.toggle("on", handbrake); gaugeState.hb = handbrake; }
+  if (drifting !== gaugeState.drift) { gaugeEl.drift.classList.toggle("on", drifting); gaugeState.drift = drifting; }
+  const gear = car.speed < -0.3 ? "R" : mphNow < 0.5 ? "N" : "D";
+  if (gear !== gaugeState.gear) { gaugeEl.gear.textContent = gear; gaugeEl.gear.classList.toggle("rev", gear === "R"); gaugeState.gear = gear; }
+}
+
+// ---------- Camera name, keyboard hints ----------
+const VIEW_NAMES = { chase: "Chase cam", seat: "Driver seat", stands: "Stands", orbit: "Look around" };
+const camName = document.getElementById("camname");
+let camNameTimer = 0;
+function showCamName() {
+  camName.textContent = VIEW_NAMES[view];
+  camName.classList.remove("gone");
+  clearTimeout(camNameTimer);
+  camNameTimer = setTimeout(() => camName.classList.add("gone"), 1600);
+}
+const hints = document.getElementById("hints");
+setTimeout(() => { hints.classList.add("fade"); setTimeout(() => { hints.hidden = true; }, 900); }, 12000);
+
+// ---------- Speech bubbles when someone overtakes ----------
+const TAUNTS = ["Eat my dust!", "See ya!", "Too slow!", "Beep beep!", "Catch me if you can!", "Later!"];
+const bubble = { el: document.getElementById("bubble"), who: null, t: 0, cool: 0, last: -1 };
+const bubbleAt = new THREE.Vector3();
+function say(r, text) {
+  bubble.who = r; bubble.t = 2.2; bubble.cool = 3;
+  bubble.el.textContent = text;
+  bubble.el.classList.toggle("me", r.isPlayer);
+}
+function tickBubble(dt, inVR) {
+  bubble.cool -= dt;
+  if (race.state === "racing") {
+    const s = standings(), p = s.indexOf(player);
+    if (bubble.last >= 0 && p !== bubble.last && bubble.cool <= 0) {
+      if (p < bubble.last && s[p + 1]) say(player, "See ya, " + s[p + 1].driver.userData.info.name + "!");
+      else if (p > bubble.last && s[p - 1]) say(s[p - 1], TAUNTS[Math.floor(Math.random() * TAUNTS.length)]);
+    }
+    bubble.last = p;
+  }
+  bubble.t -= dt;
+  let show = bubble.t > 0 && bubble.who && !inVR && view !== "seat";
+  if (show) {
+    bubbleAt.copy(bubble.who.kart.position).setY(1.55).project(camera);
+    show = bubbleAt.z < 1 && Math.abs(bubbleAt.x) < 0.95 && Math.abs(bubbleAt.y) < 0.95;
+    if (show) bubble.el.style.translate = `${(bubbleAt.x + 1) / 2 * innerWidth}px ${(1 - bubbleAt.y) / 2 * innerHeight}px`;
+  }
+  bubble.el.hidden = !show;
+}
+
+const saved = store.get("gokart.driver", {}) || {}; // shared with v1, so your driver carries over
+const isChar = id => Crew.CHARACTERS.some(c => c.id === id), isLook = id => Crew.LOOKS.some(l => l.id === id);
+let pick = {
+  id: [params.get("driver"), saved.id].find(isChar) || "jimbob",
+  look: [params.get("look"), saved.look].find(isLook) || "toon"
+};
+function chips(el, items, key) {
+  el.replaceChildren(...items.map(item => {
+    const b = document.createElement("button");
+    b.textContent = item.name;
+    b.dataset.value = item.id;
+    b.title = item.kind ? item.kind : item.note;
+    b.addEventListener("click", () => choose({ ...pick, [key]: item.id }));
+    return b;
+  }));
+}
+chips(document.getElementById("drivers"), Crew.CHARACTERS, "id");
+chips(document.getElementById("looks"), Crew.LOOKS, "look");
+function choose(next) {
+  pick = next;
+  store.set("gokart.driver", pick);
+  document.querySelectorAll("#drivers button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === pick.id)));
+  document.querySelectorAll("#looks button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === pick.look)));
+  seat(player, pick.id, pick.look);
+  // The other four characters drive the rival karts, in a spread of looks.
+  const others = Crew.CHARACTERS.filter(c => c.id !== pick.id);
+  const li = Crew.LOOKS.findIndex(l => l.id === pick.look);
+  rivals.forEach((r, i) => seat(r, others[i].id, Crew.LOOKS[(li + 1 + i) % Crew.LOOKS.length].id));
+  placeRig();
+}
+
+// ---------- Where am I on the track ----------
+// Nearest center-line point, searched around the last one so a lap can't be skipped.
+function locate(r) {
+  const p = r.kart.position;
+  let best = r.idx, bd = Infinity;
+  const scan = (from, to) => {
+    for (let o = from; o <= to; o++) {
+      const i = wrapN(r.idx + o), d = (CL[i].x - p.x) ** 2 + (CL[i].z - p.z) ** 2;
+      if (d < bd) { bd = d; best = i; }
+    }
+  };
+  scan(-30, 30);
+  if (bd > 12 * 12) scan(-N / 2, N / 2); // got moved somewhere far: look everywhere
+  r.prog += wrapS(best - r.idx);
+  r.idx = best;
+  r.off = (p.x - CL[best].x) * NRM[best].x + (p.z - CL[best].z) * NRM[best].z;
+}
+function place(r, i, off) {
+  const p = at(i, off);
+  r.kart.position.set(p.x, 0, p.z);
+  Object.assign(r.car, { vx: 0, vz: 0, speed: 0, steer: 0, show: 0, heading: headingAt(i), drift: 0, slip: 0, roll: 0 });
+  r.kart.rotation.y = r.car.heading;
+  r.idx = i; r.off = off; r.stuck = 0;
+  for (const w of r.wheels) w.last = null;
+}
+function toGrid(who = racers) {
+  who.forEach(r => {
+    const [back, side] = GRID[r.isPlayer ? 4 : rivals.indexOf(r)];
+    const i = wrapN(S0 - Math.round(back / SP));
+    place(r, i, side);
+    r.prog = wrapS(i - S0);
+    r.finished = false;
+  });
+}
+// Back onto the track at the same spot around the lap.
+function rescue(r) { place(r, r.idx, THREE.MathUtils.clamp(r.off, -1.5, 1.5)); }
+// Out of a race only you go back to the start; the crew keep cruising.
+function resetKart() {
+  if (race.state === "free") toGrid([player]);
+  else rescue(player);
+}
+
+const keys = new Set();
+addEventListener("keydown", e => {
+  // Space is the handbrake everywhere, even when a button has focus.
+  if (e.code === "Space") { e.preventDefault(); keys.add("Space"); return; }
+  if (e.code === "Escape" || e.code === "KeyH" || e.code === "KeyP") { setMenu(!paused); return; }
+  if (e.target.closest && e.target.closest("button, a, input") && e.code === "Enter") return;
+  if (paused) return;
+  keys.add(e.code);
+  if (e.code === "KeyR") resetKart();
+  if (e.code === "KeyC") cycleView();
+  if (e.code === "Enter") startRace();
+  if (e.code.startsWith("Arrow")) e.preventDefault();
+});
+addEventListener("keyup", e => { keys.delete(e.code); if (e.code === "Space") e.preventDefault(); });
+addEventListener("blur", () => keys.clear());
+
+// ---------- Driving ----------
+// Normal driving: the tires grip, up to a limit, then the kart pushes wide.
+// Hold the handbrake + steer: the rear lets go and you're drifting. While you hold it, the slide holds,
+// steering into the turn tightens it and steering out of it opens it up.
+// Let go of the handbrake (or counter-steer hard) and the kart straightens up and grips again.
+// Tuned to be forgiving: the slide doesn't eat much speed and light wall scrapes don't end it.
+const MAX_STEER = 0.5, STEER_RATIO = 3; // steering wheel turns 3x the front wheels
+const TOP = 12, ACCEL = 5, GRIP = 9;
+const lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp;
+function drive(r, dt, inp) {
+  const car = r.car, kart = r.kart, p = kart.position;
+  const turn = inp.steerDirect != null ? inp.steerDirect / MAX_STEER : inp.steer; // -1..1, left is +
+  car.steer += clamp((inp.steerDirect ?? inp.steer * MAX_STEER) - car.steer, -3 * dt, 3 * dt);
+  const hb = !!inp.handbrake, hbPress = hb && !car.hbWas;
+  car.hbWas = hb;
+
+  const h0 = car.heading;
+  let h = h0;
+  let fx = -Math.sin(h), fz = -Math.cos(h), rx = Math.cos(h), rz = -Math.sin(h);
+  let vF = car.vx * fx + car.vz * fz, vL = car.vx * rx + car.vz * rz;
+
+  if (!car.drift && hb && vF > 2.5 && Math.abs(turn) > 0.12) car.drift = Math.sign(turn);
+  else if (car.drift && hbPress && turn * car.drift < -0.3) car.drift = -car.drift; // flick into the other direction
+
+  if (car.drift) {
+    const dir = car.drift;
+    let speed = Math.hypot(car.vx, car.vz);
+    let vd = Math.atan2(-car.vx, -car.vz); // which way you're actually moving
+    let slip = wrap(h - vd);               // how far the nose points past that
+    const into = clamp(turn * dir, -1, 1);
+    // Let go of the handbrake or counter-steer hard and the kart snaps straight (about a third of a second).
+    let want = dir * (0.65 + 0.25 * into);
+    if (!hb || into < -0.8) want = 0;
+    slip += (want - slip) * Math.min(1, 6 * dt);
+    const radius = (into >= 0 ? lerp(10, 5.5, into) : lerp(10, 26, -into)) * (hb ? 0.85 : 1);
+    vd += (dir * speed / radius) * dt;
+    if (inp.throttle > 0) speed += inp.throttle * ACCEL * dt;
+    else if (inp.throttle < 0) speed += inp.throttle * 7 * dt;
+    speed -= (0.35 * speed + 2.4 * Math.abs(Math.sin(slip)) + (hb ? 1 : 0)) * dt;
+    speed = clamp(speed, 0, TOP);
+    car.heading = vd + slip;
+    car.vx = -Math.sin(vd) * speed; car.vz = -Math.cos(vd) * speed;
+    if (speed < 1.8 || (want === 0 && Math.abs(slip) < 0.07)) car.drift = 0;
+  } else {
+    if (inp.throttle > 0) vF += inp.throttle * ACCEL * dt;
+    else if (inp.throttle < 0) vF += inp.throttle * (vF > 0.1 ? 9 : 2.5) * dt;
+    vF -= vF * 0.35 * dt + Math.sign(vF) * (inp.throttle === 0 ? 0.5 : 0) * dt;
+    if (hb) vF -= Math.sign(vF) * Math.min(Math.abs(vF), 4 * dt);
+    if (inp.throttle === 0 && Math.abs(vF) < 0.05) vF = 0;
+    vF = clamp(vF, -2.5, TOP);
+    const lim = GRIP / Math.max(Math.abs(vF), 0.5);
+    car.heading += clamp(vF * Math.tan(car.steer) / WHEELBASE, -lim, lim) * dt;
+    vL *= Math.exp(-7 * dt); // left-over sideways slide dies away
+    h = car.heading;
+    fx = -Math.sin(h); fz = -Math.cos(h); rx = Math.cos(h); rz = -Math.sin(h);
+    car.vx = fx * vF + rx * vL; car.vz = fz * vF + rz * vL;
+  }
+
+  p.x += car.vx * dt;
+  p.z += car.vz * dt;
+  locate(r);
+
+  // Grass is slow. Walls stop you, and end a drift.
+  let hitWall = false;
+  if (Math.abs(r.off) > HALF + 0.3) { car.vx *= 1 - 1.3 * dt; car.vz *= 1 - 1.3 * dt; }
+  const lim = WALL - 0.45;
+  if (Math.abs(r.off) > lim) {
+    const n = NRM[r.idx], s = Math.sign(r.off), push = Math.abs(r.off) - lim;
+    p.x -= n.x * s * push; p.z -= n.z * s * push;
+    r.off = s * lim;
+    const out = (car.vx * n.x + car.vz * n.z) * s;
+    if (out > 0) {
+      car.vx -= n.x * s * out * 1.3; car.vz -= n.z * s * out * 1.3;
+      if (out > 2.2) { hitWall = true; car.drift = 0; car.vx *= 0.75; car.vz *= 0.75; } // light scrapes keep the drift
+    }
+  }
+
+  // Bookkeeping for everything that reads the car: forward speed, slip, the steering you'd see.
+  h = car.heading;
+  fx = -Math.sin(h); fz = -Math.cos(h); rx = Math.cos(h); rz = -Math.sin(h);
+  vF = car.vx * fx + car.vz * fz; vL = car.vx * rx + car.vz * rz;
+  car.speed = vF;
+  const moving = Math.hypot(vF, vL) > 0.5;
+  car.slip = moving && vF > 0 ? Math.atan2(vL, vF) : 0; // + when the nose points left of where you're going
+  // In a drift the front wheels point where you're going: that's the counter-steer you see.
+  car.show = car.drift ? clamp(-car.slip + car.steer * 0.35, -0.6, 0.6) : car.steer;
+  const yaw = wrap(h - h0) / Math.max(dt, 1e-3);
+  car.roll += (clamp(-yaw * vF * 0.006 - car.slip * 0.08, -0.08, 0.08) - car.roll) * Math.min(1, 6 * dt);
+
+  kart.rotation.y = h;
+  r.body.rotation.z = car.roll;
+  for (const w of r.wheels) {
+    w.spinner.rotation.x -= ((vF * (car.drift && !w.front ? 1.6 : 1)) / WHEEL_R) * dt;
+    if (w.front) w.pivot.rotation.y = car.show;
+  }
+  r.steeringWheel.rotation.z = car.show * STEER_RATIO;
+  marks(r, dt, hb && Math.abs(vF) > 1);
+  return hitWall;
+}
+
+// Skid marks and smoke off the back tires whenever they're sliding.
+const wp = new THREE.Vector3();
+function marks(r, dt, locked) {
+  const car = r.car, sp = Math.hypot(car.vx, car.vz);
+  const sliding = (car.drift && sp > 2) || locked || (Math.abs(car.slip) > 0.18 && sp > 3);
+  r.smokeAcc += sliding ? dt * (car.drift ? 28 : 14) : 0;
+  for (const w of r.wheels) {
+    if (w.front) continue;
+    w.pivot.getWorldPosition(wp);
+    if (!sliding) { w.last = null; continue; }
+    if (!w.last) w.last = wp.clone();
+    else if (w.last.distanceToSquared(wp) > 0.04) { skid(w.last, wp); w.last.copy(wp); }
+    if (r.smokeAcc >= 1) puff(wp, car.vx, car.vz);
+  }
+  if (r.smokeAcc >= 1) r.smokeAcc -= 1;
+}
+
+// Karts bump each other instead of driving through.
+function bump() {
+  for (let i = 0; i < racers.length; i++) for (let j = i + 1; j < racers.length; j++) {
+    const a = racers[i].kart.position, b = racers[j].kart.position;
+    const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz), min = 0.85;
+    if (d > 0 && d < min) {
+      const push = (min - d) / 2 / d;
+      a.x -= dx * push; a.z -= dz * push; b.x += dx * push; b.z += dz * push;
+      for (const r of [racers[i], racers[j]]) { r.car.vx *= 0.97; r.car.vz *= 0.97; }
+    }
+  }
+}
+
+// Rival drivers aim at a point a few meters ahead on their own lane, and brake for the corners.
+// Out of a race (free drive, or once they've crossed the line) they cruise laps at an easy pace,
+// each at their own speed, and swing round anyone slow or parked in their lane.
+const CRUISE = [0.82, 0.74, 0.68, 0.6];
+function aiInput(r, i, cruise) {
+  const k = r.kart.position, car = r.car;
+  let lane = AI_LANE[i], top = AI_TOP[i];
+  if (cruise) {
+    top *= CRUISE[i];
+    for (const o of racers) {
+      const gapM = wrapS(o.idx - r.idx) * SP;
+      if (o === r || gapM < -1 || gapM > 8 || Math.abs(o.off - lane) > 1.4) continue;
+      lane = clamp(o.off + (o.off > 0 ? -2 : 2), -HALF + 0.7, HALF - 0.7);
+      if (gapM > 0 && gapM < 3) top = Math.min(top, Math.max(2, o.car.speed));
+      break;
+    }
+  } else {
+    // A little rubber band: ease off when far ahead of you, push when behind.
+    top += clamp((player.prog - r.prog) * SP * 0.04, -1.2, 1.2);
+  }
+  top = Math.min(top, SAFE[r.idx]);
+  const ahead = wrapN(r.idx + Math.round((3 + Math.max(0, car.speed) * 0.35) / SP));
+  const target = at(ahead, lane);
+  const want = Math.atan2(-(target.x - k.x), -(target.z - k.z));
+  const diff = wrap(want - car.heading);
+  const throttle = car.speed < top ? 1 : car.speed > top + 0.6 ? -0.6 : 0;
+  return { throttle, steer: 0, steerDirect: clamp(diff * 2.2, -MAX_STEER, MAX_STEER), handbrake: false };
+}
+
+// ---------- Drift points ----------
+// Points come from speed x angle while you slide. Keep a drift going and the multiplier climbs.
+// A short straight bit between two drifts keeps the combo alive; hitting a wall loses it.
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const drift = { pts: 0, t: 0, grace: 0, total: 0, best: Number(store.get("gokart2.bestDrift", 0)) || 0, flashT: 0 };
+const dui = { box: document.getElementById("drift"), label: document.getElementById("drift-label"), pts: document.getElementById("drift-pts"), mult: document.getElementById("drift-mult"), total: document.getElementById("dtotal") };
+const mult = () => Math.min(5, 1 + Math.floor(drift.t / 1.5));
+const tier = n => n < 300 ? "Drift" : n < 1000 ? "Nice drift" : n < 2500 ? "Great drift" : n < 5000 ? "Huge drift!" : "Legendary!";
+// state: "live" while sliding (the meter fills toward the next multiplier), "banked" or "lost" when it ends.
+const meterBits = [...document.querySelectorAll("#drift-meter span")];
+function flash(label, pts, multText, state) {
+  dui.box.hidden = false;
+  dui.box.classList.toggle("lost", state === "lost");
+  dui.box.classList.toggle("banked", state === "banked");
+  dui.label.textContent = label;
+  dui.pts.textContent = pts;
+  dui.mult.textContent = multText;
+  if (state !== "live") return;
+  const m = mult(), part = m >= 5 ? 0 : (drift.t % 1.5) / 1.5;
+  meterBits.forEach((b, i) => {
+    b.classList.toggle("full", i < m);
+    b.innerHTML = i === m ? `<em style="width:${Math.round(part * 100)}%"></em>` : "";
+  });
+}
+const showTotal = () => {
+  dui.total.textContent = fmt(drift.total);
+  document.getElementById("dbest").textContent = drift.best ? "Best " + fmt(drift.best) : "";
+};
+function bank() {
+  const got = Math.round(drift.pts * mult());
+  drift.total += got;
+  const record = got > drift.best;
+  if (record) { drift.best = got; store.set("gokart2.bestDrift", got); }
+  flash(record ? "New best drift!" : tier(got), "+" + fmt(got), "", "banked");
+  drift.flashT = 1.6;
+  drift.pts = drift.t = 0;
+  showTotal();
+}
+function loseCombo() {
+  if (drift.pts > 0) { flash("Wall! Combo lost", fmt(drift.pts * mult()), "", "lost"); drift.flashT = 1.4; }
+  drift.pts = drift.t = 0;
+}
+function scoreDrift(dt, hitWall) {
+  if (hitWall) return loseCombo();
+  const car = player.car, sp = Math.hypot(car.vx, car.vz);
+  if (car.drift && sp > 2.5 && Math.abs(car.slip) > 0.12) {
+    drift.pts += sp * THREE.MathUtils.radToDeg(Math.abs(car.slip)) * 0.5 * dt;
+    drift.t += dt;
+    drift.grace = 1.5;
+    drift.flashT = 0;
+    flash(tier(drift.pts * mult()), fmt(drift.pts), "×" + mult(), "live");
+  } else if (drift.pts > 0) {
+    if ((drift.grace -= dt) <= 0) bank();
+  } else if (drift.flashT > 0 && (drift.flashT -= dt) <= 0) {
+    dui.box.hidden = true;
+  }
+}
+
+// ---------- Race ----------
+const race = { state: "free", t: 0, countdown: 0, order: [] };
+const ui = {
+  bar: document.getElementById("racebar"), lap: document.getElementById("lap"), pos: document.getElementById("pos"), time: document.getElementById("time"),
+  count: document.getElementById("count"), results: document.getElementById("results"), standings: document.getElementById("standings"),
+  title: document.getElementById("results-title"), best: document.getElementById("best"), driftSum: document.getElementById("drift-sum"), raceBtn: document.getElementById("race"),
+  free: document.getElementById("freebar"), posSuf: document.getElementById("pos-suf"), posOf: document.getElementById("pos-of")
+};
+const pad2 = n => String(n).padStart(2, "0");
+const raceClock = s => pad2(Math.floor(s / 60)) + "'" + pad2(Math.floor(s % 60)) + '"' + pad2(Math.floor((s * 100) % 100));
+const clockText = s => Math.floor(s / 60) + ":" + (s % 60).toFixed(1).padStart(4, "0");
+const ordinal = n => n + (["th", "st", "nd", "rd"][n] || "th");
+
+function startRace() {
+  toGrid();
+  race.state = "countdown";
+  race.countdown = 2.999;
+  race.t = 0;
+  race.order = [];
+  drift.pts = drift.t = drift.total = 0;
+  showTotal();
+  dui.box.hidden = true;
+  ui.results.hidden = true;
+  ui.bar.hidden = false;
+  ui.free.hidden = true;
+  ui.count.hidden = false;
+  setLights(3);
+  ui.raceBtn.firstChild.textContent = "Restart race ";
+  bubble.last = -1; bubble.t = 0;
+  if (paused) setMenu(false);
+  if (view === "orbit") setView("chase");
+}
+function freeDrive() {
+  race.state = "free";
+  ui.results.hidden = ui.bar.hidden = ui.count.hidden = true;
+  ui.free.hidden = false;
+  ui.raceBtn.firstChild.textContent = "Race the crew ";
+  if (paused) setMenu(false);
+  toGrid();
+}
+// Start lights: they come on red one at a time, then all go green.
+const lamps = [...document.querySelectorAll(".gantry i")], countText = document.getElementById("count-text");
+function setLights(n) {
+  lamps.forEach((l, i) => { l.className = n <= 0 ? "green" : i < 4 - n ? "red" : ""; });
+  countText.textContent = n > 0 ? n : "GO!";
+  ui.count.classList.toggle("go", n <= 0);
+}
+function standings() {
+  const running = racers.filter(r => !r.finished).sort((a, b) => b.prog - a.prog);
+  return [...race.order, ...running];
+}
+function finish(r) {
+  r.finished = true;
+  r.time = race.t;
+  race.order.push(r);
+  if (!r.isPlayer) return;
+  if (drift.pts > 0) bank();
+  race.state = "done";
+  const place = race.order.length;
+  const best = Number(store.get("gokart2.best", 0)) || Infinity;
+  const record = r.time < best;
+  if (record) store.set("gokart2.best", r.time);
+  ui.title.textContent = place === 1 ? "You win!" : ordinal(place) + " place";
+  ui.best.textContent = "Your time " + clockText(r.time) + (record ? " · new best!" : " · best " + clockText(best));
+  ui.driftSum.textContent = "Drift points " + fmt(drift.total) + " · best single drift " + fmt(drift.best);
+  showStandings();
+  ui.results.hidden = false;
+  ui.bar.hidden = true;
+  bubble.t = 0;
+}
+function showStandings() {
+  ui.standings.replaceChildren(...standings().map((r, i) => {
+    const li = document.createElement("li");
+    const cell = (cls, text) => { const s = li.appendChild(document.createElement("span")); s.className = cls; s.textContent = text; return s; };
+    cell("p", i + 1);
+    cell("sw", "").style.background = r.isPlayer ? "var(--accent)" : "#" + r.stripe.color.getHexString();
+    cell("n", r.driver.userData.info.name + (r.isPlayer ? " (you)" : ""));
+    cell("t", r.finished ? clockText(r.time) : "racing…");
+    if (r.isPlayer) li.className = "you";
+    return li;
+  }));
+}
+function updateRace(dt) {
+  if (race.state === "countdown") {
+    race.countdown -= dt;
+    const n = Math.ceil(race.countdown);
+    setLights(n);
+    if (race.countdown <= 0) { race.state = "racing"; setTimeout(() => { if (race.state !== "countdown") ui.count.hidden = true; }, 700); }
+    return;
+  }
+  if (race.state !== "racing" && race.state !== "done") return;
+  race.t += dt;
+  for (const r of racers) if (!r.finished && r.prog >= LAPS * N) finish(r);
+  if (race.state === "racing") {
+    const lap = clamp(Math.floor(player.prog / N) + 1, 1, LAPS);
+    const pos = standings().indexOf(player) + 1;
+    ui.lap.textContent = lap + "/" + LAPS;
+    ui.pos.textContent = pos;
+    ui.posSuf.textContent = ordinal(pos).slice(String(pos).length);
+    ui.posOf.textContent = "/" + racers.length;
+    ui.time.textContent = raceClock(race.t);
+  } else if (!ui.results.hidden) {
+    showStandings();
+  }
+}
+ui.raceBtn.addEventListener("click", startRace);
+document.getElementById("race-cta").addEventListener("click", startRace);
+document.getElementById("free-menu").addEventListener("click", freeDrive);
+document.getElementById("again").addEventListener("click", startRace);
+document.getElementById("free").addEventListener("click", freeDrive);
+
+// ---------- Views ----------
+const SEAT_HEAD = new THREE.Vector3(0, 0.8, 0.5);
+const STANDS_FACING = headingAt(STAND_I) - Math.PI / 2; // looking out of the stands at the track
+const VIEWS = ["orbit", "chase", "seat", "stands"];
+let view = "chase";
+let vrView = "seat";
+const headOffset = new THREE.Vector3(); // where your head was when you last recentered
+let lookYaw = 0, lookPitch = -0.15;
+// From the stands the camera reads the sign, or follows your kart like a TV camera.
+let standsLook = "sign";
+const standsAim = new THREE.Vector3();
+const readBtn = document.getElementById("readsign");
+const standsTarget = () => standsLook === "sign" ? SIGN_CENTER : player.kart.position.clone().setY(0.4);
+
+function setStandsLook(look) {
+  standsLook = look;
+  readBtn.textContent = look === "sign" ? "Watch the kart" : "Read the sign";
+}
+function setView(v) {
+  // Going up into the stands starts on the sign: it's what the stands are there for.
+  if (v === "stands" && view !== "stands") setStandsLook("sign");
+  view = v;
+  document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+  readBtn.hidden = v !== "stands";
+  placeRig();
+  showCamName();
+}
+const cycleView = () => setView(VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length]);
+document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+document.getElementById("cam-btn").addEventListener("click", cycleView);
+document.getElementById("reset").addEventListener("click", resetKart);
+document.getElementById("reset-menu").addEventListener("click", () => { resetKart(); setMenu(false); });
+readBtn.addEventListener("click", () => setStandsLook(standsLook === "sign" ? "kart" : "sign"));
+
+// Night: dark sky, lights on, and the underglow really shows.
+const nightBtn = document.getElementById("night");
+function setNight(on) {
+  const sky = on ? 0x0b1430 : 0xbcd3e6;
+  scene.background.setHex(sky);
+  scene.fog.color.setHex(sky);
+  hemi.intensity = on ? 0.45 : 1.6;
+  sun.intensity = on ? 0.6 : 2.2;
+  sun.color.setHex(on ? 0xa8bcff : 0xffffff);
+  towerMat.emissive.setHex(on ? 0xfff2c8 : 0x6d6a5c);
+  for (const r of racers) r.glow.material.opacity = on ? 1 : 0.8;
+  skyline.setNight(on);
+  nightBtn.setAttribute("aria-pressed", String(on));
+  store.set("gokart2.night", on);
+}
+nightBtn.addEventListener("click", () => setNight(nightBtn.getAttribute("aria-pressed") !== "true"));
+
+function placeRig() {
+  const inVR = renderer.xr.isPresenting;
+  const mode = inVR ? vrView : view;
+  controls.enabled = !inVR && mode === "orbit";
+  rig.rotation.set(0, 0, 0);
+  // From the driver seat you are the character: hide their body, keep their hands on the wheel.
+  player.driver?.userData.setBodyVisible(mode !== "seat");
+  if (mode === "seat") {
+    player.kart.add(rig);
+    rig.position.copy(SEAT_HEAD);
+    if (inVR) rig.position.sub(headOffset);
+  } else if (inVR && mode === "stands") {
+    // Your head goes to the top row, turned to face the track.
+    scene.add(rig);
+    rig.rotation.y = STANDS_FACING;
+    rig.position.copy(STANDS_EYE).sub(headOffset.clone().applyAxisAngle(UP, STANDS_FACING));
+  } else {
+    scene.add(rig);
+    rig.position.set(0, 0, 0);
+  }
+  if (!inVR) {
+    const k = player.kart.position;
+    if (mode === "seat") { camera.position.set(0, 0, 0); lookYaw = 0; lookPitch = -0.15; }
+    if (mode === "stands") { camera.position.copy(STANDS_EYE); standsAim.copy(standsTarget()); }
+    if (mode === "orbit") { camera.position.set(k.x - 1.6, 1.3, k.z + 2.4); controls.target.set(k.x, 0.4, k.z); }
+    if (mode === "chase") { const b = player.car.heading; camera.position.set(k.x + Math.sin(b) * 3.2, 1.6, k.z + Math.cos(b) * 3.2); }
+  }
+}
+
+// Drag to look around from the driver seat.
+let dragging = null;
+renderer.domElement.addEventListener("pointerdown", e => { if (view === "seat") dragging = { x: e.clientX, y: e.clientY }; });
+addEventListener("pointerup", () => { dragging = null; });
+addEventListener("pointermove", e => {
+  if (!dragging) return;
+  lookYaw -= (e.clientX - dragging.x) * 0.005;
+  lookPitch = clamp(lookPitch - (e.clientY - dragging.y) * 0.005, -1.2, 1.2);
+  dragging = { x: e.clientX, y: e.clientY };
+});
+
+// ---------- VR controllers ----------
+const factory = new XRControllerModelFactory();
+const grips = {};
+for (let i = 0; i < 2; i++) {
+  const grip = renderer.xr.getControllerGrip(i);
+  grip.add(factory.createControllerModel(grip));
+  grip.addEventListener("connected", e => { grips[e.data.handedness] = grip; });
+  rig.add(grip);
+}
+const wasPressed = {};
+function pressedOnce(id, now) { const fire = now && !wasPressed[id]; wasPressed[id] = now; return fire; }
+
+renderer.xr.addEventListener("sessionstart", () => { camera.clearViewOffset(); headOffset.set(0, 0, 0); vrView = "seat"; placeRig(); });
+renderer.xr.addEventListener("sessionend", () => { camera.position.set(0, 0, 0); camera.rotation.set(0, 0, 0); placeRig(); });
+
+function readVR() {
+  const out = { throttle: 0, steer: 0, steerDirect: null, handbrake: false };
+  const session = renderer.xr.getSession();
+  const pads = {};
+  for (const src of session.inputSources) if (src.gamepad && src.handedness) pads[src.handedness] = src.gamepad;
+  const stick = gp => gp ? (gp.axes.length >= 4 ? [gp.axes[2], gp.axes[3]] : [gp.axes[0] ?? 0, gp.axes[1] ?? 0]) : [0, 0];
+  const btn = (gp, i) => !!gp?.buttons[i]?.pressed;
+  const val = (gp, i) => gp?.buttons[i]?.value ?? 0;
+  const L = pads.left, R = pads.right;
+  const [lx, ly] = stick(L), [rx] = stick(R);
+  const dz = v => (Math.abs(v) < 0.12 ? 0 : v);
+  out.throttle = clamp(val(R, 0) - val(L, 0) - dz(ly), -1, 1);
+  out.steer = -(dz(rx) || dz(lx));
+  out.handbrake = btn(L, 3) || btn(R, 3); // click a thumbstick in
+
+  // Both grips held while seated: steer by turning your hands like the real wheel.
+  if (vrView === "seat" && val(L, 1) > 0.5 && val(R, 1) > 0.5 && grips.left && grips.right) {
+    const l = player.kart.worldToLocal(grips.left.getWorldPosition(new THREE.Vector3()));
+    const r = player.kart.worldToLocal(grips.right.getWorldPosition(new THREE.Vector3()));
+    const angle = Math.atan2(r.y - l.y, r.x - l.x);
+    out.steerDirect = clamp(angle / STEER_RATIO, -MAX_STEER, MAX_STEER);
+  }
+  if (pressedOnce("A", btn(R, 4))) { vrView = vrView === "seat" ? "stands" : "seat"; placeRig(); }
+  if (pressedOnce("B", btn(R, 5))) { headOffset.copy(camera.position); placeRig(); } // camera.position is your head inside the rig
+  if (pressedOnce("X", btn(L, 4))) startRace();
+  if (pressedOnce("Y", btn(L, 5))) resetKart();
+  return out;
+}
+
+function readKeys() {
+  const k = c => keys.has(c), t = touchIn;
+  const throttle = (k("KeyW") || k("ArrowUp") || t.gas ? 1 : 0) - (k("KeyS") || k("ArrowDown") || t.brake ? 1 : 0);
+  const steer = (k("KeyA") || k("ArrowLeft") || t.left ? 1 : 0) - (k("KeyD") || k("ArrowRight") || t.right ? 1 : 0);
+  return { throttle, steer, steerDirect: null, handbrake: k("Space") || !!t.hb };
+}
+
+// ---------- Start ----------
+toGrid();
+choose(pick);
+setNight(params.get("night") === "1" || store.get("gokart2.night", false) === true);
+if (params.get("view") && VIEWS.includes(params.get("view"))) setView(params.get("view"));
+if (params.get("aim") === "sign" || params.get("aim") === "kart") setStandsLook(params.get("aim"));
+if (params.get("race") === "1") startRace();
+showTotal();
+useTouch(params.get("touch") === "1" || (params.get("touch") !== "0" && matchMedia("(pointer: coarse)").matches));
+camName.classList.add("gone");
+// The VR button sits with the round buttons when there's a headset; otherwise it stays out of the way.
+vrButton.hidden = true;
+navigator.xr?.isSessionSupported("immersive-vr").then(ok => {
+  if (!ok) return;
+  vrButton.classList.add("vr-pill");
+  document.getElementById("icons").append(vrButton);
+  vrButton.hidden = false;
+}).catch(() => {});
+
+// The biggest part of the screen that the HUD (corners, speedometer, touch controls) leaves clear.
+function clearArea() {
+  const fit = q => Math.min((q.r - q.l) / (SIGN_W + 1), (q.b - q.t) / (SIGN_H + 0.8));
+  let a = { l: 0, t: 0, r: innerWidth, b: innerHeight };
+  const covers = [...document.querySelectorAll("#tl, #tr, #gauge, #touch button")]
+    .map(el => el.getBoundingClientRect()).filter(c => c.width && c.height)
+    .sort((p, q) => q.width * q.height - p.width * p.height);
+  for (const c of covers) {
+    if (c.right <= a.l || c.left >= a.r || c.bottom <= a.t || c.top >= a.b) continue;
+    // Trim whichever side leaves the sign the most room.
+    a = [{ ...a, l: c.right }, { ...a, r: c.left }, { ...a, t: c.bottom }, { ...a, b: c.top }].reduce((p, q) => fit(q) > fit(p) ? q : p);
+  }
+  const pad = 12;
+  return { x: a.l + pad, y: a.t + pad, w: Math.max(40, a.r - a.l - 2 * pad), h: Math.max(40, a.b - a.t - 2 * pad) };
+}
+// Slide the picture so the middle of the shot lands at a spot that isn't the middle of the screen.
+const slide = { x: 0, y: 0 };
+function slideShot(x, y, dt) {
+  const k = Math.min(1, 4 * dt);
+  slide.x += (x - slide.x) * k;
+  slide.y += (y - slide.y) * k;
+  if (!x && !y && Math.abs(slide.x) < 0.5 && Math.abs(slide.y) < 0.5) {
+    slide.x = slide.y = 0;
+    if (camera.view?.enabled) camera.clearViewOffset();
+    return;
+  }
+  camera.setViewOffset(innerWidth, innerHeight, slide.x, slide.y, innerWidth, innerHeight);
+}
+
+// ---------- Loop ----------
+const clock = new THREE.Clock();
+const chasePos = new THREE.Vector3(), chaseLook = new THREE.Vector3();
+const handL = new THREE.Vector3(), handR = new THREE.Vector3();
+const idle = { throttle: 0, steer: 0, steerDirect: null, handbrake: false };
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const now = clock.elapsedTime;
+  const inVR = renderer.xr.isPresenting;
+  const input = race.state === "countdown" ? idle : inVR ? readVR() : readKeys();
+  // Paused: the world stands still, but the camera and the render keep going.
+  if (!paused || inVR) {
+    const hitWall = drive(player, dt, input);
+    // The crew are always out driving: racing you in a race, cruising laps the rest of the time.
+    const going = race.state !== "countdown";
+    rivals.forEach((r, i) => {
+      const ai = going ? aiInput(r, i, race.state === "free" || r.finished) : idle;
+      drive(r, dt, ai);
+      // Wedged against something? Put them back on the track.
+      r.stuck = going && Math.abs(r.car.speed) < 0.6 ? r.stuck + dt : 0;
+      if (r.stuck > 2.5) rescue(r);
+    });
+    bump();
+    if (race.state !== "countdown") scoreDrift(dt, hitWall);
+    tickSmoke(dt);
+    skyline.spin.rotation.y += dt * 0.2;
+    updateRace(dt);
+    const mph = Math.round(Math.abs(player.car.speed) * 2.237);
+    showDash(mph, drift.pts > 0 ? "DRIFT " + fmt(drift.pts) + " ×" + mult() : "");
+    for (const r of racers) {
+      r.driver.userData.tick(dt, now, {
+        speed: r.car.speed, steer: r.car.show,
+        hands: [r.hands[0].getWorldPosition(handL), r.hands[1].getWorldPosition(handR)]
+      });
+    }
+    if (!inVR) { updateGauge(dt, input.handbrake); drawMinimap(); }
+  }
+
+  const kart = player.kart, car = player.car;
+  sun.position.set(kart.position.x + 6, 10, kart.position.z + 4);
+  sun.target.position.copy(kart.position);
+
+  if (!inVR) {
+    const sp = Math.hypot(car.vx, car.vz);
+    if (view === "orbit") {
+      controls.target.lerp(new THREE.Vector3(kart.position.x, 0.4, kart.position.z), 0.1);
+      controls.update();
+    } else if (view === "chase") {
+      // Sit between where the kart points and where it's going, so you can see the drift angle.
+      let dx = -Math.sin(car.heading), dz = -Math.cos(car.heading);
+      if (car.speed > 1.5) { dx = dx * 0.45 + (car.vx / sp) * 0.55; dz = dz * 0.45 + (car.vz / sp) * 0.55; }
+      const len = Math.hypot(dx, dz) || 1;
+      chasePos.set(kart.position.x - (dx / len) * 3.2, 1.6, kart.position.z - (dz / len) * 3.2);
+      camera.position.lerp(chasePos, 1 - Math.pow(0.002, dt));
+      chaseLook.copy(kart.position).setY(0.5);
+      camera.lookAt(chaseLook);
+    } else if (view === "stands") {
+      camera.position.copy(STANDS_EYE);
+      standsAim.lerp(standsTarget(), 1 - Math.pow(0.002, dt));
+      camera.lookAt(standsAim);
+    } else {
+      camera.rotation.set(lookPitch, lookYaw, 0, "YXZ");
+    }
+    // A touch more field of view at speed. From the stands, zoom so the kart (or the sign) fills the shot.
+    let fov = 62 + Math.min(sp, TOP) * 0.8, slideX = 0, slideY = 0;
+    if (view === "stands") {
+      const d = camera.position.distanceTo(standsAim), deg = THREE.MathUtils.radToDeg;
+      if (standsLook === "sign") {
+        // Fit the whole sign into the part of the screen the menu and buttons aren't covering, and slide it there.
+        const a = clearArea();
+        fov = deg(2 * Math.atan(Math.max((SIGN_H + 0.8) / a.h, (SIGN_W + 1) / a.w) * innerHeight / 2 / d));
+        slideX = innerWidth / 2 - (a.x + a.w / 2);
+        slideY = innerHeight / 2 - (a.y + a.h / 2);
+      } else fov = clamp(deg(2 * Math.atan(4 / d)), 14, 50);
+    }
+    if (Math.abs(camera.fov - fov) > 0.05) { camera.fov += (fov - camera.fov) * Math.min(1, 4 * dt); camera.updateProjectionMatrix(); }
+    slideShot(slideX, slideY, dt);
+  }
+  tickBubble(paused ? 0 : dt, inVR);
+  renderer.render(scene, camera);
+});
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  sizeMinimap();
+});
+</script>
+</body>
+</html>

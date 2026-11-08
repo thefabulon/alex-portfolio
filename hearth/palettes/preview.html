@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hearth Themes</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Fraunces:opsz,wght@9..144,700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="skins.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "DM Sans", sans-serif; background: #ece7df; color: #2b2522; }
+    main { max-width: 1180px; margin: 0 auto; padding: 40px 16px 56px; }
+    h1 { font-family: "Fraunces", serif; font-size: 34px; margin: 0; }
+    .lede { max-width: 640px; color: #5c524c; line-height: 1.55; }
+    .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 28px; }
+
+    /* Each card carries data-skin, so it paints itself with that skin's tokens. */
+    .card {
+      border-radius: 24px 24px 8px 24px; overflow: hidden; color: var(--ink);
+      background:
+        radial-gradient(circle at 85% 10%, var(--glow-a), transparent 14rem),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b) 55%, var(--bg-c));
+      box-shadow: 0 14px 36px rgba(40, 30, 25, .16);
+    }
+    .inner { padding: 22px; }
+    .kicker { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .12rem; text-transform: uppercase; margin: 0; }
+    .name { font-family: "Fraunces", serif; font-size: 24px; color: var(--heading); margin: 6px 0 4px; }
+    .mood { color: var(--muted); font-size: 14px; margin: 0; }
+    .swatches { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 18px 0; }
+    .swatches span { aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(var(--ink-rgb), .18); }
+    .sample { border: 1px solid rgba(var(--ink-rgb), .14); background: var(--panel); border-radius: 16px; padding: 14px; }
+    .row { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 10px; border: 1px solid rgba(var(--ink-rgb), .10); background: rgba(var(--ink-rgb), .035); font-size: 13px; }
+    .row + .row { margin-top: 8px; }
+    .row input { accent-color: var(--primary); margin: 0; }
+    .buttons { display: flex; gap: 8px; margin-top: 12px; }
+    .btn { border-radius: 10px; padding: 8px 12px; font: 700 12px "DM Sans", sans-serif; border: 1px solid transparent; }
+    .btn.fire { background: var(--button); color: var(--button-ink); }
+    .btn.soft { background: rgba(var(--ink-rgb), .05); color: var(--soft-ink); border-color: rgba(var(--ink-rgb), .18); }
+    .why { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 16px 0 0; }
+    code { font-size: 11px; color: var(--muted); }
+    .hexes { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Hearth themes</h1>
+    <p class="lede">Four themes for Hearth, each drawn from a place or memory that feels calm. Each one is muted, avoids pure black and white, and keeps one warm note so Hearth still feels like a hearth. The full rationale for each is in README.md.</p>
+    <div class="grid" id="grid"></div>
+  </main>
+  <script>
+    const skins = [
+      { id: "ember", name: "Ember", mood: "Cozy and comforting · dark", why: "Firelight from camping trips with Alex's mom, one of the most comforting feelings he knows. The original Hearth look." },
+      { id: "tidepool", name: "Tidepool", mood: "Serene and connected · dark", why: "Dusty blues from exploring tide pools as a kid, where every animal was relaxed and the whole ecosystem worked as one." },
+      { id: "meadow", name: "Morning Meadow", mood: "Fresh and hopeful · light", why: "Sage green on warm oat paper, like lying in the grass on a quiet morning with a whole new day ahead." },
+      { id: "marshy", name: "Marshy", mood: "Soft and safe · dark", why: "Midnight blue and sky blue from Marshy, a sequined stuffed sheep that kept Alex company on the darkest nights." }
+    ];
+    const roles = ["bg-a", "panel", "accent", "primary", "button", "ink", "muted"];
+    const grid = document.getElementById("grid");
+    skins.forEach(skin => {
+      const card = document.createElement("article");
+      card.className = "card";
+      card.dataset.skin = skin.id;
+      card.innerHTML = `
+        <div class="inner">
+          <p class="kicker">Hearth theme</p>
+          <h2 class="name">${skin.name}</h2>
+          <p class="mood">${skin.mood}</p>
+          <div class="swatches">${roles.map(r => `<span title="${r}" style="background:var(--${r})"></span>`).join("")}</div>
+          <div class="sample">
+            <label class="row"><input type="checkbox" checked> Take three slow breaths</label>
+            <label class="row"><input type="checkbox"> Drink a glass of water</label>
+            <div class="buttons"><span class="btn fire">Check in</span><span class="btn soft">Save ritual</span></div>
+          </div>
+          <p class="why">${skin.why}</p>
+          <div class="hexes"></div>
+        </div>`;
+      grid.appendChild(card);
+      const css = getComputedStyle(card);
+      card.querySelector(".hexes").innerHTML = roles
+        .map(r => `<code>${r} ${css.getPropertyValue("--" + r).trim()}</code>`).join("");
+    });
+  </script>
+</body>
+</html>

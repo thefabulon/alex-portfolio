@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheelie Ride v2 · Orange County</title>
+<meta name="description" content="Version 2 of Wheelie Ride: a full-screen ride through the real roads of Aliso Viejo, Laguna Hills, Laguna Niguel and Laguna Beach, from the 405 down Laguna Canyon Rd to Anita Street Beach. Real gears, a rev counter, traffic, palm trees and the ocean.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Big+Shoulders+Display:wght@700;800&family=Rajdhani:wght@500;600;700&family=Russo+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/v2/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js"></script>
+</head>
+<body>
+<div id="scene" role="img" aria-label="3D view of the ride through Orange County"></div>
+
+<div class="loading" id="loading" role="status">
+  <h1>Wheelie <em>Ride</em> <small>v2 · Orange County</small></h1>
+  <p id="load-text">Loading the map…</p>
+  <div class="load-bar"><i id="load-fill"></i></div>
+  <p class="load-note">Real roads, buildings and hills from OpenStreetMap and elevation data.</p>
+</div>
+
+<!-- Top left: free ride, a shortcut to the map, and your hand drag (like the go-kart's corner) -->
+<div class="tl" id="tl">
+  <div class="tag">Free <em>ride</em></div>
+  <button class="cta" id="map-cta">Pick a place <kbd>M</kbd></button>
+  <div class="dchip"><span>Hand drag</span><b id="hand-drag">0 m</b><small id="best-drag">best 0 m</small></div>
+  <div class="dchip air"><span>Air</span><b id="air-last">0.0 s</b><small id="best-air">best 0.0 s</small></div>
+</div>
+
+<!-- Top right: menu, camera, sunset, map, back on the road -->
+<div class="tr" id="tr">
+  <div class="icons">
+    <button class="ico" id="menu-btn" title="Menu (Esc)" aria-label="Pause menu"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+    <button class="ico" id="cam-btn" title="Switch camera (C)" aria-label="Switch camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8h3.5l2-2.5h7l2 2.5H21v11H3z"/><circle cx="12" cy="13" r="3.6"/></svg></button>
+    <button class="ico" id="time-btn" title="Sunset (T)" aria-label="Sunset" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 17a7 7 0 0 1 14 0"/><path d="M2 20h20M12 5v3M4.2 9.2l2 2M19.8 9.2l-2 2"/></svg></button>
+    <button class="ico" id="map-btn" title="Map (M)" aria-label="Map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg></button>
+    <button class="ico sound-ico" id="sound-btn" title="Sound (V)" aria-label="Sound" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path class="wave" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="cross" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
+    <button class="ico" id="reset-btn" title="Back on the road (R)" aria-label="Back on the road"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4.5 3.5v4.5H9"/></svg></button>
+  </div>
+  <div class="camname gone" id="camname" aria-live="polite">Chase cam</div>
+</div>
+
+<!-- Keyboard hints: fade away once you're riding -->
+<div class="hints" id="hints">
+  <span><kbd>W</kbd><kbd>S</kbd> Gas / brake</span>
+  <span><kbd>A</kbd><kbd>D</kbd> Steer</span>
+  <span><kbd class="hl">Space</kbd> Wheelie</span>
+  <span><kbd>C</kbd> Camera</span>
+  <span><kbd>Esc</kbd> Menu</span>
+</div>
+
+<!-- Pause menu -->
+<div class="menu" id="menu" hidden role="dialog" aria-modal="true" aria-labelledby="menu-title">
+  <div class="m-panel">
+    <header class="m-head">
+      <h1 id="menu-title">Wheelie <em>Ride</em><small>v2 · Orange County</small></h1>
+      <span class="m-paused">Paused</span>
+    </header>
+    <div class="m-grid">
+      <nav class="m-main" aria-label="Game">
+        <button class="m-btn primary" id="resume">Resume <kbd>Esc</kbd></button>
+        <button class="m-btn" id="map-open">Map <kbd>M</kbd></button>
+        <button class="m-btn" id="reset-menu">Back on the road <kbd>R</kbd></button>
+        <button class="m-btn" id="start-menu">Back to the start</button>
+        <a class="m-btn small" href="index.html">Play version 1</a>
+        <a class="m-btn small" href="../lobby/v2.html">← Lobby</a>
+      </nav>
+      <div class="m-side">
+        <section>
+          <h2 id="bike-label">Ride</h2>
+          <div class="chips" role="group" aria-labelledby="bike-label">
+            <button data-bike="street" aria-pressed="false">Street</button>
+            <button data-bike="trail" aria-pressed="false">Trail</button>
+            <button data-bike="sprint" aria-pressed="false">Sprint</button>
+            <button data-bike="sur-ron" aria-pressed="false">Sur-Ron</button>
+            <button data-bike="kawasaki" aria-pressed="false">Ninja H2R</button>
+          </div>
+          <p class="m-note" id="drive-label"></p>
+        </section>
+        <section id="gearbox">
+          <h2 id="gear-label">Gears</h2>
+          <div class="chips" role="group" aria-labelledby="gear-label">
+            <button data-gearbox="auto" aria-pressed="true">Automatic</button>
+            <button data-gearbox="manual" aria-pressed="false">Manual <kbd>Z</kbd><kbd>X</kbd></button>
+          </div>
+        </section>
+        <section>
+          <h2 id="spawn-label">Start at</h2>
+          <div class="chips spawns" id="spawns" role="group" aria-labelledby="spawn-label"></div>
+        </section>
+        <section>
+          <h2 id="view-label">Camera</h2>
+          <div class="chips" role="group" aria-labelledby="view-label">
+            <button data-view="third" aria-pressed="true">Chase</button>
+            <button data-view="first" aria-pressed="false">1st person</button>
+            <button data-view="side" aria-pressed="false">Side cam</button>
+          </div>
+        </section>
+        <section>
+          <h2 id="time-label">World</h2>
+          <div class="chips" role="group" aria-labelledby="time-label">
+            <button data-time="day" aria-pressed="true">Afternoon</button>
+            <button data-time="sunset" aria-pressed="false">Sunset</button>
+            <button id="traffic" aria-pressed="true">Traffic</button>
+            <button id="sound" aria-pressed="true">Sound <kbd>V</kbd></button>
+          </div>
+        </section>
+        <details open>
+          <summary>How to wheelie</summary>
+          <ul>
+            <li>Get rolling, then hold <kbd class="hl">Space</kbd> to lift the front. Low gears lift it faster.</li>
+            <li>Let go of <kbd class="hl">Space</kbd> to bring it down. Tap it to hold the angle.</li>
+            <li>Past the orange mark on the meter, your hand drags on the road and sparks fly. Past the red line, you loop it.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>Jumps</summary>
+          <ul>
+            <li>Ride over a crest, off a ridge or off the top of a slope fast enough and you get air.</li>
+            <li>In the air, hold <kbd class="hl">Space</kbd> to pull the nose up and the brake to push it down.</li>
+            <li>Land on the back wheel and you ride away in a wheelie. Land nose first, or too hard, and you crash. Landing on a downslope is softest.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>Controls</summary>
+          <dl class="ctl">
+            <dt><kbd>W</kbd><kbd>S</kbd></dt><dd>Gas (pedal, on the bicycles) and brake (arrow keys work too)</dd>
+            <dt><kbd>A</kbd><kbd>D</kbd></dt><dd>Steer</dd>
+            <dt><kbd class="hl">Space</kbd></dt><dd>Wheelie, or nose up in the air</dd>
+            <dt><kbd>E</kbd></dt><dd>Drag a foot to slow down</dd>
+            <dt><kbd>X</kbd><kbd>Z</kbd></dt><dd>Shift up and down (<kbd>G</kbd>: automatic or manual)</dd>
+            <dt><kbd>C</kbd></dt><dd>Switch camera</dd>
+            <dt><kbd>M</kbd></dt><dd>Map: click any road to ride there</dd>
+            <dt><kbd>T</kbd></dt><dd>Afternoon or sunset</dd>
+            <dt><kbd>V</kbd></dt><dd>Sound on or off</dd>
+            <dt><kbd>R</kbd></dt><dd>Back on the road</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Pause menu (<kbd>H</kbd> and <kbd>P</kbd> work too)</dd>
+          </dl>
+          <p>On a phone or tablet: steer with the arrows on the left; brake, wheelie and gas on the right.</p>
+        </details>
+        <details>
+          <summary>Gauges</summary>
+          <ul>
+            <li>The bar across the top is the rev counter: white, then green when it's time to shift, then red at the limit.</li>
+            <li>The dash shows your speed in mph, the gear and the RPM. The bicycles show how fast your legs turn and which gear teeth you're in. The Sur-Ron is electric, so it's always in D.</li>
+            <li>The sign next to the minimap is the real speed limit. Your speed turns red when you're 10 mph over.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>About the map</summary>
+          <p>The roads, buildings, coastline and city lines are real, from OpenStreetMap, and the hills come from real elevation data. It covers Laguna Hills and the 5 and 405 down to Dana Point, and Laguna Beach across to Mission Viejo.</p>
+          <p>Map data © OpenStreetMap contributors. Elevation: AWS Terrain Tiles (USGS, SRTM).</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rev bar (top middle) -->
+<div class="revbar" aria-hidden="true">
+  <div class="rev-top"><span id="rev-label">RPM ×1000</span><span id="rev-scale"></span></div>
+  <div class="rev-segs" id="rev-segs"></div>
+  <div class="rev-speed"><b id="rev-speed">0</b> MPH</div>
+</div>
+
+<!-- Where you are -->
+<div class="where" aria-live="off"><b id="road-name">…</b><span id="city-name"></span></div>
+<div class="toast" id="toast" hidden aria-live="polite"></div>
+<div id="drag-callout" class="drag-callout" hidden>HAND DRAG!</div>
+<div id="air-callout" class="drag-callout air-callout" hidden>AIR <b id="air-time">0.0</b>s</div>
+
+<!-- Minimap (bottom left) -->
+<div class="minimap">
+  <canvas id="minimap" width="320" height="320" aria-label="Minimap"></canvas>
+  <span class="north" id="north">N</span>
+  <div class="limit" id="limit" hidden><small>SPEED<br>LIMIT</small><b id="limit-num">45</b></div>
+</div>
+
+<!-- Wheelie meter (bottom middle) -->
+<div class="lean-box">
+  <div class="lean-row">
+    <span class="lbl">Wheelie<span class="lean-key"> · orange = hand drag · red = crash</span></span>
+    <span id="lean-readout" class="mono">0°</span>
+  </div>
+  <div id="meter" class="meter-track" role="progressbar" aria-label="Wheelie lean toward crash" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="meter-zone" aria-hidden="true"></div>
+    <div id="meter-fill" class="meter-fill"></div>
+    <div class="meter-marker"></div>
+  </div>
+</div>
+
+<!-- Dash: speedometer and gear (bottom right) -->
+<div class="dash" id="dash" aria-live="off">
+  <svg class="dash-arc" id="dash-arc" viewBox="0 0 220 64" aria-hidden="true"></svg>
+  <div class="dash-main">
+    <div class="dash-speed"><b id="speed">0</b><span>mph</span><small id="speed-kmh">0 km/h</small></div>
+    <div class="dash-gear"><span>GEAR</span><b id="gear">1</b><small id="gear-sub">auto</small><small id="gear-of"></small></div>
+  </div>
+  <div class="dash-row"><span id="rpm-read">0 rpm</span><span id="dash-extra"></span><span id="odo">0.0 mi</span></div>
+  <i class="shift-light" id="shift-light" title="Shift up"></i>
+</div>
+
+<!-- Crash -->
+<div id="crash-screen" class="crash" hidden role="dialog" aria-labelledby="crash-title">
+  <p class="crash-kicker">Ride over</p>
+  <h2 id="crash-title">Too far back!</h2>
+  <p id="crash-description">You crossed the lean limit.</p>
+  <div class="row"><button class="go" id="restart">Ride again <kbd>R</kbd></button><button id="restart-start">Back to the start</button></div>
+</div>
+
+<!-- Big map -->
+<div class="bigmap" id="bigmap" hidden role="dialog" aria-label="Map of the area">
+  <canvas id="bigmap-canvas"></canvas>
+  <div class="bigmap-bar"><span>Click any road to ride there. Yellow squares are start points, orange dots are landmarks.</span><button id="bigmap-close">Close <kbd>M</kbd></button></div>
+</div>
+
+<!-- Touch controls -->
+<div class="touch" aria-label="Touch controls">
+  <div class="touch-group">
+    <button data-control="ArrowLeft" aria-label="Steer left">←</button>
+    <button data-control="ArrowRight" aria-label="Steer right">→</button>
+  </div>
+  <div class="touch-group">
+    <button data-control="ArrowDown" aria-label="Brake">BRAKE</button>
+    <button class="wheelie" data-control="Space">WHEELIE</button>
+    <button class="gas" data-control="ArrowUp" aria-label="Gas">GAS</button>
+  </div>
+</div>
+
+<script src="src/v2/drivetrain.js"></script>
+<script src="src/v2/sound.js"></script>
+<script src="src/v2/oc-map.js"></script>
+<script src="src/v2/world.js"></script>
+<script src="src/v2/main.js"></script>
+</body>
+</html>

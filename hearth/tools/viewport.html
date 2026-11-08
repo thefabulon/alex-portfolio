@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Viewport</title>
+<!-- Holds the app at an exact phone width; macOS headless Chrome won't shrink a window below ~500px.
+     Usage: viewport.html?w=390&h=844&q=demo%3Dtoday -->
+<style>html,body{margin:0;background:#181112}iframe{display:block;border:0}</style>
+</head>
+<body>
+<iframe id="app" title="Hearth"></iframe>
+<script>
+  const params = new URLSearchParams(location.search);
+  const frame = document.getElementById("app");
+  frame.width = params.get("w") || 390;
+  frame.height = params.get("h") || 844;
+  frame.src = "../" + (params.get("page") || "index.html") + "?" + (params.get("q") || "");
+  window.addEventListener("message", event => {
+    if (event.data && event.data.hearthHeight) document.body.dataset.pageHeight = event.data.hearthHeight;
+  });
+</script>
+</body>
+</html>

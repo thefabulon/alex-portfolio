@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ground Plans Wall</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Alex's gallery ground plans drawn in Sharpie and paint pen on a sheet of kraft paper, with the notebook sketch taped up and sticky notes everywhere.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Sedgwick+Ave&family=Sedgwick+Ave+Display&display=swap">
+<style>
+/* Version 3 of the ground plans: a crit wall. One long sheet of kraft paper, plans drawn on it in Sharpie and white
+   paint pen, photos taped and pinned up, notes on sticky notes, arrows from the lobby to each game. */
+:root{
+  --kraft:#c49f70; --ink:#16130f; --paint:#f4efe3; --orange:#ff4f1a;
+  --y:#ffe46e; --pink:#ff9fc6; --blue:#9fd6ff; --green:#bdee9c;
+  --marker:"Sedgwick Ave","Marker Felt","Comic Sans MS",cursive;
+  --display:"Sedgwick Ave Display","Sedgwick Ave","Marker Felt",cursive;
+  --note:"Gaegu","Bradley Hand","Comic Sans MS",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--kraft)}
+body{margin:0;color:var(--ink);font:700 22px/1.25 var(--note);overflow-x:clip;min-height:100vh;
+  background-color:var(--kraft);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9 .22' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .2 0 0 0 0 .08 0 0 0 .5 -.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .15 0 0 0 .55 -.18'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E"),
+    linear-gradient(98deg,transparent 22.4%,rgba(255,236,200,.22) 22.6%,rgba(70,45,20,.13) 22.9%,transparent 23.6%),
+    linear-gradient(79deg,transparent 64.2%,rgba(70,45,20,.12) 64.4%,rgba(255,236,200,.2) 64.7%,transparent 65.3%);
+  background-size:400px 400px,900px 900px,100% 1900px,100% 2600px}
+a{color:inherit}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+.page{position:relative;width:min(1320px,100% - 32px);margin:0 auto;padding:28px 0 120px}
+.mk-text{font-family:var(--marker);font-weight:400}
+
+/* ---------- top ---------- */
+.top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 24px;font:400 19px/1.2 var(--marker);color:var(--paint);text-transform:uppercase;letter-spacing:.02em}
+.top a{text-decoration:none;border-bottom:2px solid var(--paint)}
+.top a:hover{color:var(--ink);border-color:var(--ink)}
+.title{position:relative;margin:84px 0 0;font:400 1px/1 var(--display);text-transform:uppercase;filter:url(#rough)}
+.title .l1{display:block;font-size:clamp(84px,17.5vw,260px);line-height:.82;color:var(--paint);transform:rotate(-3deg);transform-origin:left;white-space:nowrap;margin-left:-.04em}
+.title .l2{display:block;font-size:clamp(52px,10vw,150px);line-height:.86;color:var(--ink);transform:rotate(-1.4deg);white-space:nowrap;margin-left:.4em;width:max-content}
+header{position:relative}
+.sticky.lede{position:absolute;right:0;top:50%;--w:280px;--r:4deg}
+@media (max-width:1000px){.sticky.lede{position:relative;right:auto;top:auto;margin:10px 0 0 auto;--r:2deg}}
+
+/* ---------- sticky notes, tape, pins ---------- */
+.sticky{position:relative;background:var(--c,var(--y));padding:24px 22px 22px;width:var(--w,270px);max-width:100%;transform:rotate(var(--r,0deg));
+  font:700 21px/1.25 var(--note);color:#24201a;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 30%,rgba(0,0,0,0) 80%,rgba(0,0,0,.05));
+  box-shadow:0 1px 1px rgba(40,25,10,.18),0 16px 22px -14px rgba(40,25,10,.55);clip-path:polygon(0 0,100% 0,100% 100%,4% 100%,0 96%)}
+.sticky h4{margin:0 0 6px;font:400 19px/1.1 var(--marker);text-transform:uppercase;letter-spacing:.03em}
+.sticky p{margin:0 0 8px}.sticky p:last-child{margin:0}
+.sticky ul{margin:0;padding-left:18px}.sticky li{margin-bottom:6px}
+.tape{position:relative;transform:rotate(var(--r,0deg))}
+.tape::before,.tape::after{content:"";position:absolute;width:120px;height:34px;z-index:3;background:rgba(232,220,186,.9);
+  box-shadow:0 1px 2px rgba(40,25,10,.22);
+  clip-path:polygon(0 6%,5% 0,9% 8%,14% 1%,100% 0,97% 10%,100% 22%,96% 36%,100% 52%,96% 66%,100% 80%,97% 92%,100% 100%,0 100%,4% 90%,0 78%,3% 64%,0 50%,4% 36%,0 22%)}
+.tape::before{top:-16px;left:-30px;transform:rotate(-34deg)}
+.tape::after{top:-14px;right:-30px;transform:rotate(30deg)}
+.tape img{display:block;width:100%;height:auto;box-shadow:0 2px 3px rgba(40,25,10,.25),0 20px 26px -18px rgba(40,25,10,.6)}
+.pin{position:relative;transform:rotate(var(--r,0deg))}
+.pin img{display:block;width:100%;height:auto;border:8px solid #fbf8f1;border-bottom-width:8px;box-shadow:0 2px 3px rgba(40,25,10,.25),0 18px 24px -16px rgba(40,25,10,.6)}
+.pin::before{content:"";position:absolute;top:-9px;left:50%;width:22px;height:22px;margin-left:-11px;border-radius:50%;z-index:3;
+  background:radial-gradient(circle at 35% 30%,#ff9c8a 0 18%,#e5321b 40%,#8f1406 100%);box-shadow:3px 5px 4px rgba(40,25,10,.4)}
+
+/* ---------- notebook pages ---------- */
+.sec-h{font:400 clamp(44px,6vw,86px)/.9 var(--marker);text-transform:uppercase;margin:0;transform:rotate(-1.5deg)}
+.sec-h.paint{color:var(--paint)}
+.notebook{position:relative;margin-top:170px;display:grid;grid-template-columns:minmax(170px,1fr) minmax(0,2.3fr) minmax(170px,1fr);gap:20px 34px;align-items:start}
+.notebook .sec-h{grid-column:1/-1;margin-bottom:24px}
+.nb-photos{grid-column:2;display:flex;align-items:flex-start;gap:0}
+.nb-photos .tape{flex:1 1 0;min-width:0}
+.nb-photos .p1{--r:-2.5deg;z-index:1;flex-grow:1.05}
+.nb-photos .p2{--r:3deg;margin-top:70px;margin-left:-26px}
+.callouts{display:grid;gap:30px;font:400 22px/1.15 var(--marker);text-transform:uppercase}
+.callouts.l{grid-column:1;grid-row:2;padding-top:40px;text-align:right}
+.callouts.r{grid-column:3;grid-row:2;padding-top:120px}
+.callouts p{margin:0}
+.callouts .who{font:700 18px/1.2 var(--note);text-transform:none;color:#3a2a17}
+.nb-caption{grid-column:2;margin:18px 0 0;font:400 20px/1.25 var(--marker);text-transform:uppercase;transform:rotate(-.6deg)}
+.arrows{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:4}
+.anc{position:absolute;width:2px;height:2px}
+@media (max-width:900px){
+  .notebook{grid-template-columns:1fr}
+  .nb-photos,.callouts.l,.callouts.r,.nb-caption{grid-column:1;grid-row:auto;text-align:left;padding-top:0}
+  .callouts{grid-template-columns:1fr 1fr}
+  .notebook .arrows{display:none}
+}
+@media (max-width:520px){.nb-photos{flex-direction:column}.nb-photos .p2{margin:30px 0 0 20px}.callouts{grid-template-columns:1fr}}
+
+/* ---------- exhibits ---------- */
+.exhibits{margin-top:130px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:30px 26px;align-items:start}
+.exhibits .sec-h{grid-column:1/-1}
+.ex{grid-column:span 3}
+.ex:nth-child(3){grid-column:span 4}.ex:nth-child(5){grid-column:span 2}
+.ex .pin img{max-height:440px;object-fit:cover}
+.ex .pin{margin-bottom:14px}
+.ex:nth-child(2){--r:-3deg;margin-top:40px}.ex:nth-child(3){--r:2deg}.ex:nth-child(4){--r:-1.5deg;margin-top:70px}.ex:nth-child(5){--r:3deg;margin-top:10px}
+.ex .pin{--r:inherit}
+.ex h3{margin:6px 0 2px;font:400 26px/1 var(--marker);text-transform:uppercase}
+.ex p{margin:0;max-width:24ch}
+.ex a{color:var(--paint);font:400 19px/1.3 var(--marker);text-transform:uppercase;text-decoration:none;border-bottom:2px solid}
+.ex a:hover{color:var(--ink)}
+.ex .num{color:var(--orange);font-family:var(--marker);font-weight:400}
+@media (max-width:900px){.ex:nth-child(n){grid-column:span 6}.exhibits .sec-h{grid-column:1/-1}}
+
+/* ---------- the plans and the arrows between them ---------- */
+.flow{position:relative;margin-top:150px}
+.plan{position:relative;display:grid;gap:18px 28px;align-items:start}
+.plan h2{margin:0;font:400 clamp(58px,8vw,118px)/.84 var(--display);text-transform:uppercase;transform:rotate(-2deg)}
+.plan .open{display:inline-block;margin-top:10px;font:400 22px/1 var(--marker);text-transform:uppercase;text-decoration:none;color:var(--ink);padding:10px 16px;position:relative}
+.plan .open svg{position:absolute;inset:-6px -10px;width:calc(100% + 20px);height:calc(100% + 12px);overflow:visible;pointer-events:none}
+.plan .open:hover{color:var(--paint)}
+.plan .tag{margin:6px 0 0;font:400 21px/1.25 var(--marker);text-transform:uppercase;max-width:34ch;color:#2a1f13}
+.art svg{display:block;width:100%;height:auto;overflow:visible}
+#svg-bike{overflow:hidden}
+.src{font:700 17px/1.2 var(--note);color:#4a3520;margin:0}
+.lobby{grid-template-columns:minmax(0,1.9fr) minmax(250px,1fr)}
+.lobby .head{grid-column:1/-1}
+.lobby .art{grid-column:1;grid-row:2/4}
+.lobby .s1{--c:var(--y);--r:3deg;margin-top:10px;margin-left:-40px}
+.lobby .s2{--c:var(--pink);--r:-2deg;margin-left:10px}
+.lobby .s3{--c:var(--blue);--r:-2.5deg;grid-column:1;justify-self:start;margin-top:-50px;margin-left:6%;--w:330px;z-index:2}
+.lobby .src{grid-column:1/-1}
+.games{display:grid;grid-template-columns:1fr 1fr;column-gap:150px;margin-top:190px}
+.kart{grid-template-columns:1fr}
+.bike{grid-template-columns:1fr;margin-top:220px}
+.kart .s1{--c:var(--green);--r:-3deg;margin:-40px 0 0 auto}
+.kart .s2{--c:var(--y);--r:2deg;margin:-20px 0 0 4%;--w:300px}
+.bike .s1{--c:var(--pink);--r:2.5deg;margin:-30px 0 0 auto}
+.bike .s2{--c:var(--blue);--r:-2deg;margin:-10px 0 0 6%;--w:300px}
+.drift{margin-top:200px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.drift .head{grid-column:1/-1;text-align:center;justify-self:center}
+.drift .head .tag{margin-inline:auto}
+.drift .art{grid-column:1/-1}
+.drift .s1{--c:var(--y);--r:-2deg;justify-self:center}
+.drift .s2{--c:var(--green);--r:1.5deg;justify-self:center;margin-top:30px}
+.drift .s3{--c:var(--pink);--r:-1deg;justify-self:center;margin-top:-6px;--w:300px}
+.drift .src{grid-column:1/-1;text-align:center}
+.flow .arrows{z-index:0}
+.flow .arrow-label{position:absolute;font:400 18px/1 var(--marker);text-transform:uppercase;color:var(--orange);white-space:nowrap;transform:rotate(var(--r,0deg));z-index:1}
+@media (max-width:1000px){
+  .lobby{grid-template-columns:1fr}.lobby .art{grid-row:auto}.lobby .s1,.lobby .s2,.lobby .s3{margin:0;justify-self:center}
+  .games{grid-template-columns:1fr;margin-top:120px}.bike{margin-top:120px}
+  .drift{grid-template-columns:1fr}.drift .sticky{margin:0 !important}
+  .flow .arrows,.flow .arrow-label{display:none}
+}
+
+/* ---------- early ideas ---------- */
+.early{margin-top:200px}
+.early-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px}
+.early-top p{margin:12px 0 0;max-width:46ch;font:400 21px/1.3 var(--marker);text-transform:uppercase}
+.only{font:400 20px/1 var(--marker);text-transform:uppercase;background:none;border:0;color:var(--paint);cursor:pointer;padding:6px 0;border-bottom:2px solid var(--paint)}
+.only[aria-pressed="true"]{color:var(--orange);border-color:var(--orange)}
+.ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:54px 40px;margin-top:40px}
+.idea{position:relative;transform:rotate(var(--r,0deg))}
+.idea:nth-child(4n+1){--r:-1.2deg}.idea:nth-child(4n+2){--r:1deg;margin-top:24px}.idea:nth-child(4n+3){--r:-.4deg;margin-top:-8px}.idea:nth-child(4n){--r:1.6deg;margin-top:14px}
+.idea[hidden]{display:none}
+.idea .pick{all:unset;display:block;cursor:pointer;position:relative}
+.idea .pick:focus-visible{outline:3px solid var(--ink);outline-offset:6px}
+.idea h3{margin:0;font:400 26px/1 var(--marker);text-transform:uppercase;display:flex;gap:10px;align-items:baseline}
+.idea h3 small{font-size:18px;color:var(--paint)}
+.idea .mini{display:block;width:100%;height:auto;overflow:visible;margin:6px 0}
+.idea .loop{position:absolute;inset:-26px -22px -18px -22px;width:calc(100% + 44px);height:calc(100% + 44px);overflow:visible;pointer-events:none}
+.idea .loop path{transition:stroke-dashoffset .5s ease-out}
+.idea p{margin:0;font-size:20px}
+.idea details{margin-top:6px;font-size:19px}
+.idea summary{cursor:pointer;font:400 17px/1.2 var(--marker);text-transform:uppercase;list-style:none;color:#3d2a14;width:max-content}
+.idea summary::-webkit-details-marker{display:none}
+.idea summary::after{content:" +"}
+.idea details[open] summary::after{content:" –"}
+.idea details p{margin-top:6px}
+.idea .eff{font:400 16px/1 var(--marker);text-transform:uppercase;margin-top:8px;color:#3d2a14}
+.card{grid-column:span 2;justify-self:center;width:min(560px,100%);transform:rotate(-1.5deg);padding:30px 32px 26px;color:#1f2433;font:700 20px/30px var(--note);
+  background:#fbfaf4 linear-gradient(transparent 29px,rgba(80,140,200,.35) 29px,rgba(80,140,200,.35) 30px) 0 46px/100% 30px;
+  box-shadow:0 2px 3px rgba(40,25,10,.25),0 20px 26px -16px rgba(40,25,10,.6);position:relative}
+.card::before{content:"";position:absolute;left:0;right:0;top:56px;height:2px;background:rgba(220,70,70,.55)}
+.card h3{margin:0 0 18px;font:400 26px/1 var(--marker);text-transform:uppercase;color:var(--ink)}
+.card ol{margin:0;padding-left:22px}.card p{margin:0}
+@media (max-width:700px){.card{grid-column:auto}}
+.foot{margin-top:120px;font:400 17px/1.3 var(--marker);text-transform:uppercase;color:#3d2a14}
+
+
+/* on phones the two wide plans scroll sideways so the lettering stays readable */
+@media (max-width:600px){.lobby .art,.drift .art{overflow-x:auto;overflow-y:hidden;padding:12px 0 8px}#svg-lobby,#svg-drift{min-width:600px}}
+/* lettering inside the drawings */
+.hand-marker text{font-family:var(--marker);fill:var(--ink);text-transform:uppercase}
+.hand-marker .lb{font-size:11.2px}
+.hand-marker .lbk{font-size:13px}
+.hand-marker .lbi{font-size:13px;fill:var(--paint)}
+.hand-marker .st text{font-size:14px;fill:var(--ink)}
+.idea .hand-marker .lb{font-size:15px}
+.hand-marker .mk{mix-blend-mode:multiply}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="rough" x="-2%" y="-5%" width="104%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="2" seed="3" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</defs></svg>
+
+<div class="page">
+  <div class="top"><span>Alex · OCSA Production &amp; Design · process work</span>
+    <span>other versions: <a href="gallery-ground-plans.html">ink tiles</a> · <a href="gallery-ground-plans-notebook.html">notebook</a> · <a href="gallery-ground-plans-watercolor.html">watercolor map</a></span></div>
+
+  <header>
+    <h1 class="title"><span class="l1">Gallery</span><span class="l2">Ground Plans</span></h1>
+    <div class="sticky lede" style="--c:var(--y)">
+      <p>The lobby and my 3 games, drawn from above like a set designer's ground plan.</p>
+      <p>Traced from the real game files, so this is what's in them.</p>
+      <p>Not to scale (close, though).</p>
+    </div>
+  </header>
+
+  <section class="notebook" id="notebook" aria-labelledby="nb-h">
+    <h2 class="sec-h paint" id="nb-h">It started in my notebook</h2>
+    <div class="callouts l">
+      <p data-to="a-proj">each room is a project</p>
+      <p data-to="a-kart">go-kart is drivable</p>
+      <p data-to="a-rose">Rose blooms when you enter the room</p>
+      <p data-to="a-fort">you can climb through the fort</p>
+      <p data-to="a-lego">Legos and RC</p>
+      <p data-to="a-play">Play is a stage set</p>
+      <p class="who">(all from my notes on the page)</p>
+    </div>
+    <div class="nb-photos">
+      <figure class="tape p1" style="margin:0;position:relative">
+        <img src="gallery-versions/img/notebook-gallery.jpg" width="1300" height="2098" alt="Alex's notebook page: a ground plan of the whole gallery with a go-kart room and track, Rose, Builds with a fort, the Lobby, Play, a Lego RC room and the Entrance, with notes underneath">
+        <i id="a-proj" class="anc" style="left:45%;top:38%"></i><i id="a-kart" class="anc" style="left:22%;top:17%"></i>
+        <i id="a-rose" class="anc" style="left:67%;top:8%"></i><i id="a-fort" class="anc" style="left:77%;top:28%"></i>
+        <i id="a-lego" class="anc" style="left:15%;top:47%"></i><i id="a-play" class="anc" style="left:75%;top:46%"></i>
+      </figure>
+      <figure class="tape p2" style="margin:0;position:relative">
+        <img src="gallery-versions/img/notebook-route.jpg" width="1300" height="2008" alt="Alex's second notebook page: the lobby with game cards, a car showroom with Lego cars, a racetrack and one more room, joined by a path, with notes on the side">
+        <i id="a-cards" class="anc" style="left:24%;top:12%"></i><i id="a-show" class="anc" style="left:24%;top:31%"></i>
+        <i id="a-track" class="anc" style="left:40%;top:58%"></i><i id="a-exit" class="anc" style="left:48%;top:27%"></i>
+      </figure>
+    </div>
+    <div class="callouts r">
+      <p data-to="a-cards">game cards represent projects</p>
+      <p data-to="a-exit">exits in each room</p>
+      <p data-to="a-show">each car represents a built Lego</p>
+      <p data-to="a-track">hop into a car and drive to the racetrack</p>
+      <p data-to="a-track">racetrack: time limit 2:00</p>
+    </div>
+    <p class="nb-caption">Page 1 is the whole gallery. Page 2 is lobby → car showroom → racetrack. Everything below is drawn the same way, by hand, but traced from the games I actually built.</p>
+    <svg class="arrows" aria-hidden="true"></svg>
+  </section>
+
+  <section class="exhibits" aria-labelledby="ex-h">
+    <h2 class="sec-h" id="ex-h">What's in the gallery</h2>
+    <div class="ex">
+      <div class="pin"><img src="gallery-versions/img/gokart-top.jpg" width="900" height="1320" alt="Alex's go-kart seen from above: metal deck, steering wheel and a dark stripe down the middle" loading="lazy"></div>
+      <h3><span class="num">1</span> The Go-Kart</h3><p>Built full size: real tools, real steering.</p>
+    </div>
+    <div class="ex">
+      <div class="pin"><img src="gallery-versions/img/lego-f1.jpg" width="1100" height="825" alt="Orange Lego F1 car on the street, shot from road level" loading="lazy"></div>
+      <h3><span class="num">2</span> Lego F1 Cars</h3><p>The builds plus the street-level photos.</p>
+    </div>
+    <div class="ex">
+      <div class="pin"><img src="gallery-versions/img/vr.jpg" width="800" height="1410" alt="Alex sitting in a chair wearing a VR headset" loading="lazy"></div>
+      <h3><span class="num">3</span> VR &amp; Virtual</h3><p>The headset work, and this gallery itself.</p><p><a href="woven-room/index.html">Enter the Woven Room →</a></p>
+    </div>
+    <div class="ex">
+      <div class="pin"><img src="gallery-versions/img/hearth.jpg" width="600" height="1298" alt="The Hearth app on a phone, showing the little keeper creature in a crown" loading="lazy"></div>
+      <h3><span class="num">4</span> Hearth App</h3><p>A daily-ritual app with a creature that grows.</p><p><a href="hearth/showcase.html">See the app →</a></p>
+    </div>
+  </section>
+
+  <div class="flow" id="flow">
+    <svg class="arrows" aria-hidden="true"></svg>
+
+    <article class="plan lobby" id="lobby">
+      <div class="head"><h2>The Lobby</h2><p class="tag">A 70s den where every game is a cartridge, and a little robot named Bit shows you around.</p><a class="open" href="lobby/v2.html">Open it →</a></div>
+      <div class="art"><svg id="svg-lobby" viewBox="0 0 560 300" role="img" aria-label="Ground plan of the lobby: a den with a cabinet, TV, console and cartridge rack against the back wall, a round rug, a portal by the window, posters, a beanbag and a plant"></svg></div>
+      <div class="sticky s1"><h4>What's there</h4><p>An 8 × 6 m den. A wood cabinet holds the CRT TV, the wood-grain ALEX-2600 console, a joystick and a 6-slot cartridge rack.</p><p>Round rug, synthwave window, posters, a beanbag and a plant.</p></div>
+      <div class="sticky s2"><h4>How you move</h4><p>Start on the rug facing the cabinet. Take a cartridge from the rack (1), plug it into the console (2), and the portal by the window opens (3). Walk through it into the game.</p><p>Bit flies between 4 stops and points at whatever it's talking about.</p></div>
+      <div class="sticky s3"><h4>Why 6 slots?</h4><p>The rack has 6 slots but there are only 3 games, so the empty slots hold "Coming soon" cartridges. A new game drops into a slot without changing the room.</p></div>
+      <p class="src">Traced from lobby/v2.html · built, v2.11</p>
+    </article>
+
+    <div class="games">
+      <article class="plan kart" id="gokart">
+        <div class="head"><h2>Go-Kart</h2><p class="tag">My plywood kart on a walled drift track, with Brian's Skyline turning on a stand in the middle.</p><a class="open" href="gokart/v2.html">Open it →</a></div>
+        <div class="art"><svg id="svg-kart" viewBox="0 0 400 270" role="img" aria-label="Ground plan of the go-kart drift track: a closed loop with barriers, a start line and grid, a grandstand facing the build sign, light towers and the Skyline on a turntable in the infield"></svg></div>
+        <div class="sticky s1"><h4>What's there</h4><p><span id="kart-len">A closed track</span> with concrete barriers both sides, red-and-white curbs on the bends, a start gantry, a grandstand, 9 light towers and hills far off.</p></div>
+        <div class="sticky s2"><h4>How you move</h4><p>Start at the back of a 5-kart grid. Race the crew for 2 laps, or drive free while they cruise laps on their own. Hold Space to drift.</p><p>The Skyline sits wherever the infield has the most room, so it stays in the middle if the track changes. The build sign faces the grandstand, so the Stands camera looks right at it.</p></div>
+        <p class="src">Traced from gokart/v2.html · built, v2</p>
+      </article>
+
+      <article class="plan bike" id="wheelie">
+        <div class="head"><h2>Wheelie Sim</h2><p class="tag">One straight road that never ends. Pull the front up and see how far back you dare to go.</p><a class="open" href="wheelie-ride/index.html">Open it →</a></div>
+        <div class="art"><svg id="svg-bike" viewBox="0 0 400 300" role="img" aria-label="Ground plan of the wheelie road: a straight two-lane road with trees and signs on both sides, the bike in the middle, three camera spots, and a side view showing the hand-drag and loop-out angles"></svg></div>
+        <div class="sticky s1"><h4>What's there</h4><p>An 11 m two-lane road, pine trees and Alpinestars signs both sides. 5 rides: street, trail and sprint bikes, a Sur-Ron and a Kawasaki Ninja H2R.</p></div>
+        <div class="sticky s2"><h4>How it works</h4><p>Hold Space to lift the front. Past about 66° your rider drags a hand. Past about 85° you loop out. C switches cameras.</p><p>The bike never really moves. The road, trees and signs slide toward you and jump back ahead once they're behind, like a scrolling backdrop on a stage.</p></div>
+        <p class="src">Traced from wheelie-ride/src/main.js · built, v0.11</p>
+      </article>
+    </div>
+
+    <article class="plan drift" id="drift">
+      <div class="head"><h2>Drift Garage</h2><p class="tag">Build a car in the garage, then take it to one of three courses.</p><a class="open" href="../drift-garage/index.html">Open it →</a></div>
+      <div class="art"><svg id="svg-drift" viewBox="0 0 560 236" role="img" aria-label="Ground plans for the drift game: the garage build bay with a turntable, then the three courses: Dockyard Route, Touge Run and Drift Playground"></svg></div>
+      <div class="sticky s1"><h4>The garage</h4><p>5 rides: AE86, Silvia S15, Supra MK4, RX-7 FD, Ninja H2. Tune paint, camber, wheel offset, spoiler, wide-body, turbo and sponsor stickers.</p></div>
+      <div class="sticky s2"><h4>How you move</h4><p>Save your build, pick a course, drift for points and combos. On the Playground you weave through cones, and they go flying if you hit them.</p></div>
+      <div class="sticky s3"><h4>3 different places</h4><p>Containers, cranes and water at the dockyard. Trees, rocks and guardrails on the mountain road. An open lot with cones and light poles at the playground.</p></div>
+      <p class="src">Traced from drift-garage/index.html (it sits next to the Alex folder, so the link only works on this computer)</p>
+    </article>
+  </div>
+
+  <section class="early" id="early" aria-labelledby="early-h">
+    <div class="early-top">
+      <div><h2 class="sec-h paint" id="early-h">10 early ideas</h2>
+        <p>Before the games, I sketched ten ways to build a 3D gallery you could walk or drive through. Circle the ones worth keeping. <span id="count"></span></p></div>
+      <button class="only" id="filter" aria-pressed="false">Only show circled</button>
+    </div>
+    <div class="ideas" id="ideas"></div>
+  </section>
+
+  <p class="foot">Marker wall version · same plans as the <a href="gallery-ground-plans.html">ink tiles</a> page, drawn by hand.js</p>
+</div>
+
+<script src="gallery-versions/plans.js"></script>
+<script src="gallery-versions/hand.js"></script>
+<script>
+const TOOL = 'marker', NS = 'http://www.w3.org/2000/svg';
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  io.unobserve(e.target); e.target.__draw && e.target.__draw();
+}), { rootMargin: '900px 0px' });
+function later(svg, markup, opts) {
+  svg.__draw = () => { svg.innerHTML = markup(); Hand.draw(svg, TOOL, Object.assign({ tilt: 3 }, opts)); };
+  io.observe(svg);
+}
+const kartMarkup = GP.kart();
+document.getElementById('kart-len').textContent = `A ${Math.round(GP.kartLen / 10) * 10} m lap`;
+later(document.getElementById('svg-lobby'), GP.lobby);
+later(document.getElementById('svg-kart'), () => kartMarkup);
+later(document.getElementById('svg-bike'), GP.bike);
+later(document.getElementById('svg-drift'), GP.drift);
+
+const curve = (a, b, bend, n = 40) => {   // a bowed line from a to b
+  const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1];
+  const c = [mx - dy * bend, my + dx * bend], pts = [];
+  for (let i = 0; i <= n; i++) { const t = i / n, u = 1 - t; pts.push([u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]]); }
+  return pts;
+};
+function sizeOverlay(ov, host) {
+  const w = host.offsetWidth, h = host.offsetHeight;
+  ov.setAttribute('viewBox', `0 0 ${w} ${h}`); ov.style.width = w + 'px'; ov.style.height = h + 'px';
+  const hb = host.getBoundingClientRect();
+  return (el, fx, fy) => { const b = el.getBoundingClientRect(); return [b.left - hb.left + b.width * fx, b.top - hb.top + b.height * fy]; };
+}
+
+// arrows from the notes to the spots on the notebook pages
+function notebookArrows() {
+  const host = document.getElementById('notebook'), ov = host.querySelector('.arrows');
+  if (getComputedStyle(ov).display === 'none') return;
+  const at = sizeOverlay(ov, host); let s = '';
+  host.querySelectorAll('.callouts p[data-to]').forEach((p, i) => {
+    const left = p.closest('.callouts').classList.contains('l'), t = document.getElementById(p.dataset.to);
+    const a = at(p, left ? 1.04 : -0.04, 0.5), b = at(t, .5, .5);
+    const bb = [b[0] + (left ? -6 : 6), b[1]];
+    s += Hand.scribble(TOOL, curve(a, bb, left ? -.18 : .18), { color: 'accent', sw: 2.4, arrow: true, head: 12, seed: 70 + i });
+  });
+  ov.innerHTML = s;
+}
+
+// arrows from the lobby's cartridges to each game
+function flowArrows() {
+  const host = document.getElementById('flow'), ov = host.querySelector('.arrows');
+  host.querySelectorAll('.arrow-label').forEach(l => l.remove());
+  if (getComputedStyle(ov).display === 'none') return;
+  const at = sizeOverlay(ov, host), art = document.querySelector('.lobby .art');
+  const o = at(art, .88, 1.02);   // just past "plug in → portal → play"
+  const to = [at(document.querySelector('.kart h2'), .5, -0.18), at(document.querySelector('.drift h2'), .5, -0.14), at(document.querySelector('.bike h2'), .3, -0.12)];
+  const bends = [-.22, .04, .2], labels = ['go-kart', 'drifting game', 'wheelie sim'];
+  let s = '';
+  to.forEach((b, i) => {
+    const a = [o[0] + (i - 1) * 14, o[1] + 10], pts = curve(a, b, bends[i], 60);
+    s += Hand.scribble(TOOL, pts, { color: 'accent', sw: 3.4, arrow: true, head: 20, seed: 90 + i });
+    const m = pts[Math.round(pts.length * [.32, .22, .55][i])], lab = document.createElement('span');
+    lab.className = 'arrow-label'; lab.textContent = labels[i];
+    lab.style.cssText = `top:${m[1] - 8}px;--r:${[10, -3, -12][i]}deg`;
+    host.appendChild(lab);
+    lab.style.left = (i === 2 ? m[0] + 16 : m[0] - 16 - lab.offsetWidth) + 'px';   // labels sit on the outside of each arrow
+  });
+  ov.innerHTML = s;
+}
+// a marker loop around each "open it" link
+document.querySelectorAll('.plan .open').forEach((a, i) => {
+  const s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 100 40'); s.setAttribute('preserveAspectRatio', 'none'); s.setAttribute('aria-hidden', 'true');
+  const pts = []; for (let k = 0; k <= 70; k++) { const t = -2 + k / 60 * Math.PI * 2; pts.push([50 + Math.cos(t) * 48 * (1 + k / 900), 20 + Math.sin(t) * 17]); }
+  s.innerHTML = Hand.scribble(TOOL, pts, { color: 'ink', sw: 1.6, seed: 30 + i });
+  a.prepend(s);
+});
+const redraw = () => { notebookArrows(); flowArrows(); };
+document.fonts.ready.then(() => requestAnimationFrame(redraw));
+addEventListener('load', redraw);
+addEventListener('resize', () => { clearTimeout(redraw.t); redraw.t = setTimeout(redraw, 150); });
+
+// ---------- the 10 early ideas ----------
+const ideas = document.getElementById('ideas');
+let favs = new Set();
+try { favs = new Set(JSON.parse(localStorage.getItem('gp-favs') || '[]')); } catch (e) {}
+const save = () => { try { localStorage.setItem('gp-favs', JSON.stringify([...favs])); } catch (e) {} };
+ideas.innerHTML = GP.concepts.map((p, i) => `<article class="idea" data-i="${i}">
+  <button class="pick" aria-pressed="false" aria-label="Circle ${p.name}">
+    <h3><small>${String(i + 1).padStart(2, '0')}</small>${p.name}</h3>
+    <svg class="mini" viewBox="0 0 400 260" role="img" aria-label="Ground plan for ${p.name}"></svg>
+    <svg class="loop" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+  </button>
+  <p>${p.tag}</p>
+  <details><summary>more</summary><p><b>How you move:</b> ${p.move}</p><p><b>Why it fits:</b> ${p.fit}</p><p><b>Watch out:</b> ${p.watch}</p></details>
+  <p class="eff">Build effort: ${['low', 'medium', 'high'][p.effort - 1]}</p>
+</article>`).join('') + `<div class="card"><h3>How to pick one</h3>
+  <p>Designers narrow down by testing each idea against a few questions. Score the circled ones 1 to 3 on each:</p>
+  <ol><li>Does it show my process? Room for sketches, early versions and mistakes, or only finished photos?</li>
+  <li>Does it tell a story? Would a visitor feel a beginning, middle and end?</li>
+  <li>Does it feel like me? Could only Alex have designed this space?</li>
+  <li>Can I build it in time? A simple space done well beats a big one left half finished.</li></ol>
+  <p>You can also combine plans. For example, enter through The Shop, then walk into the Black Box for the reveal.</p></div>`;
+ideas.querySelectorAll('.idea').forEach((el, i) => {
+  later(el.querySelector('.mini'), GP.concepts[i].svg, { seed: i, tilt: 2 });
+  const pts = []; for (let k = 0; k <= 72; k++) { const t = -2.4 + i * .5 + k / 60 * Math.PI * 2; pts.push([50 + Math.cos(t) * 47 * (1 - k / 700), 52 + Math.sin(t) * 46 * (1 - k / 800)]); }
+  const loop = el.querySelector('.loop');
+  loop.innerHTML = Hand.scribble(TOOL, pts, { color: 'accent', sw: 1.4, seed: 50 + i });
+  loop.querySelectorAll('path').forEach(p => { p.setAttribute('stroke-width', '1.25'); p.setAttribute('pathLength', '100'); p.style.strokeDasharray = '100'; p.style.strokeDashoffset = '100'; });
+});
+const filterBtn = document.getElementById('filter');
+function sync() {
+  const only = filterBtn.getAttribute('aria-pressed') === 'true';
+  ideas.querySelectorAll('.idea').forEach(el => {
+    const i = +el.dataset.i, on = favs.has(i);
+    el.querySelector('.pick').setAttribute('aria-pressed', on);
+    el.querySelectorAll('.loop path').forEach(p => p.style.strokeDashoffset = on ? '0' : '100');
+    el.hidden = only && !on;
+  });
+  document.getElementById('count').textContent = favs.size ? `(${favs.size} circled)` : '';
+}
+ideas.addEventListener('click', e => {
+  const b = e.target.closest('.pick'); if (!b) return;
+  const i = +b.closest('.idea').dataset.i; favs.has(i) ? favs.delete(i) : favs.add(i); save(); sync();
+});
+filterBtn.addEventListener('click', () => { filterBtn.setAttribute('aria-pressed', filterBtn.getAttribute('aria-pressed') !== 'true'); sync(); });
+sync();
+</script>
+</body>
+</html>

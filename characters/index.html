@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex's Crew</title>
+<meta name="description" content="Five characters Alex drew on paper, built as 3D models in three looks: Toon, Galaxy and Painted. They drive the go-kart and live in the Hearth app.">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  /* Layout: full-screen 3D stage, a control panel top-left, Alex's original sketch bottom-right.
+     The panel is cartoon paper: thick ink outlines and hard shadows (Toon), a glowing button (Galaxy),
+     wobbly corners, hatching and handwriting (Painted). Tilts use `rotate` so hover `transform`s stack on top. */
+  :root {
+    --ink: #1c1424; --paper: #fff8ec; --muted: #5d4f66;
+    --sun: #ffd23f; --tang: #ff8a3d; --pink: #ff8cc6; --sky: #6ec4f0; --grape: #8b5cf6; --lime: #a6e84a;
+    --blob: 34px 26px 38px 22px / 24px 36px 22px 32px;
+    --blob-sm: 16px 12px 18px 11px / 12px 17px 11px 16px;
+    --hand: "Patrick Hand", "Comic Sans MS", cursive;
+    color-scheme: light;
+  }
+  html, body { margin: 0; height: 100%; color: var(--ink); font-family: "Fredoka", "Trebuchet MS", system-ui, sans-serif; overflow: hidden; background: #ffd84d; }
+  [hidden] { display: none !important; }
+  .stage { position: fixed; inset: 0; transition: background .5s; }
+  body[data-look="toon"] .stage { background: radial-gradient(circle at 60% 45%, #fff6b8, #ffd84d 45%, #f5a623); }
+  body[data-look="galaxy"] .stage { background: radial-gradient(circle at 65% 35%, #6a3fd1, #2a1a6e 40%, #0b0b2a 80%); }
+  body[data-look="carlo"] .stage { background: repeating-conic-gradient(from 0deg at 62% 50%, #4b2bb8 0 9deg, #7fe3f5 9deg 16deg, #f4f1ff 16deg 19deg, #7a4ff0 19deg 26deg); }
+  canvas { display: block; position: fixed; inset: 0; touch-action: none; }
+
+  .panel { position: fixed; left: 18px; top: 18px; width: min(410px, calc(100vw - 36px)); max-height: calc(100vh - 40px); overflow-y: auto; box-sizing: border-box; padding: 16px 20px 20px; background: var(--paper); border: 3px solid var(--ink); border-radius: var(--blob); box-shadow: 7px 8px 0 var(--ink); rotate: -.6deg; scrollbar-width: thin; }
+  .eyebrow { display: inline-block; font-weight: 600; font-size: 12px; letter-spacing: .04em; background: var(--pink); border: 2px solid var(--ink); border-radius: 999px; padding: 2px 11px; rotate: -2deg; }
+  h1 { margin: 6px 0 0; font-weight: 700; font-size: 46px; line-height: 1; letter-spacing: -.01em; }
+  h1 em { display: inline-block; font-style: normal; color: var(--tang); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); rotate: -4deg; }
+  .squiggle { display: block; width: 190px; height: 14px; margin: 2px 0 8px 4px; }
+  .lede { margin: 0 0 2px; font-size: 15px; color: var(--muted); line-height: 1.4; }
+  .lbl { display: block; margin: 14px 0 7px; font: 20px/1 var(--hand); }
+  .lbl::before { content: "✦"; color: var(--tang); margin-right: 6px; -webkit-text-stroke: 1px var(--ink); }
+
+  button, .btn { font: 600 14px/1.1 "Fredoka", sans-serif; color: var(--ink); background: #fff; border: 2.5px solid var(--ink); border-radius: var(--blob-sm); padding: 7px 13px; box-shadow: 3px 3px 0 var(--ink); cursor: pointer; text-decoration: none; display: inline-block; transition: transform .18s cubic-bezier(.3, 1.7, .5, 1), box-shadow .18s, background-color .2s, filter .2s; }
+  button:hover, .btn:hover { transform: translate(-1px, -3px) rotate(-2deg); box-shadow: 4px 6px 0 var(--ink); }
+  button:active, .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+  button:focus-visible, .btn:focus-visible { outline: 3px dashed var(--grape); outline-offset: 3px; }
+  button:disabled { opacity: .45; cursor: default; transform: none; box-shadow: 3px 3px 0 var(--ink); }
+  button[aria-pressed="true"] { background: var(--sun); }
+  .go { background: var(--tang); }
+
+  /* Characters: sketch stickers, each tilted its own way, in its Toon color when picked. */
+  .crew { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; padding: 2px 4px 4px 0; }
+  .crew button { min-width: 0; padding: 5px 5px 6px; display: grid; gap: 5px; justify-items: center; font-size: 13px; border-radius: 14px 10px 16px 9px / 10px 15px 9px 14px; }
+  .crew button:nth-child(odd) { rotate: -2.5deg; } .crew button:nth-child(even) { rotate: 2deg; }
+  .crew img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #fff; display: block; border: 2px solid var(--ink); border-radius: 10px 8px 12px 7px; box-sizing: border-box; }
+  .crew button[aria-pressed="true"] { transform: scale(1.08) translateY(-2px); box-shadow: 4px 5px 0 var(--ink); }
+  .crew button[data-value="jimbob"][aria-pressed="true"] { background: var(--pink); }
+  .crew button[data-value="srank"][aria-pressed="true"] { background: var(--sun); }
+  .crew button[data-value="jimmy"][aria-pressed="true"] { background: var(--sky); }
+  .crew button[data-value="ember"][aria-pressed="true"] { background: var(--tang); }
+  .crew button[data-value="bernie"][aria-pressed="true"] { background: var(--lime); }
+
+  /* Looks: each button dressed in its own style. The ones not picked fade back. */
+  .looks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .looks button { min-width: 0; padding: 10px 10px 9px; text-align: left; display: grid; gap: 3px; border-radius: var(--blob-sm); filter: saturate(.45) brightness(1.06); }
+  .looks button[aria-pressed="true"] { filter: none; transform: translateY(-3px) rotate(-2deg); box-shadow: 5px 6px 0 var(--ink); }
+  .looks b { font-weight: 700; font-size: 19px; line-height: 1; }
+  .looks small { font: 15px/1 var(--hand); }
+  .looks [data-value="toon"] { background: var(--sun); }
+  .looks [data-value="galaxy"] { background: radial-gradient(circle at 28% 22%, #d8ccff, #8b5cf6 45%, #2a1a6e); color: #fff; }
+  .looks [data-value="galaxy"] b { -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; text-shadow: 0 0 8px #e3d8ff; }
+  .looks [data-value="galaxy"][aria-pressed="true"] { box-shadow: 5px 6px 0 var(--ink), 0 0 22px 4px rgba(170, 140, 255, .8); }
+  .looks [data-value="carlo"] { background: repeating-linear-gradient(-45deg, #fff 0 5px, #c9f3fb 5px 8px, #fff 8px 13px, #e6dbff 13px 16px); border-radius: 22px 9px 19px 12px / 9px 20px 12px 22px; }
+  .looks [data-value="carlo"] b { font: 23px/1 var(--hand); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { padding: 5px 12px; border-radius: 999px; font-size: 13px; }
+  .chips button[aria-pressed="true"] { background: var(--lime); }
+
+  /* The note is a speech bubble pointing up at the looks. */
+  .note { position: relative; margin: 16px 0 0; padding: 10px 13px; background: #fff; border: 2.5px solid var(--ink); border-radius: 18px 24px 16px 22px / 20px 16px 24px 18px; font: 17px/1.3 var(--hand); }
+  .note::before { content: ""; position: absolute; top: -10px; left: 30px; width: 15px; height: 15px; background: #fff; border-left: 2.5px solid var(--ink); border-top: 2.5px solid var(--ink); rotate: 50deg; }
+  .note strong { font: 600 15px "Fredoka", sans-serif; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+  /* Alex's sketch, taped up like a polaroid. */
+  .sketch { position: fixed; right: 18px; bottom: 18px; width: 200px; background: #fff; border: 3px solid var(--ink); border-radius: 6px; padding: 10px 10px 6px; box-shadow: 6px 7px 0 var(--ink); rotate: 2.5deg; }
+  .sketch::before { content: ""; position: absolute; top: -13px; left: 50%; width: 76px; height: 22px; translate: -50% 0; rotate: -5deg; background: rgba(255, 210, 63, .8); border: 1.5px solid rgba(28, 20, 36, .3); }
+  .sketch img { width: 100%; display: block; }
+  .sketch p { margin: 5px 0 0; font: 17px/1.1 var(--hand); text-align: center; }
+  .back { position: fixed; right: 18px; top: 18px; font: 600 14px "Fredoka", sans-serif; color: var(--ink); text-decoration: none; background: #fff; border: 2.5px solid var(--ink); border-radius: 999px; padding: 7px 14px; box-shadow: 3px 3px 0 var(--ink); rotate: 1.5deg; transition: transform .18s cubic-bezier(.3, 1.7, .5, 1); }
+  .back:hover { transform: translateY(-2px) rotate(-2deg); }
+  .hint { position: fixed; left: 50%; bottom: 18px; translate: -50% 0; font: 17px var(--hand); background: #fff; border: 2.5px solid var(--ink); border-radius: 999px; padding: 4px 14px; box-shadow: 3px 3px 0 var(--ink); white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 760px) {
+    .panel { top: auto; bottom: 14px; left: 12px; width: calc(100vw - 24px); max-height: 52vh; padding: 12px 14px 16px; rotate: 0deg; }
+    h1 { font-size: 32px; } .lede, .squiggle { display: none; }
+    .crew button { font-size: 11px; } .looks b { font-size: 16px; } .looks small { display: none; }
+    .sketch { top: 70px; bottom: auto; width: 110px; }
+    .hint { display: none; }
+  }
+</style>
+</head>
+<body data-look="toon">
+<div class="stage" aria-hidden="true"></div>
+<div class="panel">
+  <div class="eyebrow">Characters · sketch to 3D</div>
+  <h1>Alex's <em>Crew</em></h1>
+  <svg class="squiggle" viewBox="0 0 190 14" aria-hidden="true"><path d="M3 8 C 17 1, 29 14, 45 7 S 73 1, 89 7 S 117 14, 133 7 S 161 1, 187 7" fill="none" stroke="#ff8a3d" stroke-width="5" stroke-linecap="round"/></svg>
+  <p class="lede">Five characters drawn in pen, built as 3D models in three looks. They drive the go-kart and keep the hearth in the Hearth app.</p>
+  <span class="lbl" id="crew-label">Character</span>
+  <div class="crew" id="crew" role="group" aria-labelledby="crew-label"></div>
+  <span class="lbl" id="look-label">Look</span>
+  <div class="looks" id="looks" role="group" aria-labelledby="look-label"></div>
+  <p class="note" id="note"></p>
+  <span class="lbl" id="hat-label">Try a Hearth hat</span>
+  <div class="chips" id="hats" role="group" aria-labelledby="hat-label"></div>
+  <div class="row">
+    <a class="btn go" id="drive" href="../gokart/index.html">Drive in the go-kart →</a>
+    <button id="lineup" aria-pressed="false">See them all</button>
+    <button id="glb">Download .glb</button>
+  </div>
+</div>
+<figure class="sketch" id="sketch" style="margin:0">
+  <img id="sketch-img" src="sketches/jimbob.jpg" alt="">
+  <p id="sketch-cap">Alex's original sketch</p>
+</figure>
+<a class="back" href="../gallery-ground-plans.html">← Ground plans</a>
+<div class="hint" id="hint">Drag to turn · scroll to zoom</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script src="crew.js"></script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { DecalGeometry } from "three/addons/geometries/DecalGeometry.js";
+import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
+import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+
+const Crew = makeCrew(THREE, { DecalGeometry, mergeVertices });
+// A few words in Alex's handwriting under each look button.
+const LOOK_TAGS = { toon: "flat & bold", galaxy: "shiny glow", carlo: "fuzzy & wobbly" };
+const HATS = [{ id: "", name: "Own" }, { id: "cap", name: "Cap" }, { id: "leaf", name: "Leaf" }, { id: "crown", name: "Crown" }, { id: "straw", name: "Straw" }];
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.prepend(renderer.domElement);
+document.body.prepend(document.querySelector(".stage"));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.05, 100);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 1.6;
+controls.maxDistance = 9;
+controls.maxPolarAngle = Math.PI * 0.55;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f9a, 1.5));
+const key = new THREE.DirectionalLight(0xffffff, 2.3);
+key.position.set(2.5, 5, 4);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 0.5, far: 20 });
+scene.add(key);
+const back = new THREE.DirectionalLight(0xbfd8ff, 1.2);
+back.position.set(-3, 2, -4);
+scene.add(back);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.ShadowMaterial({ opacity: 0.22 }));
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// ---------- State ----------
+const params = new URLSearchParams(location.search);
+const has = (list, id) => list.some(x => x.id === id);
+const state = {
+  id: has(Crew.CHARACTERS, params.get("c")) ? params.get("c") : "jimbob",
+  look: has(Crew.LOOKS, params.get("look")) ? params.get("look") : "toon",
+  hat: HATS.some(h => h.id === params.get("hat")) ? params.get("hat") : "",
+  lineup: params.get("view") === "all"
+};
+let shown = []; // characters currently in the scene
+
+function chips(el, items, render, onPick) {
+  el.replaceChildren(...items.map(item => {
+    const b = document.createElement("button");
+    b.dataset.value = item.id;
+    render(b, item);
+    b.addEventListener("click", () => onPick(item.id));
+    return b;
+  }));
+}
+chips(document.getElementById("crew"), Crew.CHARACTERS, (b, c) => {
+  const img = document.createElement("img");
+  img.src = "sketches/" + c.id + ".jpg";
+  img.alt = "";
+  b.append(img, c.name);
+  b.title = c.kind;
+}, id => set({ id, lineup: false }));
+chips(document.getElementById("looks"), Crew.LOOKS, (b, l) => {
+  b.innerHTML = `<b></b><small></small>`;
+  b.querySelector("b").textContent = l.name;
+  b.querySelector("small").textContent = LOOK_TAGS[l.id] || "";
+}, look => set({ look }));
+chips(document.getElementById("hats"), HATS, (b, h) => { b.textContent = h.name; }, hat => set({ hat, lineup: false }));
+
+function set(next) {
+  Object.assign(state, next);
+  const q = new URLSearchParams({ c: state.id, look: state.look });
+  if (state.hat) q.set("hat", state.hat);
+  if (state.lineup) q.set("view", "all");
+  history.replaceState(null, "", "?" + q);
+  render();
+}
+
+function clear() {
+  for (const c of shown) scene.remove(c);
+  shown = [];
+}
+function render() {
+  const info = Crew.CHARACTERS.find(c => c.id === state.id), look = Crew.LOOKS.find(l => l.id === state.look);
+  document.body.dataset.look = state.look;
+  document.querySelectorAll("#crew button").forEach(b => b.setAttribute("aria-pressed", String(!state.lineup && b.dataset.value === state.id)));
+  document.querySelectorAll("#looks button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === state.look)));
+  document.querySelectorAll("#hats button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === state.hat)));
+  document.getElementById("lineup").setAttribute("aria-pressed", String(state.lineup));
+  const note = document.getElementById("note");
+  note.replaceChildren();
+  const strong = document.createElement("strong");
+  strong.textContent = state.lineup ? "All five, in every look. " : `${info.name} the ${info.kind.toLowerCase()}. `;
+  note.append(strong, state.lineup ? "Click any character to pick them." : info.blurb + " " + look.name + " look: " + look.note);
+  document.getElementById("drive").href = `../gokart/index.html?driver=${state.id}&look=${state.look}`;
+  document.getElementById("sketch").hidden = state.lineup;
+  document.getElementById("sketch-img").src = "sketches/" + state.id + ".jpg";
+  document.getElementById("sketch-img").alt = "Alex's pen sketch of " + info.name;
+  document.getElementById("sketch-cap").textContent = "Alex's sketch: " + info.name;
+  document.getElementById("glb").disabled = state.lineup;
+  document.getElementById("hint").textContent = state.lineup ? "Click a character to pick them" : "Drag to turn · scroll to zoom";
+
+  clear();
+  if (state.lineup) {
+    Crew.LOOKS.forEach((l, row) => Crew.CHARACTERS.forEach((c, col) => {
+      const ch = Crew.build(c.id, l.id);
+      ch.position.set((col - 2) * 1.75, 0, (row - (Crew.LOOKS.length - 1) / 2) * -1.9);
+      ch.rotation.y = 0.25;
+      scene.add(ch);
+      shown.push(ch);
+    }));
+    controls.maxDistance = 30;
+    frame(new THREE.Vector3(0, 0.4, 0), innerWidth > 760 ? 17 : 24, 0.6);
+  } else {
+    const ch = Crew.build(state.id, state.look, { hat: state.hat || null });
+    ch.rotation.y = 0.45;
+    scene.add(ch);
+    shown.push(ch);
+    controls.maxDistance = 9;
+    frame(new THREE.Vector3(0, ch.userData.size.y * 0.48, 0), 3.4 + Math.max(0, ch.userData.size.x - 1.2) * 1.5, 0.22);
+  }
+}
+// Leave room for the panel on the left on wide screens by aiming a little to its side.
+function frame(target, dist, pitch) {
+  dist *= Math.max(1, 1.1 / camera.aspect); // narrow screens need to back up
+  const shift = innerWidth > 760 ? -Math.min(2.2, dist * 0.12) : 0;
+  controls.target.copy(target).add(new THREE.Vector3(shift, innerWidth > 760 ? 0 : -dist * 0.12, 0));
+  camera.position.set(controls.target.x + Math.sin(0.1) * dist, target.y + Math.sin(pitch) * dist, Math.cos(0.1) * dist * Math.cos(pitch));
+  controls.update();
+}
+
+document.getElementById("lineup").addEventListener("click", () => set({ lineup: !state.lineup }));
+
+// Pick from the lineup.
+const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
+let downAt = null;
+renderer.domElement.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener("pointerup", e => {
+  if (!state.lineup || !downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(pointer, camera);
+  const hit = ray.intersectObjects(shown, true).find(h => h.object.isMesh);
+  if (!hit) return;
+  let o = hit.object;
+  while (o.parent && !shown.includes(o)) o = o.parent;
+  set({ id: o.userData.id, look: o.userData.look, lineup: false });
+});
+
+// Export the current character as a .glb for Blender, game engines and so on.
+document.getElementById("glb").addEventListener("click", () => {
+  const ch = shown[0];
+  if (!ch) return;
+  const copy = Crew.exportable(ch);
+  copy.rotation.set(0, 0, 0);
+  new GLTFExporter().parse(copy, glb => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([glb], { type: "model/gltf-binary" }));
+    a.download = `${state.id}-${state.look}${state.hat ? "-" + state.hat : ""}.glb`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, err => console.error(err), { binary: true });
+});
+
+render();
+
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+  for (const c of shown) c.userData.tick(still ? 0 : dt, still ? 0 : t, {});
+  if (!state.lineup && !still) shown[0].rotation.y += dt * 0.25;
+  controls.update();
+  renderer.render(scene, camera);
+});
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

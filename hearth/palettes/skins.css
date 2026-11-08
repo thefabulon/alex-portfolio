@@ -1,0 +1,228 @@
+/*
+  Hearth skins. Each skin sets the same color tokens; index.html only ever
+  uses these tokens, so switching data-skin on <html> repaints the whole app.
+
+  The *-rgb tokens are plain "r, g, b" triples so the app can mix its own
+  transparency: rgba(var(--ink-rgb), .14).
+
+  Rationale for each palette: see README.md in this folder.
+*/
+
+/* ---------- Ember (the original Hearth look, the default) ---------- */
+:root,
+[data-skin="ember"] {
+  color-scheme: dark;
+  --bg-a: #181112;
+  --bg-b: #281819;
+  --bg-c: #171011;
+  --glow-a: rgba(200, 82, 49, 0.27);
+  --glow-b: rgba(147, 54, 29, 0.28);
+  --grain: 0.14;
+
+  --ink: #fdf4e7;
+  --ink-rgb: 253, 244, 231;
+  --heading: #fff1dd;
+  --muted: #c8b8a6;
+  --faint: #9f8c7e;
+  --icon: #fed7aa;
+
+  --accent: #f6be6e;
+  --accent-rgb: 246, 190, 110;
+  --primary: #f26d3d;
+  --primary-rgb: 242, 109, 61;
+  --button: #d65332;
+  --button-ink: #fff7e8;
+  --button-rgb: 211, 78, 39;
+  --soft-ink: #ffe8bd;
+  --chip-ink: #f8d39a;
+
+  --panel: rgba(57, 37, 34, 0.82);
+  --shadow: rgba(0, 0, 0, 0.20);
+  --well: rgba(0, 0, 0, 0.10);
+  --inset: rgba(20, 15, 16, 0.32);
+
+  --stage-top: #382021;
+  --stage-bottom: #201516;
+  --stage-glow: rgba(255, 191, 93, 0.34);
+  --stage-floor: rgba(242, 109, 61, 0.48);
+  --caption-bg: rgba(27, 17, 18, 0.70);
+  --caption-ink: rgba(255, 237, 213, 0.90);
+
+  --ok-ink: #a7f3d0;
+  --ok-bg: rgba(110, 231, 183, 0.10);
+  --ok-line: rgba(157, 180, 124, 0.55);
+  --err-ink: #fecaca;
+
+  --game-sky-top: #2a1a1b;
+  --game-sky-bottom: #140f10;
+  --game-ground: #3b2524;
+  --game-ground-top: #6d3a2c;
+  --game-spike: #f6be6e;
+  --game-goal: #f6be6e;
+  --game-goal-base: #5a3a30;
+  --game-veil: rgba(20, 15, 16, 0.72);
+}
+
+/* ---------- Tidepool: dusty blue, for slowing down ---------- */
+[data-skin="tidepool"] {
+  color-scheme: dark;
+  --bg-a: #0f1820;
+  --bg-b: #17242f;
+  --bg-c: #0d151c;
+  --glow-a: rgba(88, 140, 170, 0.26);
+  --glow-b: rgba(52, 96, 118, 0.30);
+  --grain: 0.12;
+
+  --ink: #eaf2f5;
+  --ink-rgb: 234, 242, 245;
+  --heading: #f4f9fb;
+  --muted: #a9bcc6;
+  --faint: #7f949f;
+  --icon: #b9dde8;
+
+  --accent: #9fd0de;
+  --accent-rgb: 159, 208, 222;
+  --primary: #7fb3cf;
+  --primary-rgb: 127, 179, 207;
+  --button: #3a7593;
+  --button-ink: #f4fbff;
+  --button-rgb: 30, 80, 110;
+  --soft-ink: #d3eaf1;
+  --chip-ink: #bfe0ea;
+
+  --panel: rgba(26, 42, 54, 0.82);
+  --shadow: rgba(0, 0, 0, 0.24);
+  --well: rgba(0, 0, 0, 0.12);
+  --inset: rgba(10, 18, 24, 0.34);
+
+  --stage-top: #1d3240;
+  --stage-bottom: #111c24;
+  --stage-glow: rgba(190, 228, 238, 0.28);
+  --stage-floor: rgba(90, 150, 180, 0.42);
+  --caption-bg: rgba(13, 22, 29, 0.72);
+  --caption-ink: rgba(224, 240, 245, 0.92);
+
+  --ok-ink: #b9e6cf;
+  --ok-bg: rgba(120, 200, 160, 0.12);
+  --ok-line: rgba(160, 215, 190, 0.50);
+  --err-ink: #f3c1b8;
+
+  --game-sky-top: #18283a;
+  --game-sky-bottom: #0d151c;
+  --game-ground: #1f3442;
+  --game-ground-top: #2f5266;
+  --game-spike: #e8c48a;
+  --game-goal: #f2d29a;
+  --game-goal-base: #3a4f5c;
+  --game-veil: rgba(13, 21, 28, 0.74);
+}
+
+/* ---------- Morning Meadow: a light, fresh daytime skin ---------- */
+[data-skin="meadow"] {
+  color-scheme: light;
+  --bg-a: #f6f1e7;
+  --bg-b: #eee7d8;
+  --bg-c: #f3eee3;
+  --glow-a: rgba(178, 194, 163, 0.50);
+  --glow-b: rgba(232, 196, 166, 0.40);
+  --grain: 0.10;
+
+  --ink: #2f3a33;
+  --ink-rgb: 47, 58, 51;
+  --heading: #24302a;
+  --muted: #5a675d;
+  --faint: #616d63;
+  --icon: #7a9a6c;
+
+  --accent: #a0553b;
+  --accent-rgb: 160, 85, 59;
+  --primary: #6e8f62;
+  --primary-rgb: 110, 143, 98;
+  --button: #56744b;
+  --button-ink: #fbfaf5;
+  --button-rgb: 70, 96, 60;
+  --soft-ink: #34433a;
+  --chip-ink: #7d4630;
+
+  --panel: rgba(255, 252, 246, 0.80);
+  --shadow: rgba(70, 80, 55, 0.10);
+  --well: rgba(47, 58, 51, 0.04);
+  --inset: rgba(232, 238, 222, 0.60);
+
+  --stage-top: #e7eddc;
+  --stage-bottom: #d3ddc5;
+  --stage-glow: rgba(255, 238, 196, 0.80);
+  --stage-floor: rgba(150, 178, 128, 0.50);
+  --caption-bg: rgba(255, 252, 246, 0.82);
+  --caption-ink: #34433a;
+
+  --ok-ink: #2f6b45;
+  --ok-bg: rgba(86, 140, 100, 0.12);
+  --ok-line: rgba(86, 116, 75, 0.45);
+  --err-ink: #a23b2a;
+
+  --game-sky-top: #f1f2e4;
+  --game-sky-bottom: #dbe4ce;
+  --game-ground: #b9c7a6;
+  --game-ground-top: #8ea47c;
+  --game-spike: #b8664a;
+  --game-goal: #e0a252;
+  --game-goal-base: #8b7560;
+  --game-veil: rgba(246, 241, 231, 0.84);
+}
+
+/* ---------- Marshy: midnight blue and sky blue, for dark nights ---------- */
+/* Named after Alex's childhood stuffed animal, a sequined midnight-blue sheep.
+   The raised grain stands in for his sequins. */
+[data-skin="marshy"] {
+  color-scheme: dark;
+  --bg-a: #121838;
+  --bg-b: #1a2250;
+  --bg-c: #0e1330;
+  --glow-a: rgba(140, 190, 240, 0.24);
+  --glow-b: rgba(200, 210, 255, 0.16);
+  --grain: 0.22;
+
+  --ink: #eef3fc;
+  --ink-rgb: 238, 243, 252;
+  --heading: #f6f9ff;
+  --muted: #b3bfdc;
+  --faint: #8592b5;
+  --icon: #cfe3fb;
+
+  --accent: #a9d4f5;
+  --accent-rgb: 169, 212, 245;
+  --primary: #9cc8f0;
+  --primary-rgb: 156, 200, 240;
+  --button: #4660b5;
+  --button-ink: #f6f9ff;
+  --button-rgb: 60, 85, 170;
+  --soft-ink: #dce9fb;
+  --chip-ink: #cfe3fb;
+
+  --panel: rgba(30, 38, 82, 0.82);
+  --shadow: rgba(0, 0, 0, 0.26);
+  --well: rgba(0, 0, 0, 0.12);
+  --inset: rgba(12, 16, 40, 0.36);
+
+  --stage-top: #26306a;
+  --stage-bottom: #141a3c;
+  --stage-glow: rgba(243, 217, 164, 0.28);
+  --stage-floor: rgba(120, 170, 235, 0.40);
+  --caption-bg: rgba(14, 19, 48, 0.72);
+  --caption-ink: rgba(236, 243, 255, 0.92);
+
+  --ok-ink: #c4ecd8;
+  --ok-bg: rgba(140, 210, 180, 0.12);
+  --ok-line: rgba(170, 220, 200, 0.50);
+  --err-ink: #f6c2c8;
+
+  --game-sky-top: #1c2558;
+  --game-sky-bottom: #0e1330;
+  --game-ground: #222c5e;
+  --game-ground-top: #3d4d94;
+  --game-spike: #a9d4f5;
+  --game-goal: #f3d9a4;
+  --game-goal-base: #3a4470;
+  --game-veil: rgba(14, 19, 48, 0.76);
+}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup</title>
+<!-- Renders one screenshot inside a CSS device frame on a transparent background.
+     Usage: mockup.html?kind=phone&shot=phone-ritual
+            mockup.html?kind=laptop&shot=laptop-ritual
+            mockup.html?kind=combo&shot=laptop-ritual&phone=phone-ritual -->
+<link rel="stylesheet" href="../showcase/devices.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  .canvas { padding: 40px 60px 70px; display: inline-flex; align-items: flex-end; position: relative; }
+  .phone { --w: 360px; }
+  .laptop { --w: 1100px; }
+  .combo .phone { --w: 260px; position: absolute; left: 20px; bottom: 50px; }
+  .combo .laptop { margin-left: 160px; }
+</style>
+</head>
+<body>
+<div class="canvas" id="canvas"></div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const kind = params.get("kind") || "phone";
+  const shot = name => '<div class="screen"><img src="../screenshots/' + name + '.png" alt=""></div>';
+  const phone = name => '<div class="phone">' + shot(name) + "</div>";
+  const laptop = name => '<div class="laptop"><div class="lid">' + shot(name) + '</div><div class="base"></div></div>';
+  const canvas = document.getElementById("canvas");
+  if (kind === "combo") {
+    canvas.classList.add("combo");
+    canvas.innerHTML = laptop(params.get("shot")) + phone(params.get("phone"));
+  } else {
+    canvas.innerHTML = kind === "laptop" ? laptop(params.get("shot")) : phone(params.get("shot"));
+  }
+</script>
+</body>
+</html>
