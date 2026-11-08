@@ -11,3 +11,6 @@
 # Raw OpenStreetMap and elevation downloads for the Wheelie Ride v2 map (~130 MB).
 # tools/fetch_osm.py downloads them again; only the built src/v2/oc-map.js is kept.
 wheelie-ride/tools/cache/
+
+# macOS drag-and-drop leftovers
+*.textClipping

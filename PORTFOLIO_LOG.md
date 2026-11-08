@@ -20,6 +20,12 @@ Some projects also have their own detailed log. Their changes are summarized her
 
 ## 2026-11-08
 
+### My portfolio is a website now
+
+- **Change:** I put my portfolio on GitHub and Hostinger, and the website opens on the Lobby (lobby v2.13 in [lobby/RELEASE_LOG.md](lobby/RELEASE_LOG.md)). From there people plug in cartridges to play my games, or go to my ground plans gallery.
+- **Fixes:** the lobby moved to the top of the project as `index.html`. I fixed all the "← Lobby" and "← Ground plans" buttons after I renamed and moved pages, and I copied the drifting game into the project so it works online.
+- **Why I made this call:** _[your reasoning here]_
+
 ### Portfolio slides: Music Production
 
 - **Change:** New slide 18, **Music Production**. The deck is now 19 slides, and Encanto moved to 19.

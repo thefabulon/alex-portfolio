@@ -14,6 +14,13 @@ The changes for all my projects are summarized in [../PORTFOLIO_LOG.md](../PORTF
 
 ---
 
+## v2.13 (2026-11-08): The lobby is the front door of my website
+
+- **Problem:** When I put my portfolio on Hostinger from GitHub, the website needed to open on the lobby, but the lobby was hidden in `lobby/`. Lots of links were also broken: the projects' "← Lobby" buttons pointed to `lobby/v2.html`, which I'd renamed, the "← Ground plans" buttons pointed to the gallery after I'd moved it into `gallery-versions/`, and the DRIFTING GAME cartridge pointed to a folder outside my repo.
+- **Cause:** A website opens the `index.html` at the very top of the project. Links between pages are written as paths from each page's own folder, so moving a page breaks every link to it and from it.
+- **Fix:** The lobby moved to the top as `index.html`, so the site opens straight into it, and its cartridge paths were updated. Every "← Lobby" button now goes to `../index.html`, and every "← Ground plans" button goes to `gallery-versions/gallery-ground-plans.html`. The gallery pages' own paths were fixed for their new folder. The drifting game was copied into the repo as `drift-garage/` so its cartridge works online.
+- **Takeaway:** Before moving or renaming a page, search for every link to it. A link checker that tests every path finds the ones I'd miss.
+
 ## v2.12 (2026-11-07): Bit talks about the new racing HUD
 
 - The go-kart game has a new racing-game screen: position, lap and a track map in the corner, a speedometer, start lights and a pause menu (see the go-kart entry in [../PORTFOLIO_LOG.md](../PORTFOLIO_LOG.md)). The old menu with its Hide button is gone.

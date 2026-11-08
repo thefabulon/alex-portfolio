@@ -2,13 +2,13 @@
 
 A retro game room that holds all of Alexander's projects. Each project is a game cartridge. Take one from the rack, plug it into the wood-grain ALEX-2600 console, and a portal opens to that project. Bit, a little hovering robot, welcomes you and explains each cartridge.
 
-Open `index.html` directly or from a server. It works in a browser and in a VR headset (Enter VR).
+The lobby is the website's front page: it lives at the top of the repo as [`../index.html`](../index.html), so the site opens straight into it. This folder keeps its notes, release log and inspiration screenshots. Open `index.html` directly or from a server. It works in a browser and in a VR headset (Enter VR).
 
-`v2.html` is the newer version with three cartridges: GO-KART, WHEELIE SIM and DRIFTING GAME.
+It has three cartridges: GO-KART, WHEELIE SIM and DRIFTING GAME. (The old one-cartridge first version was replaced by this one.)
 
-- **GO-KART** opens the drift version of the go-kart game, `../gokart/v2.html`, in both lobbies. The first version (`gokart/index.html`) isn't linked from the lobby. Brian's Skyline, the car the kart is based on, sits on a stand in the middle of that track, so the GO-KART title screen and cartridge label show it behind the kart (`drawSkyline()`), and Bit mentions it. The rest of the crew drive laps on their own when you're not racing, so the TV shows four smaller karts (`CREW_KARTS`) cruising behind yours. Bit also tells you to use the Stands camera to read the sign about how the kart was built.
-- **WHEELIE SIM** opens `../wheelie-ride/index.html`, inside this repo. Like GO-KART, it has camera views (3rd person, 1st person, side cam; C switches), and Bit mentions them. The rider on the cartridge and TV wears an MTB helmet with a lime peak (`mtbHelmet()`), like the rider in the game, and Bit mentions the Sur-Ron, the Ninja H2R and the helmet.
-- **DRIFTING GAME** opens `~/Dev/drift-garage/index.html`, linked as `../../drift-garage/`. That folder sits next to `Alex/`, outside the repo, so this link only works locally.
+- **GO-KART** opens the drift version of the go-kart game, `gokart/v2.html`. The first version (`gokart/index.html`) isn't linked from the lobby. Brian's Skyline, the car the kart is based on, sits on a stand in the middle of that track, so the GO-KART title screen and cartridge label show it behind the kart (`drawSkyline()`), and Bit mentions it. The rest of the crew drive laps on their own when you're not racing, so the TV shows four smaller karts (`CREW_KARTS`) cruising behind yours. Bit also tells you to use the Stands camera to read the sign about how the kart was built.
+- **WHEELIE SIM** opens `wheelie-ride/index.html`. Like GO-KART, it has camera views (3rd person, 1st person, side cam; C switches), and Bit mentions them. The rider on the cartridge and TV wears an MTB helmet with a lime peak (`mtbHelmet()`), like the rider in the game, and Bit mentions the Sur-Ron, the Ninja H2R and the helmet.
+- **DRIFTING GAME** opens `drift-garage/index.html`. It's a copy of `~/Dev/drift-garage` brought into the repo so it works on the website. If that game changes, copy it in again.
 
 Every change to the lobby is written up in [RELEASE_LOG.md](RELEASE_LOG.md).
 
@@ -21,12 +21,12 @@ On the Meta Quest browser, going through the portal can keep you in VR on the ne
 
 ## Adding a cartridge
 
-Add an entry to `PROJECTS` near the top of the script in `v2.html` (or `index.html`):
+Add an entry to `PROJECTS` near the top of the script in `../index.html`:
 
-- `title`, `tag`, `href`: the label text and the page the portal opens
+- `title`, `tag`, `href`: the label text and the page the portal opens (paths are from the top of the repo, like `gokart/v2.html`)
 - `stripes`, `portal`, `glow`: label stripe colors, the portal swirl colors and the light color
 - `pickup`, `again`, `blurb`: what Bit says when you pick it up the first time, later times, and when you use the quick-play button
 - `art(ctx, x, y, w, h)`: draws the picture on the label (canvas 2D)
 - `screen(ctx, w, h, t)`: draws the TV title screen while it's plugged in (`t` is seconds)
 
-The rack has 6 slots (`RACK_SLOTS`). Slots without a project show a "Coming soon" cartridge. When you add a cartridge, update the line where Bit lists the games ("There are three games so far…" in `v2.html`). Then add an entry to [RELEASE_LOG.md](RELEASE_LOG.md).
+The rack has 6 slots (`RACK_SLOTS`). Slots without a project show a "Coming soon" cartridge. When you add a cartridge, update the line where Bit lists the games ("There are three games so far…" in `../index.html`). Then add an entry to [RELEASE_LOG.md](RELEASE_LOG.md).
