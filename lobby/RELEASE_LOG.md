@@ -14,6 +14,28 @@ The changes for all my projects are summarized in [../PORTFOLIO_LOG.md](../PORTF
 
 ---
 
+## v2.17 (2026-11-08): Bit becomes Bambam, my assistant, with a real voice
+
+- **Change:** The robot isn't Bit anymore. He's Bambam, my assistant, and he talks in the bambam voice from ElevenLabs instead of the browser's robot voice. He introduces himself as "Alex's assistant," and when something isn't done yet he says "we're working on it," because we build this together.
+- **How the voice works:** every line Bambam can say (48 of them) is recorded ahead of time as an mp3 in `lobby/bit-voice/`.
+- **Why recorded, not live:** the lobby is a public website. To make speech live, the page would need my ElevenLabs key, and anyone could copy it out of the page and use up my credits. So `lobby/bit-voice/build_voice.py` records the lines on my computer, and only the mp3s go online.
+- **Fix along the way:** the voice worked on the website but not when I opened the file on my computer, because the browser blocked the page from reading the list of recordings. Now the page just tries each line's mp3 and only uses the old voice if it's missing.
+- **When I change his lines:** run the script again. It only records the new or changed lines and deletes the old ones with `--clean`.
+- **Why I made this call:** _[your reasoning here]_
+
+## v2.16 (2026-11-08): THE WOVEN ROOM cartridge
+
+- **Change:** A third cartridge on the rack: THE WOVEN ROOM, my VR gallery. Its label is the gallery wall with the tapestry and the shiny arch. On the TV the tapestry sways in its folds and flips between THREAD and METAL, the way it does when you click it in the room.
+- **Bit:** Bit tells the story (El Anatsui at The Broad, Gunta Stölzl's tapestry) and the trick: there are no buttons, so you click the art itself to find all 7 secrets. Bit's welcome now says "There are three so far."
+- **Fix along the way:** Bit said "Vroom! See you on the track!" for every cartridge, which made no sense for a gallery. Now each cartridge can have its own line, and the Woven Room's is "Shh, it's a gallery!"
+- **Back again:** the Woven Room has a "← Lobby" link in the top-left corner.
+- **Why I made this call:** _[your reasoning here]_
+
+## v2.15 (2026-11-08): A clean screen
+
+- **Change:** I took away the info panel that floated on the left (the title, the instructions, the Play buttons and the Sound button) and the "← Ground plans" button in the top right. Now the whole screen is the lobby, and Bit explains everything.
+- **Why I made this call:** _[your reasoning here]_
+
 ## v2.14 (2026-11-08): Two cartridges, and the new Wheelie Sim
 
 - **Change:** I took the DRIFTING GAME cartridge out. The rack now has GO-KART and WHEELIE SIM, and Bit says "There are two games so far."

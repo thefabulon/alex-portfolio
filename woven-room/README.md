@@ -29,13 +29,20 @@ The sculptures come from The Broad too: the high-shine, balloon-like pieces such
 
 ## In the room
 
-| Switch | What it does |
-| --- | --- |
-| Thread / Metal | Wool, or small tilted metal plates joined by copper wire that catch the light as you move |
-| Flat / Folded | The flat book photo, or hung in deep folds |
-| Still / Breathing | The folds hold still, or slowly drift |
+There are no buttons. The things in the room are the switches, and part of the visit is finding them. Point at something and a tag says what a click will do. A tally in the corner counts the 7 things to find, with a riddle for each one you haven't found yet.
 
-Desktop: W A S D or arrow keys to walk, drag to look, M / F / B for the switches. The Door, Weave, Shine and Story buttons glide you to a spot.
+| Click | What it does |
+| --- | --- |
+| The tapestry | Thread or metal: small tilted plates joined by copper wire that catch the light as you move |
+| The hanging rod | Folded, or the flat book photo |
+| The fringe | The folds slowly drift, or hold still |
+| The ceiling | See the whole room from above (click it again to come back down) |
+| A sculpture | Walk to it and see which part of the tapestry it came from |
+| The story wall | Walk over and read it |
+| The door | Back to the ground plans (click twice) |
+| The floor | Walk there |
+
+Desktop: W A S D or arrow keys to walk, drag to look. M / F / B still work as shortcuts. "← Lobby" in the top-left corner goes back to the lobby.
 Headset: left stick walks, right stick turns in steps. A switches thread/metal, B flat/folded, X still/breathing, Y takes you back to the door.
 
 ## Files

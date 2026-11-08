@@ -20,6 +20,22 @@ Some projects also have their own detailed log. Their changes are summarized her
 
 ## 2026-11-08
 
+- The lobby robot is now Bambam, my assistant, and he talks in the bambam voice from ElevenLabs. He says "we're working on more" instead of "Alexander is making more." I recorded all 48 of his lines ahead of time with a script, so my API key never goes on the website. Details in the lobby's release log (v2.17).
+- The Woven Room no longer links to the ground plans. I took the "Ground plans" link out of the top corner, and the door now leads back to the lobby.
+
+### The Woven Room: no buttons, and it's in the lobby
+
+- **Problem:** The Woven Room had a dark blue panel in the top-left corner with orange buttons for every switch. It covered the room, and it looked like a game menu instead of a gallery.
+- **Fix:** I took the panel out completely. Now the things in the room are the controls: click the tapestry to turn it to metal, its hanging rod to fold or flatten it, its fringe to make it breathe, the ceiling to see the room from above, a sculpture or the story wall to walk to it, and the door to leave. Click the floor to walk there. When you point at something, a little tag tells you what clicking will do, and a caption explains what happened. A tally in the corner ("2 / 7 found") counts what you've discovered, with a riddle for each thing you haven't found yet.
+- **How I picked it:** I tried three versions: numbered museum audio-guide stops, see-through glass controls that float next to things, and this one, where the art itself is the switch. I chose this one because finding the controls is part of exploring the room.
+- **Lobby:** THE WOVEN ROOM is now the third cartridge (lobby v2.16 in [lobby/RELEASE_LOG.md](lobby/RELEASE_LOG.md)).
+- **Why I made this call:** _[your reasoning here]_
+
+- **Lobby: a clean screen:** I removed the floating info panel on the left and the "← Ground plans" button, so the lobby fills the whole screen. Details in lobby v2.15 in [lobby/RELEASE_LOG.md](lobby/RELEASE_LOG.md).
+
+- **The Veil in Google Slides:** I picked The Veil as my final edition. `portfolio-slides/Alexander-Kim-Portfolio-Veil-GoogleSlides.pptx` is a real, editable deck: every word is a text box I can change, and every photo, frame, wall label, sculpture and the veil art is its own layer (framed photos and wall labels are groups). `python3 portfolio-slides/build_veil_slides.py` makes it from the same page as the PDF. Google Slides has no extra-wide Archivo, so the big titles use Archivo Black at the same width.
+- **Fix:** On page 16 the "In loving memory" card for Rocky Bal Beta was stuck in the top-left corner, covering "Gallery 16". It now sits in the top right, in the PDF and the slides.
+
 ### Portfolio: three new themed editions for art school
 
 - **Problem:** My portfolio deck looked like a template, and this is for a theater design program at an art school.
